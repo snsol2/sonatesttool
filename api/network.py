@@ -1,14 +1,13 @@
 # Copyright 2016 Telcoware
+# network control management classes
 
 from neutronclient.v2_0 import client
-from config import ReadConfig
 
-CONFIG_FILE = '../config/config.ini'
 
-auth_config = ReadConfig(CONFIG_FILE)
-neutron = client.Client(**auth_config.get_auth_conf())
-networks = neutron.list_networks()
+class Network:
+    def __init__(self, auth_config):
+        self.neutron = client.Client(**auth_config)
 
-# print json.dumps(networks, indent=4, separators=(',',':'))
-
-print networks
+    def read_network_lists(self):
+        networks = self.neutron.list_networks()
+        return networks
