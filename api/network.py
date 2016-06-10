@@ -3,6 +3,8 @@
 
 from neutronclient.v2_0 import client
 
+# TODO
+# apply oslo_log
 
 class Network:
     def __init__(self, auth_config):
