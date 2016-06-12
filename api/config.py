@@ -5,22 +5,30 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-default_group = cfg.OptGroup(name='DEFAULT')
-
-default_conf = [
-    cfg.IntOpt('network_cnt'),
-]
-
-CONF.register_group(default_group)
-CONF.register_opts(default_conf, default_group)
+# default_group = cfg.OptGroup(name='DEFAULT')
+#
+# default_conf = [
+#     cfg.IntOpt('network_cnt'),
+# ]
+#
+# CONF.register_group(default_group)
+# CONF.register_opts(default_conf, default_group)
 
 
 class ReadConfig:
     def __init__(self, conf_file):
+        default_group = cfg.OptGroup(name='DEFAULT')
+
+        default_conf = [
+            cfg.IntOpt('network_cnt'),
+        ]
+
+        CONF.register_group(default_group)
+        CONF.register_opts(default_conf, default_group)
         CONF(default_config_files=[conf_file])
 
-    @classmethod
-    def get_auth_conf(cls):
+    @staticmethod
+    def get_auth_conf():
         auth_group = cfg.OptGroup(name='auth')
 
         auth_conf = [
@@ -35,8 +43,8 @@ class ReadConfig:
 
         return CONF.auth
 
-    @classmethod
-    def get_network_conf(cls):
+    @staticmethod
+    def get_network_conf():
 
         print CONF.DEFAULT.network_cnt
 
