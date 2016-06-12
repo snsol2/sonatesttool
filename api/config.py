@@ -2,43 +2,73 @@
 
 from oslo_config import cfg
 
-auth_group = cfg.OptGroup(name='auth',
-                          title='OpenStack Auth Information')
-
-AuthGroup = [
-    cfg.StrOpt('username', default='admin'),
-    cfg.StrOpt('password', default='admin'),
-    cfg.StrOpt('tenant_name', default='admin'),
-    cfg.StrOpt('auth_url', default='http://controller:5000/v2.0', )
-]
-
-network_group = cfg.OptGroup(name='network1',
-                             title='Network Information')
-
-network_group = cfg.OptGroup(name='network2',
-                             title='Network Information')
-
-NetworkGroup = [
-    cfg.StrOpt('network', default='admin'),
-    cfg.StrOpt('subnet', default='admin'),
-]
 
 CONF = cfg.CONF
 
-CONF.register_group(auth_group)
-CONF.register_opts(AuthGroup, auth_group)
+default_group = cfg.OptGroup(name='DEFAULT')
 
-CONF.register_group(network_group)
-CONF.register_opts(NetworkGroup, network_group)
+default_conf = [
+    cfg.IntOpt('network_cnt'),
+]
+
+CONF.register_group(default_group)
+CONF.register_opts(default_conf, default_group)
 
 
 class ReadConfig:
     def __init__(self, conf_file):
         CONF(default_config_files=[conf_file])
 
-    def get_auth_conf(self):
+    @classmethod
+    def get_auth_conf(cls):
+        auth_group = cfg.OptGroup(name='auth')
+
+        auth_conf = [
+            cfg.StrOpt('username'),
+            cfg.StrOpt('password'),
+            cfg.StrOpt('tenant_name'),
+            cfg.StrOpt('auth_url')
+        ]
+
+        CONF.register_group(auth_group)
+        CONF.register_opts(auth_conf, auth_group)
+
         return CONF.auth
 
-    def get_network_conf(self):
-        return CONF.network1, CONF.network2
+    @classmethod
+    def get_network_conf(cls):
+
+        print CONF.DEFAULT.network_cnt
+
+        network_group1 = cfg.OptGroup(name='network1')
+
+        network_group2 = cfg.OptGroup(name='network2')
+
+        network_group3 = cfg.OptGroup(name='network3')
+
+        network_conf1 = [
+            cfg.StrOpt('network'),
+            cfg.StrOpt('subnet')
+        ]
+
+        network_conf2 = [
+            cfg.StrOpt('network'),
+            cfg.StrOpt('subnet')
+        ]
+
+        network_conf3 = [
+            cfg.StrOpt('network'),
+            cfg.StrOpt('subnet')
+        ]
+
+        CONF.register_group(network_group1)
+        CONF.register_opts(network_conf1, network_group1)
+
+        CONF.register_group(network_group2)
+        CONF.register_opts(network_conf2, network_group2)
+
+        CONF.register_group(network_group3)
+        CONF.register_opts(network_conf3, network_group3)
+
+        return CONF.network1, CONF.network2, CONF.network3
 
