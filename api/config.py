@@ -48,35 +48,26 @@ class ReadConfig:
 
         print CONF.DEFAULT.network_cnt
 
-        network_group1 = cfg.OptGroup(name='network1')
+        network_group = cfg.OptGroup(name='network')
 
-        network_group2 = cfg.OptGroup(name='network2')
+        subnet_group = cfg.OptGroup(name='subnet')
 
-        network_group3 = cfg.OptGroup(name='network3')
 
-        network_conf1 = [
-            cfg.StrOpt('network'),
-            cfg.StrOpt('subnet')
+        network_conf = [
+            cfg.StrOpt('network1'),
+            cfg.StrOpt('network2')
         ]
 
-        network_conf2 = [
-            cfg.StrOpt('network'),
-            cfg.StrOpt('subnet')
+        subnet_conf = [
+            cfg.StrOpt('subnet1'),
+            cfg.StrOpt('subnet2')
         ]
 
-        network_conf3 = [
-            cfg.StrOpt('network'),
-            cfg.StrOpt('subnet')
-        ]
+        CONF.register_group(network_group)
+        CONF.register_opts(network_conf, network_group)
 
-        CONF.register_group(network_group1)
-        CONF.register_opts(network_conf1, network_group1)
+        CONF.register_group(subnet_group)
+        CONF.register_opts(subnet_conf, subnet_group)
 
-        CONF.register_group(network_group2)
-        CONF.register_opts(network_conf2, network_group2)
-
-        CONF.register_group(network_group3)
-        CONF.register_opts(network_conf3, network_group3)
-
-        return CONF.network1, CONF.network2, CONF.network3
+        return CONF.network, CONF.subnet
 

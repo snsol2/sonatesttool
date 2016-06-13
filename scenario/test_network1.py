@@ -20,7 +20,7 @@ network_config = list(config.get_network_conf())
 
 # network = Network(auth_config)
 
-print dict(auth_config)
+# print dict(auth_config)
 # print network_config1
 
 for a in network_config:
