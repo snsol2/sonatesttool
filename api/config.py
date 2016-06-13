@@ -46,8 +46,6 @@ class ReadConfig:
     @staticmethod
     def get_network_conf():
 
-        print CONF.DEFAULT.network_cnt
-
         network_group = cfg.OptGroup(name='network')
 
         subnet_group = cfg.OptGroup(name='subnet')
