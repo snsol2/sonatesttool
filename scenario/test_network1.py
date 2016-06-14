@@ -2,41 +2,31 @@
 # kimjt Network temporarily test tool
 #
 
-from api.config import ReadConfig
-from api.network import Network
+from api.network import NetworkTester
 
-CONFIG_PATH = '../config/'
-CONFIG_FILE = 'config.ini'
+CONFIG_FILE = '../config/config.ini'
 
-config = ReadConfig(CONFIG_PATH + CONFIG_FILE)
+test_network = NetworkTester(CONFIG_FILE)
 
-auth_config = config.get_auth_conf()
+# SONA Test scenario
+# Reference default Config
+# Network ]
+# =================================================================
 
-# network_config1 = config.get_network_conf()
-# [network_config1, network_config2] = config.get_network_conf()
-# [network_config1, network_config2, network_config3] = config.get_network_conf()
-network_config = list(config.get_network_conf())
+print "Test Start ===="
+print "----------------------------"
+# test_network.get_network_list_all()
+# test_network.get_network_list('network3')
 
+# test_network.create_network('network1')
 
-# network = Network(auth_config)
-
-# print dict(auth_config)
-# print network_config1
-
-for a in network_config:
-    print dict(a)
-    # print dict(a['network'])
+# test_network.delete_network('network2')
 
 
-# print dict(network_config1[0])['network']
-# print dict(network_config1[1])['subnet']
-# print dict(network_config1[2])['network']
-# print dict(network_config2)
-# print dict(network_config3)
-
-
-# print (network.read_network_lists())
-
+# test_network.get_subnet_list_all()
+test_network.get_subnet_list('subnet2')
+test_network.create_subnet('subnet1', 'network1')
+test_network.get_subnet_list('subnet1')
 
 
 

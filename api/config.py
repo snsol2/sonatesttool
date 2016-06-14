@@ -1,6 +1,7 @@
 # Copyright 2016 Telcoware
 
 from oslo_config import cfg
+import ast
 
 
 CONF = cfg.CONF
@@ -21,14 +22,15 @@ class ReadConfig:
 
         default_conf = [
             cfg.IntOpt('network_cnt'),
+            cfg.IntOpt('subnet_cnt')
         ]
 
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
         CONF(default_config_files=[conf_file])
 
-    @staticmethod
-    def get_auth_conf():
+    @classmethod
+    def get_auth_conf(cls):
         auth_group = cfg.OptGroup(name='auth')
 
         auth_conf = [
@@ -43,29 +45,40 @@ class ReadConfig:
 
         return CONF.auth
 
-    @staticmethod
-    def get_network_conf():
+    @classmethod
+    def get_network_config(cls):
 
         network_group = cfg.OptGroup(name='network')
 
-        subnet_group = cfg.OptGroup(name='subnet')
-
-
-        network_conf = [
-            cfg.StrOpt('network1'),
-            cfg.StrOpt('network2')
-        ]
-
-        subnet_conf = [
-            cfg.StrOpt('subnet1'),
-            cfg.StrOpt('subnet2')
-        ]
+        network_conf = list()
+        for i in range(1, CONF.DEFAULT.network_cnt + 1):
+            network_name = ('network' + str(i))
+            network_conf.append(cfg.StrOpt(network_name))
 
         CONF.register_group(network_group)
         CONF.register_opts(network_conf, network_group)
 
+        return CONF.network
+
+    @classmethod
+    def get_subnet_config(cls):
+
+        subnet_group = cfg.OptGroup(name='subnet')
+
+        subnet_conf = list()
+        for i in range(1, CONF.DEFAULT.network_cnt + 1):
+            subnet_name = ('subnet' + str(i))
+            subnet_conf.append(cfg.StrOpt(subnet_name))
+
         CONF.register_group(subnet_group)
         CONF.register_opts(subnet_conf, subnet_group)
 
-        return CONF.network, CONF.subnet
+        return CONF.subnet
+
+    # Move to network module
+    # @classmethod
+    # def get_openstack_network_name(cls, network_opt_name):
+    #     network_conf = cls.get_network_config()[network_opt_name]
+    #     openstack_network_name = ast.literal_eval(network_conf)['network']['name']
+    #     return openstack_network_name
 
