@@ -13,7 +13,7 @@ class NetworkTester:
 
     def __init__(self, config_file):
         # Get config
-        self.auth_conf = ReadConfig(config_file).get_auth_conf()
+        self.auth_conf = ReadConfig(config_file).get_net_auth_conf()
         self.network_conf = ReadConfig.get_network_config()
         self.subnet_conf = ReadConfig.get_subnet_config()
         # Get Token and Neutron Object
@@ -28,7 +28,7 @@ class NetworkTester:
         return network_rst
 
     def get_network_list(self, network_opt):
-        network_name = self.get_network_name(network_opt)
+        network_name = self.find_network_name(network_opt)
         network_rst = self.neutron.list_networks(name=network_name)
         print "Network List --->", network_opt, dict(network_rst).values()
         return network_rst
@@ -56,7 +56,7 @@ class NetworkTester:
         return subnet_rst
 
     def get_subnet_list(self, subnet_opt):
-        subnet_name = self.get_subnet_name(subnet_opt)
+        subnet_name = self.find_subnet_name(subnet_opt)
         subnet_rst = self.neutron.list_subnets(name=subnet_name)
         print "Subnet List --->", subnet_opt, dict(subnet_rst).values()
         return subnet_rst
@@ -79,24 +79,24 @@ class NetworkTester:
     def update_subnet(self):
         pass
 
-    def get_network_name(self, network_opt):
+    def find_network_name(self, network_opt):
         network_conf = dict(self.network_conf)[network_opt]
         network_name = ast.literal_eval(network_conf)['network']['name']
         return network_name
 
     def get_network_uuid(self, network_opt):
-        network_name = self.get_network_name(network_opt)
+        network_name = self.find_network_name(network_opt)
         network_rst = self.neutron.list_networks(name=network_name)
         network_uuid = dict(network_rst)['networks'][0]['id']
         return network_uuid
 
-    def get_subnet_name(self, subnet_opt):
+    def find_subnet_name(self, subnet_opt):
         subnet_conf = dict(self.subnet_conf)[subnet_opt]
         subnet_name = ast.literal_eval(subnet_conf)['subnets'][0]['name']
         return subnet_name
 
     def get_subnet_uuid(self, subnet_opt):
-        subnet_name = self.get_subnet_name(subnet_opt)
+        subnet_name = self.find_subnet_name(subnet_opt)
         subnet_rst = self.neutron.list_subnets(name=subnet_name)
         subnet_uuid = dict(subnet_rst)['subnets'][0]['id']
         return subnet_uuid

@@ -19,31 +19,41 @@ CONF = cfg.CONF
 class ReadConfig:
     def __init__(self, conf_file):
         default_group = cfg.OptGroup(name='DEFAULT')
-
         default_conf = [
             cfg.IntOpt('network_cnt'),
             cfg.IntOpt('subnet_cnt')
         ]
-
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
         CONF(default_config_files=[conf_file])
 
     @classmethod
-    def get_auth_conf(cls):
-        auth_group = cfg.OptGroup(name='auth')
-
+    def get_net_auth_conf(cls):
+        auth_group = cfg.OptGroup(name='net_auth')
         auth_conf = [
             cfg.StrOpt('username'),
             cfg.StrOpt('password'),
             cfg.StrOpt('tenant_name'),
+            cfg.StrOpt('version'),
             cfg.StrOpt('auth_url')
         ]
-
         CONF.register_group(auth_group)
         CONF.register_opts(auth_conf, auth_group)
+        return CONF.net_auth
 
-        return CONF.auth
+    @classmethod
+    def get_nova_auth_conf(cls):
+        auth_group = cfg.OptGroup(name='nova_auth')
+        auth_conf = [
+            cfg.StrOpt('version'),
+            cfg.StrOpt('username'),
+            cfg.StrOpt('api_key'),
+            cfg.StrOpt('project_id'),
+            cfg.StrOpt('auth_url')
+        ]
+        CONF.register_group(auth_group)
+        CONF.register_opts(auth_conf, auth_group)
+        return CONF.nova_auth
 
     @classmethod
     def get_network_config(cls):
