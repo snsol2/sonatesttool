@@ -70,8 +70,11 @@ class NetworkTester:
         print "Create Subnet --->", network_opt, subnet_opt, dict(subnet_rst).values()
         return subnet_rst
 
-    def delete_subnet(self):
-        pass
+    def delete_subnet(self, subnet_opt):
+        subnet_uuid = self.get_subnet_uuid(subnet_opt)
+        subnet_rst = self.neutron.delete_subnet(subnet_uuid)
+        print "Delete network --->", subnet_opt, subnet_uuid
+        return subnet_rst
 
     def update_subnet(self):
         pass

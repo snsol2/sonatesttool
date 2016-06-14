@@ -16,7 +16,7 @@ test_network = NetworkTester(CONFIG_FILE)
 print "Test Start ===="
 print "----------------------------"
 # test_network.get_network_list_all()
-# test_network.get_network_list('network3')
+test_network.get_network_list('network3')
 
 # test_network.create_network('network1')
 
@@ -24,8 +24,9 @@ print "----------------------------"
 
 
 # test_network.get_subnet_list_all()
-test_network.get_subnet_list('subnet2')
+# test_network.get_subnet_list('subnet2')
 test_network.create_subnet('subnet1', 'network1')
+# test_network.delete_subnet('subnet1')
 test_network.get_subnet_list('subnet1')
 
 
