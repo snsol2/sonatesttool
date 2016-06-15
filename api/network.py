@@ -38,7 +38,7 @@ class NetworkTester:
         # "ast.literal_eval" is to convert string type to dict type
         network_body = ast.literal_eval(network_body)
         network_rst = self.neutron.create_network(body=network_body)
-        print "Network Create ---> Ok"
+        print "Network Create --->", network_opt, dict(network_rst).values()
         return network_rst
 
     def delete_network(self, network_opt):
@@ -100,3 +100,4 @@ class NetworkTester:
         subnet_rst = self.neutron.list_subnets(name=subnet_name)
         subnet_uuid = dict(subnet_rst)['subnets'][0]['id']
         return subnet_uuid
+

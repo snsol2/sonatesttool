@@ -15,3 +15,8 @@ test_instance = InstanceTester(CONFIG_FILE)
 
 print "Test Start ===="
 print "----------------------------"
+
+# test_instance.get_server_list_all()
+
+# test_instance.get_instance_list('instance1')
+test_instance.create_instance('instance2')

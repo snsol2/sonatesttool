@@ -21,7 +21,11 @@ class ReadConfig:
         default_group = cfg.OptGroup(name='DEFAULT')
         default_conf = [
             cfg.IntOpt('network_cnt'),
-            cfg.IntOpt('subnet_cnt')
+            cfg.IntOpt('subnet_cnt'),
+            cfg.IntOpt('instance_cnt'),
+            cfg.IntOpt('sg_cnt'),
+            cfg.IntOpt('router_cnt'),
+            cfg.IntOpt('floatingip_cnt')
         ]
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
@@ -76,7 +80,7 @@ class ReadConfig:
         subnet_group = cfg.OptGroup(name='subnet')
 
         subnet_conf = list()
-        for i in range(1, CONF.DEFAULT.network_cnt + 1):
+        for i in range(1, CONF.DEFAULT.subnet_cnt + 1):
             subnet_name = ('subnet' + str(i))
             subnet_conf.append(cfg.StrOpt(subnet_name))
 
@@ -85,10 +89,18 @@ class ReadConfig:
 
         return CONF.subnet
 
-    # Move to network module
-    # @classmethod
-    # def get_openstack_network_name(cls, network_opt_name):
-    #     network_conf = cls.get_network_config()[network_opt_name]
-    #     openstack_network_name = ast.literal_eval(network_conf)['network']['name']
-    #     return openstack_network_name
+    @classmethod
+    def get_instance_config(cls):
+
+        instance_group = cfg.OptGroup(name='instance')
+
+        instance_conf = list()
+        for i in range(1, CONF.DEFAULT.instance_cnt + 1):
+            instance_name = ('instance' + str(i))
+            instance_conf.append(cfg.StrOpt(instance_name))
+
+        CONF.register_group(instance_group)
+        CONF.register_opts(instance_conf, instance_group)
+
+        return CONF.instance
 
