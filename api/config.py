@@ -23,7 +23,7 @@ class ReadConfig:
             cfg.IntOpt('network_cnt'),
             cfg.IntOpt('subnet_cnt'),
             cfg.IntOpt('instance_cnt'),
-            cfg.IntOpt('sg_cnt'),
+            cfg.IntOpt('securitygroup_cnt'),
             cfg.IntOpt('router_cnt'),
             cfg.IntOpt('floatingip_cnt')
         ]
@@ -104,3 +104,17 @@ class ReadConfig:
 
         return CONF.instance
 
+    @classmethod
+    def get_sg_config(cls):
+
+        sg_group = cfg.OptGroup(name='security_group')
+
+        sg_conf = list()
+        for i in range(1, CONF.DEFAULT.securitygroup_cnt + 1):
+            sg_name = ('sg' + str(i))
+            sg_conf.append(cfg.StrOpt(sg_name))
+
+        CONF.register_group(sg_group)
+        CONF.register_opts(sg_conf, sg_group)
+
+        return CONF.security_group
