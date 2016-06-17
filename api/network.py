@@ -19,6 +19,7 @@ class NetworkTester:
         self.network_conf = ReadConfig.get_network_config()
         self.subnet_conf = ReadConfig.get_subnet_config()
         self.sg_conf = ReadConfig.get_sg_config()
+        self.rule_conf = ReadConfig.get_rule_config()
         # Get Token and Neutron Object
         self.neutron = client.Client(**self.auth_conf)
 
@@ -124,22 +125,70 @@ class NetworkTester:
         print 'SecurityGroup list --->', sg_opt, dict(sg_rst)
         return sg_rst
 
-    def create_securitygroup(self, sg_opt):
-        opt_body = dict(self.sg_conf)[sg_opt]
-        aaa = ast.literal_eval(opt_body)
-        print aaa
-        # sg_rst = self.neutron.create_security_group()
-        # print sg_rst
+    def create_securitygroup(self, sg_opt, rule_opt_list):
+        sg_conf = dict(self.sg_conf)[sg_opt]
+        if not sg_conf:
+            print 'Not exist Security Group Option --->'
+            return
+
+        sg_body = ast.literal_eval(sg_conf)
+
+        # Create New Security Group
+        sg_rst = self.neutron.create_security_group(sg_body)
+        print 'Create Security Group --->', sg_rst
+
+        # Make Rule to Security Group
+        rule_rst = self.add_securitygroup_rule(sg_rst, rule_opt_list.split(','))
+        if not rule_rst:
+            print 'Make Rule Error'
+            return
+
+        print 'Make Rule Succ --->', rule_rst
+        return rule_rst
 
     def get_sg_name(self, sg_opt):
         sg_conf = dict(self.sg_conf)[sg_opt]
+        if not sg_conf:
+            print 'Not Exist config file --->', sg_opt
+            return
         sg_name = ast.literal_eval(sg_conf)['security_group']['name']
         return sg_name
 
     def get_sg_uuid(self, sg_opt):
         sg_name = self.get_sg_name(sg_opt)
         sg_rst = self.neutron.list_security_groups(name=sg_name)
-        sg_uuid = dict(sg_rst)['security_groups'][0]['id']
-        return sg_uuid
+        if not sg_rst['security_groups']:
+            print 'Not Exist Security Group in OpenStack --->', sg_opt, sg_name
+            return
+
+        sg_uuid = []
+        for i in range(len(sg_rst['security_groups'])):
+            sg_uuid.append(dict(sg_rst)['security_groups'][i]['id'])
+            return sg_uuid
+
+    def add_securitygroup_rule(self, sg_rst, rule_opt_list):
+        sg_id = sg_rst['security_group']['id']
+        rule_rst = []
+        for rule in rule_opt_list:
+            rule_conf = dict(self.rule_conf)[rule.strip()]
+            rule_body = ast.literal_eval(rule_conf)
+            rule_body['security_group_rule']['security_group_id'] = sg_id
+            rule_rst.append(self.neutron.create_security_group_rule(rule_body))
+        print 'Security Group', rule_rst
+        return rule_rst
+
+    def delete_seuritygroup(self, sg_opt):
+        sg_uuid = self.get_sg_uuid(sg_opt)
+        if not sg_uuid:
+            # print 'Not Exist Security Group(uuid) in OpenStack --->', sg_opt
+            return None
+
+        sg_rst = []
+        for uuid in sg_uuid:
+            sg_rst.append(self.neutron.delete_security_group(uuid))
+
+        print 'Delete Security Group Succ --->', sg_opt, sg_rst
+        return sg_rst
+
 
 

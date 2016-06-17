@@ -24,6 +24,7 @@ class ReadConfig:
             cfg.IntOpt('subnet_cnt'),
             cfg.IntOpt('instance_cnt'),
             cfg.IntOpt('securitygroup_cnt'),
+            cfg.IntOpt('rule_cnt'),
             cfg.IntOpt('router_cnt'),
             cfg.IntOpt('floatingip_cnt')
         ]
@@ -118,3 +119,19 @@ class ReadConfig:
         CONF.register_opts(sg_conf, sg_group)
 
         return CONF.security_group
+
+    @classmethod
+    def get_rule_config(cls):
+
+        rule_group = cfg.OptGroup(name='security_group_rule')
+
+        rule_conf = list()
+        for i in range(1, CONF.DEFAULT.rule_cnt + 1):
+            rule_name = ('rule' + str(i))
+            rule_conf.append(cfg.StrOpt(rule_name))
+
+        CONF.register_group(rule_group)
+        CONF.register_opts(rule_conf, rule_group)
+
+        return CONF.security_group_rule
+

@@ -31,4 +31,6 @@ print "----------------------------"
 
 # test_network.get_securitygroup_list_all()
 # test_network.get_securitygroup_list('sg1')
-test_network.create_securitygroup('sg2', 'rule1', 'rule2')
+test_network.create_securitygroup('sg2', 'rule1,rule2')
+
+test_network.delete_seuritygroup('sg2')
