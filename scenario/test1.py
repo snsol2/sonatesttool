@@ -45,4 +45,3 @@ nova.servers.interface_detach(aaa, bbb)
 # print body
 # instance = nova.servers.create(body)
 
-neutronclient.

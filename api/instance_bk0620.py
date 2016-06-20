@@ -31,22 +31,22 @@ class InstanceTester:
             print 'Not exist', instance_opt, 'in config --->'
             return None
 
+        print 'Instance list --->', instance_opt, instance_rst
         return instance_rst
 
-    def create_instance(self, instance_opt, network_opt):
+    def create_instance(self, instance_opt):
         config_value = self.find_instance(instance_opt)
         image = self.nova.images.find(name=config_value['image'])
         flavor = self.nova.flavors.find(name=config_value['flavor'])
 
         if not config_value:
             print 'Not exist in config file --->', instance_opt
-            return
+            return config_value
 
         # Get openstack network name from network config
         net_name_list = []
-        network_opt = network_opt.split(',')
-        for a in network_opt:
-            net_conf_body = ast.literal_eval(dict(self.network_conf)[a.strip()])
+        for a in config_value['networks']:
+            net_conf_body = ast.literal_eval(dict(self.network_conf)[a])
             net_name_list.append(net_conf_body['network']['name'])
             # net_name_list.append(ast.literal_eval(dict(self.network_conf)[a])['network']['name'])
 
@@ -56,8 +56,9 @@ class InstanceTester:
             nics_list.append({'net-id':  self.nova.networks.find(label=a).id})
 
         # TODO
-        # make sg_list for security_groups name from config file
-        sg_list = ['default']
+        # make sg_list for security_groups name
+        sg_list = ['test1', 'default']
+        # sg_list = []
 
         # create instance
         instance_rst = self.nova.servers.create(name=config_value['name'],
@@ -68,6 +69,7 @@ class InstanceTester:
                                                 security_groups=sg_list)
         print 'Create Succ --->', instance_rst
         return instance_rst
+
 
     # TODO
     # - delete method
@@ -82,36 +84,6 @@ class InstanceTester:
             config_value = ast.literal_eval(instance_conf)
             return config_value
         return None
-
-    #
-    # FloatingIP control
-    #
-    def get_floatingip_list(self):
-        floatingip_rst = self.nova.floating_ips.list()
-        print floatingip_rst
-        return floatingip_rst
-
-    def floatingip_associate(self, instance_opt, pool_opt):
-        floatingip_list = self.nova.floating_ips.list()
-        server = self.get_instance_list(instance_opt)
-        extra_floatingip = ''
-
-        for a in floatingip_list:
-            if not a.fixed_ip:
-                extra_floatingip = a.ip
-                break
-
-        if not extra_floatingip:
-            extra_floatingip = self.nova.floating_ips.create(pool=pool_opt).ip
-
-        # TODO
-        # add fixed-ip option
-        self.nova.servers.add_floating_ip(server[0], extra_floatingip)
-
-        print 'Floating IP Associate --->', self.nova.floating_ips.list()
-
-
-
 
 
 

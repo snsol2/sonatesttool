@@ -135,3 +135,17 @@ class ReadConfig:
 
         return CONF.security_group_rule
 
+    @classmethod
+    def get_router_config(cls):
+
+        router_group = cfg.OptGroup(name='router')
+
+        router_conf = list()
+        for i in range(1, CONF.DEFAULT.router_cnt + 1):
+            router_name = ('router' + str(i))
+            router_conf.append(cfg.StrOpt(router_name))
+
+        CONF.register_group(router_group)
+        CONF.register_opts(router_conf, router_group)
+
+        return CONF.router

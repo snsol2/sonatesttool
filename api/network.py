@@ -4,10 +4,9 @@
 from neutronclient.v2_0 import client
 from api.config import ReadConfig
 import ast
-import json
 
 # TODO
-# - apply oslo_log
+# - apply log
 # - Exception
 
 
@@ -20,6 +19,7 @@ class NetworkTester:
         self.subnet_conf = ReadConfig.get_subnet_config()
         self.sg_conf = ReadConfig.get_sg_config()
         self.rule_conf = ReadConfig.get_rule_config()
+        self.router_conf = ReadConfig.get_router_config()
         # Get Token and Neutron Object
         self.neutron = client.Client(**self.auth_conf)
 
@@ -43,13 +43,13 @@ class NetworkTester:
         # "ast.literal_eval" is to convert string type to dict type
         network_body = ast.literal_eval(network_body)
         network_rst = self.neutron.create_network(body=network_body)
-        print "Network Create --->", network_opt, dict(network_rst).values()
+        print "Create Network--->", network_opt, dict(network_rst).values()
         return network_rst
 
     def delete_network(self, network_opt):
         network_uuid = self.get_network_uuid(network_opt)
         network_rst = self.neutron.delete_network(network_uuid)
-        print "Delete network --->", network_opt, network_uuid
+        print "Delete Network --->", network_opt, network_uuid
         return network_rst
 
     # TODO
@@ -58,11 +58,16 @@ class NetworkTester:
 
     def get_network_name(self, network_opt):
         network_conf = dict(self.network_conf)[network_opt]
+        if not network_conf:
+            print 'Not Exist Network config --->', network_opt
+            return
         network_name = ast.literal_eval(network_conf)['network']['name']
         return network_name
 
     def get_network_uuid(self, network_opt):
         network_name = self.get_network_name(network_opt)
+        if not network_name:
+            return
         network_rst = self.neutron.list_networks(name=network_name)
         network_uuid = dict(network_rst)['networks'][0]['id']
         return network_uuid
@@ -132,7 +137,6 @@ class NetworkTester:
             return
 
         sg_body = ast.literal_eval(sg_conf)
-
         # Create New Security Group
         sg_rst = self.neutron.create_security_group(sg_body)
         print 'Create Security Group --->', sg_rst
@@ -189,6 +193,83 @@ class NetworkTester:
 
         print 'Delete Security Group Succ --->', sg_opt, sg_rst
         return sg_rst
+
+    #  TODO
+    def update_securitygroup(self):
+        pass
+
+    #
+    # Router Control Method
+    #
+    def get_router_list_all(self):
+        router_rst = self.neutron.list_routers()
+        print 'Router List --->', router_rst
+        return router_rst
+
+    def get_router_list(self, router_opt):
+        router_name = self.get_router_name(router_opt)
+        if not router_name:
+            return
+
+        router_rst = self.neutron.list_routers(name=router_name)
+        # print 'Router list --->', router_rst
+        return router_rst
+
+    def get_router_name(self, router_opt):
+        router_conf = dict(self.router_conf)[router_opt]
+        if not router_conf:
+            print 'Not Exist config file --->', router_opt
+            return
+        router_name = ast.literal_eval(router_conf)['router']['name']
+        return router_name
+
+    def get_router_uuid(self, router_opt):
+        router_rst = self.get_router_list(router_opt)
+        router_uuid = router_rst['routers'][0]['id']
+        return router_uuid
+
+    def create_router(self, router_opt, network_opt):
+        router_body = ast.literal_eval(dict(self.router_conf)[router_opt])
+        if not router_body:
+            print 'Not Exist config file --->', router_opt
+            return
+
+        if network_opt:
+            network_uuid = self.get_network_uuid(network_opt)
+            if not network_uuid:
+                return
+            router_body['router']['external_gateway_info'] = {'network_id': network_uuid}
+
+        router_rst = self.neutron.create_router(router_body)
+        print 'Create Router --->', router_rst
+        return router_rst
+
+    def delete_router(self, router_opt):
+        router_uuid = self.get_router_uuid(router_opt)
+        router_rst = self.neutron.delete_router(router_uuid)
+        print 'Delete Router --->', router_rst
+
+    def add_router_interface(self, router_opt, subnet_opt):
+        router_uuid = self.get_router_uuid(router_opt)
+        subnet_uuid = self.get_subnet_uuid(subnet_opt)
+        if subnet_uuid and router_uuid:
+            router_if_body = {'subnet_id': subnet_uuid}
+            router_if_rst = self.neutron.add_interface_router(router_uuid, router_if_body)
+        print 'Add Router Interface --->', router_if_rst
+        return router_if_rst
+
+    def remove_router_interface(self, router_opt, subnet_opt):
+        router_uuid = self.get_router_uuid(router_opt)
+        subnet_uuid = self.get_subnet_uuid(subnet_opt)
+        if subnet_uuid and router_uuid:
+            router_if_body = {'subnet_id': subnet_uuid}
+            router_if_rst = self.neutron.remove_interface_router(router_uuid, router_if_body)
+        print 'Remove Router Interface --->', router_if_rst
+        return router_if_rst
+
+
+
+
 
 
 
