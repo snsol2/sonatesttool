@@ -5,7 +5,7 @@
 from api.instance import InstanceTester
 
 CONFIG_FILE = '../config/config.ini'
-EXT_NETWORK_NAME = 'ext-net'
+EXT_NETWORK = 'ext-net'
 
 test_instance = InstanceTester(CONFIG_FILE)
 
@@ -22,6 +22,10 @@ print "----------------------------"
 # test_instance.get_instance_list('instance1')
 # test_instance.create_instance('instance1', 'network2, network3')
 # test_instance.create_instance('instance1', 'network2')
+test_instance.delete_instance('instance1')
 
 # test_instance.get_floatingip_list()
-test_instance.floatingip_associate('instance1', EXT_NETWORK_NAME)
+# test_instance.floatingip_associate('instance1', EXT_NETWORK)
+
+# test_instance.floatingip_separate('instance1')
+# test_instance.delete_floatingip_all()

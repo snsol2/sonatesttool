@@ -4,6 +4,7 @@
 from novaclient import client
 from api.config import ReadConfig
 import ast
+import time
 
 
 class InstanceTester:
@@ -66,13 +67,21 @@ class InstanceTester:
                                                 availability_zone=config_value['zone'],
                                                 nics=nics_list,
                                                 security_groups=sg_list)
+
+        if instance_rst:
+            time.sleep(5)
+
         print 'Create Succ --->', instance_rst
         return instance_rst
 
-    # TODO
-    # - delete method
-    def delete_instance(self):
-        pass
+    def delete_instance(self, instance_opt):
+        instance_list = self.get_instance_list(instance_opt)
+        for i in instance_list:
+            self.nova.servers.delete(i)
+            time.sleep(5)
+
+        print 'Delete Instance --->', instance_opt
+        return
 
     def find_instance(self, instance_opt):
         instance_conf = dict(self.instance_conf)[instance_opt]
@@ -87,9 +96,8 @@ class InstanceTester:
     # FloatingIP control
     #
     def get_floatingip_list(self):
-        floatingip_rst = self.nova.floating_ips.list()
-        print floatingip_rst
-        return floatingip_rst
+        floatingip_list = self.nova.floating_ips.list()
+        return floatingip_list
 
     def floatingip_associate(self, instance_opt, pool_opt):
         floatingip_list = self.nova.floating_ips.list()
@@ -106,12 +114,23 @@ class InstanceTester:
 
         # TODO
         # add fixed-ip option
+        print server[0], extra_floatingip
         self.nova.servers.add_floating_ip(server[0], extra_floatingip)
 
         print 'Floating IP Associate --->', self.nova.floating_ips.list()
 
+    def floatingip_separate(self, instance_opt):
+        floatingip_list = self.get_floatingip_list()
+        instance_list = self.get_instance_list(instance_opt)
+        for i in instance_list:
+            for f in floatingip_list:
+                if i.id == f.instance_id:
+                    self.nova.servers.remove_floating_ip(i, f.ip )
+        return
 
-
-
-
+    def delete_floatingip_all(self):
+        floatingip_list = self.get_floatingip_list()
+        for f in floatingip_list:
+            self.nova.floating_ips.delete(f)
+        return
 

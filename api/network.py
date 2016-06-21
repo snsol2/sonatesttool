@@ -38,8 +38,26 @@ class NetworkTester:
         print "Network List --->", network_opt, dict(network_rst).values()
         return network_rst
 
+    def get_network_name(self, network_opt):
+        network_body = dict(self.network_conf)[network_opt]
+        if not network_body:
+            print 'Not Exist Network config --->', network_opt
+            return
+        network_name = ast.literal_eval(network_body)['network']['name']
+        return network_name
+
+    def get_network_uuid(self, network_opt):
+        network_name = self.get_network_name(network_opt)
+        if not network_name:
+            return
+        network_rst = self.neutron.list_networks(name=network_name)
+        network_uuid = dict(network_rst)['networks'][0]['id']
+        return network_uuid
+
     def create_network(self, network_opt):
         network_body = dict(self.network_conf)[network_opt]
+        if not network_body:
+            return
         # "ast.literal_eval" is to convert string type to dict type
         network_body = ast.literal_eval(network_body)
         network_rst = self.neutron.create_network(body=network_body)
@@ -55,22 +73,6 @@ class NetworkTester:
     # TODO
     def update_network(self):
         pass
-
-    def get_network_name(self, network_opt):
-        network_conf = dict(self.network_conf)[network_opt]
-        if not network_conf:
-            print 'Not Exist Network config --->', network_opt
-            return
-        network_name = ast.literal_eval(network_conf)['network']['name']
-        return network_name
-
-    def get_network_uuid(self, network_opt):
-        network_name = self.get_network_name(network_opt)
-        if not network_name:
-            return
-        network_rst = self.neutron.list_networks(name=network_name)
-        network_uuid = dict(network_rst)['networks'][0]['id']
-        return network_uuid
 
     #
     # Subnet Methods
