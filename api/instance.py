@@ -26,7 +26,7 @@ class InstanceTester:
         if config_value:
             instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
             if not instance_rst:
-                print 'Not exist openstack --->', instance_opt, config_value
+                print 'Not exist openstack --->', instance_opt
                 return None
         else:
             print 'Not exist', instance_opt, 'in config --->'
@@ -102,6 +102,9 @@ class InstanceTester:
     def floatingip_associate(self, instance_opt, pool_opt):
         floatingip_list = self.nova.floating_ips.list()
         server = self.get_instance_list(instance_opt)
+        if not server:
+            print 'Floating IP associate Fail --->'
+            return
         extra_floatingip = ''
 
         for a in floatingip_list:
