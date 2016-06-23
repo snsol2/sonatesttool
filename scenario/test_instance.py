@@ -18,11 +18,12 @@ print "Test Start ===="
 print "----------------------------"
 
 # test_instance.get_server_list_all()
-
-# test_instance.get_instance_list('instance1')
+import json
+# print test_instance.get_instance_list('instance1')[0].__dict__['_info']
+print test_instance.get_instance('instance1')[0].addresses
 # test_instance.create_instance('instance1', 'network2, network3')
 # test_instance.create_instance('instance1', 'network2')
-test_instance.delete_instance('instance1')
+# test_instance.delete_instance('instance1')
 
 # test_instance.get_floatingip_list()
 # test_instance.floatingip_associate('instance1', EXT_NETWORK)

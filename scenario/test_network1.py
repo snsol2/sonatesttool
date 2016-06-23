@@ -15,23 +15,25 @@ test_network = NetworkTester(CONFIG_FILE)
 
 print "Test Start ===="
 print "----------------------------"
-# test_network.get_network_list_all()
-# test_network.get_network_list('network3')
+# print test_network.get_network_lists()
+# test_network.get_network('network3')
 # test_network.create_network('network1')
-# test_network.create_network('network2')
-# test_network.delete_network('network2')
+# test_network.create_network('network3')
+# test_network.delete_network('network3')
+# test_network.get_network_uuid('network3')
 
 
-# test_network.get_subnet_list_all()
-# test_network.get_subnet_list('subnet2')
+# test_network.get_subnet_lists()
+# print test_network.get_subnet('subnet2')
+# test_network.get_subnet_uuid('subnet2')
 # test_network.create_subnet('subnet1', 'network1')
-# test_network.create_subnet('subnet2', 'network2')
-# test_network.delete_subnet('subnet1')
+# test_network.create_subnet('subnet2', 'network3')
+# test_network.delete_subnet('subnet2')
 
-# test_network.get_securitygroup_list_all()
-# test_network.get_securitygroup_list('sg1')
+# test_network.get_securitygroup_lists()
+# test_network.get_securitygroup('sg2')
+# test_network.get_sg_uuid('sg2')
 # test_network.create_securitygroup('sg2', 'rule1,rule2')
-
 # test_network.delete_seuritygroup('sg2')
 
 # test_network.get_router_list_all()
@@ -46,3 +48,9 @@ print "----------------------------"
 
 # test_network.add_router_interface('router1', 'subnet2')
 # test_network.remove_router_interface('router1', 'subnet2')
+
+# test_network.set_port_down('instance1', 'network2')
+# test_network.set_port_up('instance1', 'network2')
+
+# test_network.set_network_down('network2')
+test_network.set_network_up('network2')

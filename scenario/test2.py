@@ -45,5 +45,25 @@ body = {'security_group': {'name': 'new-sg', 'description': 'Test Tool SG'},
 #         # Get Token and Neutron Object
 #         self.neutron = client.Client(**self.auth_conf)
 
-aaa = [{1: 'test1'}, {2: 'test2'}, {3: 'test3'}, {4: 'teset4'}]
-print aaa[:][1]
+# aaa = [{1: 'test1'}, {2: 'test2'}, {3: 'test3'}, {4: 'teset4'}]
+aaa = ['aa', 'bb', 'cc']
+# aaa = [1, 2, 3]
+print aaa[:]
+
+# bbb = [ip['ip_address'] for ip in aaa]
+# print bbb
+# class bcolors:
+#     HEADER='\033[95m'
+#     OKBLUE='\033[94m'
+#     OKGREEN='\033[92m'
+#     WARNING='\033[93m'
+#     FAIL='\033[91m'
+#     ENDC='\033[0m'
+#     BOLD='\033[1m'
+#     UNDERLINE='\033[4m'
+#
+# print bcolors.BOLD
+# print bcolors.WARNING
+# print "Warning:Noactivefrommetsremain.Continue?" # +bcolors.ENDC
+# print 'asdfadf'
+
