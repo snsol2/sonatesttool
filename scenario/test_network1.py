@@ -33,7 +33,7 @@ print "----------------------------"
 # test_network.get_securitygroup_lists()
 # test_network.get_securitygroup('sg2')
 # test_network.get_sg_uuid('sg2')
-# test_network.create_securitygroup('sg2', 'rule1,rule2')
+# test_network.create_securitygroup('sg2', 'rule1,rule4')
 # test_network.delete_seuritygroup('sg2')
 
 # test_network.get_router_list_all()
@@ -53,4 +53,4 @@ print "----------------------------"
 # test_network.set_port_up('instance1', 'network2')
 
 # test_network.set_network_down('network2')
-test_network.set_network_up('network2')
+# test_network.set_network_up('network2')

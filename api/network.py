@@ -188,32 +188,15 @@ class NetworkTester:
         if not sg_conf:
             print 'Not Exist config file --->', sg_opt
             return
+
         sg_name = ast.literal_eval(sg_conf)['name']
         return sg_name
 
-    def create_securitygroup(self, sg_opt, rule_opt_list):
-        sg_body = dict(self.sg_conf)[sg_opt]
-        if not sg_body:
-            print 'Not exist Security Group in config --->'
-            return
-
-        # sg_body = ast.literal_eval(sg_body)
-        sg_body = ast.literal_eval("{'security_group': " + sg_body + "}")
-        # Create New Security Group
-        sg_rst = self.neutron.create_security_group(sg_body)
-        print 'Create Security Group --->', sg_rst
-
-        # Make Rule to Security Group
-        rule_rst = self.add_securitygroup_rule(sg_rst, rule_opt_list.split(','))
-        if not rule_rst:
-            print 'Make Rule Error'
-            return
-
-        print 'Make Rule Succ --->', rule_rst
-        return rule_rst
-
     def get_sg_uuid(self, sg_opt):
         sg_name = self.get_sg_name(sg_opt)
+        if not sg_name:
+            return
+
         sg_rst = self.neutron.list_security_groups(name=sg_name)
         if not sg_rst['security_groups']:
             print 'Not Exist Security Group in OpenStack --->', sg_opt, sg_name
@@ -222,15 +205,44 @@ class NetworkTester:
         sg_uuid = []
         for i in range(len(sg_rst['security_groups'])):
             sg_uuid.append(dict(sg_rst)['security_groups'][i]['id'])
-            return sg_uuid
 
-    def add_securitygroup_rule(self, sg_rst, rule_opt_list):
-        sg_id = sg_rst['security_group']['id']
+        return sg_uuid
+
+    def create_securitygroup(self, sg_opt, rule_opt_list):
+        if not self.get_sg_name(sg_opt):
+            return
+        if self.get_sg_uuid(sg_opt):
+            print 'Already Exist Security Group --->', sg_opt
+            return
+
+        sg_body = dict(self.sg_conf)[sg_opt]
+        sg_body = ast.literal_eval("{'security_group': " + sg_body + "}")
+
+        # Create New Security Group
+        sg_rst = self.neutron.create_security_group(sg_body)
+        print 'Create Security Group --->', sg_rst
+
+        # Make Rule to Security Group
+        rule_rst = self.add_securitygroup_rule(sg_rst['security_group']['id'],
+                                               rule_opt_list.split(','))
+        if not rule_rst:
+            print 'Make Rule Error'
+            self.delete_seuritygroup(sg_opt)
+            return
+
+        print 'Make Rule Succ --->', rule_rst
+        return rule_rst
+
+    def add_securitygroup_rule(self, sg_uuid, rule_opt_list):
         rule_rst = []
         for rule in rule_opt_list:
             rule_conf = dict(self.rule_conf)[rule.strip()]
+            if not rule_conf:
+                print 'Not Exist Rule --->', rule
+                return
             rule_body = ast.literal_eval(rule_conf)
-            rule_body['security_group_rule']['security_group_id'] = sg_id
+            rule_body['security_group_id'] = sg_uuid
+            rule_body = {'security_group_rule': rule_body}
             rule_rst.append(self.neutron.create_security_group_rule(rule_body))
         print 'Security Group', rule_rst
         return rule_rst
