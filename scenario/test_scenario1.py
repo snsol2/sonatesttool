@@ -4,21 +4,23 @@
 
 from api.network import NetworkTester
 from api.instance import InstanceTester
+from api.reporter import CLog
 
 CONFIG_FILE = '../config/config.ini'
 EXT_NETWORK = 'ext-net'
 
 test_network = NetworkTester(CONFIG_FILE)
 test_instance = InstanceTester(CONFIG_FILE)
+r = CLog(CONFIG_FILE)
 
 # SONA Test scenario
 # Reference default Config
 # =================================================================
 
-print "Test Start ===="
-print "----------------------------"
+r.PRINTW("Test Start ====")
+r.PRINTW("----------------------------")
 test_network.get_network('network1')
-test_network.get_instance('instance1')
+test_instance.get_instance('instance1')
 # test_network.create_network('network1')
 # test_network.create_subnet('subnet1', 'network1')
 #

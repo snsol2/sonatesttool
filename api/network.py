@@ -4,6 +4,7 @@
 from neutronclient.v2_0 import client
 from api.config import ReadConfig
 from api.instance import InstanceTester
+from api.reporter import CLog
 import ast
 
 # TODO
@@ -11,7 +12,7 @@ import ast
 # - Exception
 
 
-class NetworkTester:
+class NetworkTester(CLog):
 
     def __init__(self, config_file):
         # Get config
@@ -42,7 +43,8 @@ class NetworkTester:
         if not network_name:
             return
         network_rst = self.neutron.list_networks(name=network_name)
-        print "Network List --->", network_opt, dict(network_rst).values()
+        # print "Network List --->", network_opt, dict(network_rst).values()
+        CLog.REPORT_MSG("Network List ---> %s %s", network_opt, dict(network_rst).values())
         return network_rst
 
     def get_network_name(self, network_opt):

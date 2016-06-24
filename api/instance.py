@@ -3,11 +3,12 @@
 
 from novaclient import client
 from api.config import ReadConfig
+from api.reporter import CLog
 import ast
 import time
 
 
-class InstanceTester:
+class InstanceTester(CLog):
 
     def __init__(self, config_file):
         # Get config
@@ -32,6 +33,8 @@ class InstanceTester:
         else:
             print 'Not exist', instance_opt, 'in config --->'
             return None
+
+        CLog.REPORT_MSG("%s", instance_rst)
 
         return instance_rst
 
