@@ -26,18 +26,11 @@ class ReadConfig:
             cfg.IntOpt('securitygroup_cnt'),
             cfg.IntOpt('rule_cnt'),
             cfg.IntOpt('router_cnt'),
-            cfg.IntOpt('floatingip_cnt'),
-            cfg.StrOpt('logpath'),
-            cfg.StrOpt('report_path'),
+            cfg.IntOpt('floatingip_cnt')
         ]
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
         CONF(default_config_files=[conf_file])
-
-
-    @classmethod
-    def get_file_path(cls):
-        return CONF.DEFAULT.report_path
 
     @classmethod
     def get_net_auth_conf(cls):

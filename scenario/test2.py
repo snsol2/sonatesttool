@@ -46,9 +46,9 @@ body = {'security_group': {'name': 'new-sg', 'description': 'Test Tool SG'},
 #         self.neutron = client.Client(**self.auth_conf)
 
 # aaa = [{1: 'test1'}, {2: 'test2'}, {3: 'test3'}, {4: 'teset4'}]
-# aaa = ['aa', 'bb', 'cc']
-# # aaa = [1, 2, 3]
-# print aaa[:]
+aaa = ['aa', 'bb', 'cc']
+# aaa = [1, 2, 3]
+print aaa[:]
 
 # bbb = [ip['ip_address'] for ip in aaa]
 # print bbb
@@ -67,4 +67,3 @@ body = {'security_group': {'name': 'new-sg', 'description': 'Test Tool SG'},
 # print "Warning:Noactivefrommetsremain.Continue?" # +bcolors.ENDC
 # print 'asdfadf'
 
-print "%s aassssdfa %s"

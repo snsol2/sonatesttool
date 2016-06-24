@@ -3,12 +3,11 @@
 
 from novaclient import client
 from api.config import ReadConfig
-from api.test_util import TestLog
 import ast
 import time
 
 
-class InstanceTester(TestLog):
+class InstanceTester:
 
     def __init__(self, config_file):
         # Get config
@@ -35,15 +34,6 @@ class InstanceTester(TestLog):
             return None
 
         return instance_rst
-
-    def find_instance(self, instance_opt):
-        instance_conf = dict(self.instance_conf)[instance_opt]
-        if instance_conf:
-            # TODO
-            # when config file is wrong, exception ...
-            config_value = ast.literal_eval(instance_conf)
-            return config_value
-        return None
 
     def create_instance(self, instance_opt, network_opt):
         config_value = self.find_instance(instance_opt)
@@ -93,6 +83,15 @@ class InstanceTester(TestLog):
 
         print 'Delete Instance --->', instance_opt
         return
+
+    def find_instance(self, instance_opt):
+        instance_conf = dict(self.instance_conf)[instance_opt]
+        if instance_conf:
+            # TODO
+            # when config file is wrong, exception ...
+            config_value = ast.literal_eval(instance_conf)
+            return config_value
+        return None
 
     #
     # FloatingIP control

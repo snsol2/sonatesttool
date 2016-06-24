@@ -17,9 +17,6 @@ test_instance = InstanceTester(CONFIG_FILE)
 
 print "Test Start ===="
 print "----------------------------"
-test_network.get_network('network1')
-test_instance.get_instance('intance1')
-
 # test_network.create_network('network1')
 # test_network.create_subnet('subnet1', 'network1')
 #
@@ -38,6 +35,6 @@ test_instance.get_instance('intance1')
 # test_instance.create_instance('instance1', 'network2')
 
 
-# test_instance.floatingip_associate('instance1', EXT_NETWORK)
+test_instance.floatingip_associate('instance1', EXT_NETWORK)
 
 
