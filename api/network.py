@@ -33,7 +33,7 @@ class NetworkTester(CLog):
     def get_network_lists(self):
         network_rst = self.neutron.list_networks()
         if not network_rst:
-            print 'Not exist Network --->'
+            print 'Not exist Network aaaaaa--->'
             return
         # print "Network All List --->", dict(network_rst).values()
         return network_rst
