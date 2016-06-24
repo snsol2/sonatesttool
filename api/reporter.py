@@ -30,7 +30,7 @@ class CLog():
         # report : file
         now = datetime.datetime.now()
         now_time = now.strftime('%Y-%m-%d')
-        file_name = ReadConfig(config_file).get_file_path() + 'REPORT_' + now_time
+        file_name = ReadConfig(config_file).get_file_path() + 'aaREPORT_' + now_time
         print file_name
         rpt_fomatter = logging.Formatter('%(message)s')
         fileHandler = logging.FileHandler(file_name)
