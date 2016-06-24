@@ -4,24 +4,23 @@ import logging
 import logging.handlers
 import datetime
 import inspect
+from api.config import ReadConfig
 
-WHITE='\033[97m'
-BLUE='\033[94m'
-YELLOW='\033[93m'
-GREEN='\033[92m'
-RED='\033[91m'
-BLACK='\033[90m'
-ENDC='\033[0m'
-BOLD='\033[1m'
+WHITE = '\033[97m'
+BLUE  = '\033[94m'
+YELLOW= '\033[93m'
+GREEN = '\033[92m'
+RED   = '\033[91m'
+BLACK = '\033[90m'
+ENDC  = '\033[0m'
+BOLD  = '\033[1m'
 UNDERLINE='\033[4m'
-
-
 
 class CLog():
     LOG = logging.getLogger(__name__)
     REPORT_LOG = logging.getLogger("report_log")
 
-    def __init__(self, file_name):
+    def __init__(self, config_file):
         # log : console
         log_fomatter = logging.Formatter('[%(asctime)s] (%(levelname)7s) %(filename)s:%(lineno)s : %(message)s')
         streamHandler = logging.StreamHandler()
@@ -29,12 +28,13 @@ class CLog():
         CLog.LOG.addHandler(streamHandler)
 
         # report : file
-        # ReadConfig.
+        now = datetime.datetime.now()
+        now_time = now.strftime('%Y-%m-%d')
+        file_name = ReadConfig(config_file).get_file_path() + '/REPORT_' + now_time
         rpt_fomatter = logging.Formatter('%(message)s')
         fileHandler = logging.FileHandler(file_name)
         fileHandler.setFormatter(rpt_fomatter)
         CLog.REPORT_LOG.addHandler(fileHandler)
-        # CLog.LOG.error('Log Class __init__')
 
     @classmethod
     def REPORT_MSG(self, msg, *args):
