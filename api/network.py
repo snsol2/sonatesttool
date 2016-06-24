@@ -16,6 +16,7 @@ class NetworkTester(CLog):
 
     def __init__(self, config_file):
         # Get config
+        CLog.__init__(self, config_file)
         self.auth_conf = ReadConfig(config_file).get_net_auth_conf()
         self.network_conf = ReadConfig.get_network_config()
         self.subnet_conf = ReadConfig.get_subnet_config()

@@ -40,5 +40,3 @@ test_instance.get_instance('instance1')
 
 
 # test_instance.floatingip_associate('instance1', EXT_NETWORK)
-
-
