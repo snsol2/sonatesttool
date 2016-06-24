@@ -4,6 +4,7 @@
 from neutronclient.v2_0 import client
 from api.config import ReadConfig
 from api.instance import InstanceTester
+from api.reporter import CLog
 import ast
 
 # TODO
@@ -11,7 +12,7 @@ import ast
 # - Exception
 
 
-class NetworkTester:
+class NetworkTester(CLog):
 
     def __init__(self, config_file):
         # Get config
