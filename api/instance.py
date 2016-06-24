@@ -4,6 +4,7 @@
 from novaclient import client
 from api.config import ReadConfig
 import ast
+import time
 
 
 class InstanceTester:
@@ -16,16 +17,17 @@ class InstanceTester:
         # Get Token and Neutron Object
         self.nova = client.Client(**self.auth_conf)
 
-    def get_instance_list_all(self):
+    def get_instance_lists(self):
         instance_rst = self.nova.servers.list()
         print 'Instance All --->', instance_rst
+        return instance_rst
 
-    def get_instance_list(self, instance_opt):
+    def get_instance(self, instance_opt):
         config_value = self.find_instance(instance_opt)
         if config_value:
             instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
             if not instance_rst:
-                print 'Not exist openstack --->', instance_opt, config_value
+                print 'Not exist openstack --->', instance_opt
                 return None
         else:
             print 'Not exist', instance_opt, 'in config --->'
@@ -47,7 +49,7 @@ class InstanceTester:
         network_opt = network_opt.split(',')
         for a in network_opt:
             net_conf_body = ast.literal_eval(dict(self.network_conf)[a.strip()])
-            net_name_list.append(net_conf_body['network']['name'])
+            net_name_list.append(net_conf_body['name'])
             # net_name_list.append(ast.literal_eval(dict(self.network_conf)[a])['network']['name'])
 
         # Get network uuid from openstack neutron and make nics list
@@ -66,13 +68,21 @@ class InstanceTester:
                                                 availability_zone=config_value['zone'],
                                                 nics=nics_list,
                                                 security_groups=sg_list)
+
+        if instance_rst:
+            time.sleep(5)
+
         print 'Create Succ --->', instance_rst
         return instance_rst
 
-    # TODO
-    # - delete method
-    def delete_instance(self):
-        pass
+    def delete_instance(self, instance_opt):
+        instance_list = self.get_instance(instance_opt)
+        for i in instance_list:
+            self.nova.servers.delete(i)
+            time.sleep(5)
+
+        print 'Delete Instance --->', instance_opt
+        return
 
     def find_instance(self, instance_opt):
         instance_conf = dict(self.instance_conf)[instance_opt]
@@ -87,13 +97,15 @@ class InstanceTester:
     # FloatingIP control
     #
     def get_floatingip_list(self):
-        floatingip_rst = self.nova.floating_ips.list()
-        print floatingip_rst
-        return floatingip_rst
+        floatingip_list = self.nova.floating_ips.list()
+        return floatingip_list
 
     def floatingip_associate(self, instance_opt, pool_opt):
         floatingip_list = self.nova.floating_ips.list()
-        server = self.get_instance_list(instance_opt)
+        server = self.get_instance(instance_opt)
+        if not server:
+            print 'Floating IP associate Fail --->'
+            return
         extra_floatingip = ''
 
         for a in floatingip_list:
@@ -106,12 +118,23 @@ class InstanceTester:
 
         # TODO
         # add fixed-ip option
+        print server[0], extra_floatingip
         self.nova.servers.add_floating_ip(server[0], extra_floatingip)
 
         print 'Floating IP Associate --->', self.nova.floating_ips.list()
 
+    def floatingip_separate(self, instance_opt):
+        floatingip_list = self.get_floatingip_list()
+        instance_list = self.get_instance(instance_opt)
+        for i in instance_list:
+            for f in floatingip_list:
+                if i.id == f.instance_id:
+                    self.nova.servers.remove_floating_ip(i, f.ip)
+        return
 
-
-
-
+    def delete_floatingip_all(self):
+        floatingip_list = self.get_floatingip_list()
+        for f in floatingip_list:
+            self.nova.floating_ips.delete(f)
+        return
 

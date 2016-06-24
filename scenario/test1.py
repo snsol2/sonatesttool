@@ -26,8 +26,8 @@ print nova.servers.get(server[0].id)
 
 
 print nova.servers.interface_list(aaa)[1].id
-bbb = nova.servers.interface_list(aaa)[1].id
-nova.servers.interface_detach(aaa, bbb)
+# bbb = nova.servers.interface_list(aaa)[1].id
+# nova.servers.interface_detach(aaa, bbb)
 # print nova.networks.find(label='test-net').
 # print 'net-id', net.id
 # print sg
