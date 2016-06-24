@@ -3,11 +3,12 @@
 
 from novaclient import client
 from api.config import ReadConfig
+from api.test_util import TestLog
 import ast
 import time
 
 
-class InstanceTester:
+class InstanceTester(TestLog):
 
     def __init__(self, config_file):
         # Get config
