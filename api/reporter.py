@@ -14,33 +14,34 @@ RED = '\033[91m'
 BLACK = '\033[90m'
 ENDC = '\033[0m'
 BOLD = '\033[1m'
-UNDERLINE ='\033[4m'
+UNDERLINE = '\033[4m'
 
-class CLog():
+
+class CLog:
     LOG = logging.getLogger(__name__)
     REPORT_LOG = logging.getLogger("report_log")
 
     def __init__(self, config_file):
         # log : console
-        log_fomatter = logging.Formatter('[%(asctime)s] (%(levelname)7s) %(filename)s:%(lineno)s : %(message)s')
-        streamHandler = logging.StreamHandler()
-        streamHandler.setFormatter(log_fomatter)
-        CLog.LOG.addHandler(streamHandler)
+        log_formatter = logging.Formatter('[%(asctime)s] (%(levelname)7s) %(filename)s:%(lineno)s : %(message)s')
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(log_formatter)
+        self.LOG.addHandler(stream_handler)
 
         # report : file
         now = datetime.datetime.now()
         now_time = now.strftime('%Y-%m-%d')
         file_name = ReadConfig(config_file).get_file_path() + 'REPORT_' + now_time
         print file_name
-        rpt_fomatter = logging.Formatter('%(message)s')
-        fileHandler = logging.FileHandler(file_name)
-        fileHandler.setFormatter(rpt_fomatter)
-        CLog.REPORT_LOG.addHandler(fileHandler)
+        rpt_formatter = logging.Formatter('%(message)s')
+        file_handler = logging.FileHandler(file_name)
+        file_handler.setFormatter(rpt_formatter)
+        CLog.REPORT_LOG.addHandler(file_handler)
 
     @classmethod
-    def REPORT_MSG(self, msg, *args):
+    def REPORT_MSG(cls, msg, *args):
         full_msg = msg % args
-        CLog.REPORT_LOG.error(full_msg)
+        cls.REPORT_LOG.error(full_msg)
 
     @classmethod
     def DPRINTDR(self, format, *args):
@@ -103,7 +104,6 @@ class CLog():
     def PRINTY(self, format, *args):
         print YELLOW+format % args +ENDC
 
-    @classmethod
     def PRINTW(self, format, *args):
         print WHITE+format % args +ENDC
 

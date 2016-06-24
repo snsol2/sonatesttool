@@ -24,6 +24,7 @@ class NetworkTester(CLog):
         self.router_conf = ReadConfig.get_router_config()
         # Get Token and Neutron Object
         self.neutron = client.Client(**self.auth_conf)
+        # Get Token and Nova Object
         self.nova = InstanceTester(config_file)
 
     #

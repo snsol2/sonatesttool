@@ -1,8 +1,6 @@
 # Copyright 2016 Telcoware
 
 from oslo_config import cfg
-import ast
-
 
 CONF = cfg.CONF
 
