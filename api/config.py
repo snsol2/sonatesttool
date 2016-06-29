@@ -33,7 +33,7 @@ class ReadConfig:
 
     @classmethod
     def get_file_path(cls):
-         return CONF.DEFAULT.report_path
+        return CONF.DEFAULT.report_path
 
     @classmethod
     def get_net_auth_conf(cls):

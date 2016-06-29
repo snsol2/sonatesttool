@@ -5,7 +5,7 @@
 from api.network import NetworkTester
 from api.instance import InstanceTester
 from api.reporter import CLog
-CONFIG_FILE = '../config/config.ini'
+CONFIG_FILE = 'config/config.ini'
 EXT_NETWORK = 'ext-net'
 
 test_network = NetworkTester(CONFIG_FILE)
@@ -19,8 +19,8 @@ clog = CLog()
 
 print("Test Start ====")
 print("----------------------------")
-test_network.get_network('network11')
-test_instance.get_instance('instance14')
+test_network.get_network('network1')
+test_instance.get_instance('instance1')
 # test_network.create_network('network4')
 # test_network.create_subnet('subnet1', 'network1')
 #

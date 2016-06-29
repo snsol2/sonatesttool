@@ -6,8 +6,6 @@ from api.config import ReadConfig
 from api.instance import InstanceTester
 from api.reporter import CLog
 import ast
-import traceback
-import sys
 
 # TODO
 # - apply log
@@ -43,15 +41,13 @@ class NetworkTester:
         return network_rst
 
     def get_network(self, network_opt):
-        try:
-            network_name = self.get_network_name(network_opt)
-            if not network_name:
-                return
-            network_rst = self.neutron.list_networks(name=network_name)
-            CLog.REPORT_MSG("Network List ---> %s %s", network_opt, dict(network_rst).values())
-            return network_rst
-        except:
-            CLog.exception_err_log()
+        network_name = self.get_network_name(network_opt)
+        if not network_name:
+            return
+        network_rst = self.neutron.list_networks(name=network_name)
+        # print "Network List --->", network_opt, dict(network_rst).values()
+        CLog.REPORT_MSG("Network List ---> %s %s", network_opt, dict(network_rst).values())
+        return network_rst
 
     def get_network_name(self, network_opt):
         network_body = dict(self.network_conf)[network_opt]

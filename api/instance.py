@@ -8,7 +8,7 @@ import ast
 import time
 
 
-class InstanceTester(CLog):
+class InstanceTester:
 
     def __init__(self, config_file):
         # Get config
@@ -24,19 +24,20 @@ class InstanceTester(CLog):
         return instance_rst
 
     def get_instance(self, instance_opt):
-        config_value = self.find_instance(instance_opt)
-        if config_value:
-            instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
-            if not instance_rst:
-                print 'Not exist openstack --->', instance_opt
-                return None
-        else:
-            print 'Not exist', instance_opt, 'in config --->'
-            return None
-
-        CLog.REPORT_MSG("%s", instance_rst)
-
-        return instance_rst
+        try:
+            config_value = self.find_instance(instance_opt)
+            if config_value:
+                instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
+                if not instance_rst:
+                    print 'Not exist openstack --->', instance_opt
+                    return
+            else:
+                print 'Not exist', instance_opt, 'in config --->'
+                return
+        except:
+            # CLog.REPORT_MSG("%s", instance_rst)
+            CLog.exception_err_log()
+            return
 
     def create_instance(self, instance_opt, network_opt):
         config_value = self.find_instance(instance_opt)
