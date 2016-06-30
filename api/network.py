@@ -4,7 +4,7 @@
 from neutronclient.v2_0 import client
 from api.config import ReadConfig
 from api.instance import InstanceTester
-from api.reporter import CLog
+from api.reporter import Reporter
 import ast
 import traceback
 import sys
@@ -48,10 +48,10 @@ class NetworkTester:
             if not network_name:
                 return
             network_rst = self.neutron.list_networks(name=network_name)
-            CLog.REPORT_MSG("Network List ---> %s %s", network_opt, dict(network_rst).values())
+            Reporter.REPORT_MSG("Network List ---> %s %s", network_opt, dict(network_rst).values())
             return network_rst
         except:
-            CLog.exception_err_log()
+            Reporter.exception_err_write()
 
     def get_network_name(self, network_opt):
         network_body = dict(self.network_conf)[network_opt]
@@ -73,18 +73,22 @@ class NetworkTester:
         return network_uuid
 
     def create_network(self, network_opt):
-        network_body = dict(self.network_conf)[network_opt]
-        if not network_body:
-            print 'Not Exist Network in Config'
-            return
+        # Reporter.unit_test_start()
+        try:
+            network_body = dict(self.network_conf)[network_opt]
+            if not network_body:
+                print 'Not Exist Network in Config'
+                return
 
-        if self.get_network_uuid(network_opt):
-            print 'Already Exist same Network name --->'
+            if self.get_network_uuid(network_opt):
+                print 'Already Exist same Network name --->'
 
-        network_body = ast.literal_eval("{'network': " + network_body + "}")
-        network_rst = self.neutron.create_network(body=network_body)
-        print "Create Network--->", network_opt, dict(network_rst).values()
-        return network_rst
+            network_body = ast.literal_eval("{'network': " + network_body + "}")
+            network_rst = self.neutron.create_network(body=network_body)
+            print "Create Network--->", network_opt, dict(network_rst).values()
+            return network_rst
+        except:
+            Reporter.exception_err_write()
 
     def delete_network(self, network_opt):
         network_uuid = self.get_network_uuid(network_opt)
@@ -405,3 +409,6 @@ class NetworkTester:
 
         network_rst = self.neutron.update_network(network_uuid, body)
         return network_rst
+
+    def test_method(self):
+        Reporter.unit_test_start()

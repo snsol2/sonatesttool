@@ -3,7 +3,7 @@
 
 from novaclient import client
 from api.config import ReadConfig
-from api.reporter import CLog
+from api.reporter import Reporter
 import ast
 import time
 
@@ -34,10 +34,10 @@ class InstanceTester:
             else:
                 print 'Not exist', instance_opt, 'in config --->'
                 return
+
+            Reporter.REPORT_MSG("Get Instance  ---> %s %s", instance_opt, instance_rst)
         except:
-            # CLog.REPORT_MSG("%s", instance_rst)
-            CLog.exception_err_log()
-            return
+            Reporter.exception_err_write()
 
     def create_instance(self, instance_opt, network_opt):
         config_value = self.find_instance(instance_opt)

@@ -7,6 +7,7 @@ import inspect
 from api.config import ReadConfig
 import traceback
 import sys
+import os
 
 WHITE = '\033[97m'
 BLUE = '\033[94m'
@@ -19,7 +20,7 @@ BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
 
-class CLog:
+class Reporter:
     LOG = logging.getLogger(__name__)
     REPORT_LOG = logging.getLogger("report")
 
@@ -38,7 +39,20 @@ class CLog:
         rpt_formatter = logging.Formatter('%(message)s')
         file_handler = logging.FileHandler(file_name)
         file_handler.setFormatter(rpt_formatter)
-        CLog.REPORT_LOG.addHandler(file_handler)
+        Reporter.REPORT_LOG.addHandler(file_handler)
+
+        # report result
+        test_count = 0
+
+    @classmethod
+    def make_line_header(cls):
+        now_time = datetime.datetime.now().time()
+        line_number = inspect.getlineno(inspect.getouterframes(inspect.currentframe())[2][0])
+        file_path_name = inspect.getfile(inspect.getouterframes(inspect.currentframe())[2][0])
+        file_name = file_path_name.split('/')[-1]
+        line_header = '[%s] %s:%d : ' % (now_time, file_name, line_number)
+        return line_header
+
 
     @classmethod
     def REPORT_MSG(cls, report_msg, *args):
@@ -47,48 +61,28 @@ class CLog:
 
     @classmethod
     def DPRINTDR(cls, report_format, *args):
-        line_number = inspect.getlineno(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = inspect.getfile(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = file_name.split('/')[-1]
-        current_time = datetime.datetime.now().time()
-        full_msg = '[%s] %s:%d : ' % (current_time, file_name, line_number)
-        print RED + full_msg + report_format % args + ENDC
+        line_header = cls.make_line_header()
+        print RED + line_header + report_format % args + ENDC
 
     @classmethod
     def DPRINTG(cls, report_format, *args):
-        line_number = inspect.getlineno(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = inspect.getfile(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = file_name.split('/')[-1]
-        s_time = datetime.datetime.now().time()
-        full_msg = '[%s] %s:%d : ' % (s_time, file_name, line_number)
-        print GREEN + full_msg + report_format % args + ENDC
+        line_header = cls.make_line_header()
+        print GREEN + line_header + report_format % args + ENDC
 
     @classmethod
     def DPRINTB(cls, report_format, *args):
-        line = inspect.getlineno(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = inspect.getfile(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = file_name.split('/')[-1]
-        s_time = datetime.datetime.now().time()
-        full_msg = '[%s] %s:%d : ' % (s_time, file_name, line)
-        print BLUE + full_msg + report_format % args + ENDC
+        line_header = cls.make_line_header()
+        print BLUE + line_header + report_format % args + ENDC
 
     @classmethod
     def DPRINTY(cls, report_format, *args):
-        line = inspect.getlineno(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = inspect.getfile(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = file_name.split('/')[-1]
-        s_time = datetime.datetime.now().time()
-        full_msg = '[%s] %s:%d : ' % (s_time, file_name, line)
-        print YELLOW + full_msg + report_format % args + ENDC
+        line_header = cls.make_line_header()
+        print YELLOW + line_header + report_format % args + ENDC
 
     @classmethod
     def DPRINTW(cls, report_format, *args):
-        line = inspect.getlineno(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = inspect.getfile(inspect.getouterframes(inspect.currentframe())[1][0])
-        file_name = file_name.split('/')[-1]
-        s_time = datetime.datetime.now().time()
-        full_msg = '[%s] %s:%d : ' % (s_time, file_name, line)
-        print WHITE + full_msg + report_format % args + ENDC
+        line_header = cls.make_line_header()
+        print WHITE + line_header + report_format % args + ENDC
 
     @classmethod
     def PRINTR(cls, report_format, *args):
@@ -116,22 +110,38 @@ class CLog:
     @classmethod
     def RESULT_PRINT(cls, result):
         if result == 'OK':
-            CLog.PRINTR('OK')
+            cls.PRINTR('OK')
         elif result == 'NOK' :
-            CLog.PRINTR('NOK')
+            cls.PRINTR('NOK')
         else :
-            CLog.PRINTR('NONE')
-
-    def test(self, report_string, *args):
-        if 'ok' in args:
-            print 'ok test' + report_string % args
-            # print 'ok test' + report_string % (args[0], args[1], args[2])
-        elif 'nok' in args:
-            print 'nok test' + report_string % args
+            cls.PRINTR('NONE')
 
     @classmethod
-    def exception_err_log(cls):
+    def base_line(cls, text):
+        print_line = text + ' ' + "=" * (80 - len(text))
+        cls.PRINTY(print_line)
+        return
+
+
+    # @classmethod
+    # def test(cls, report_string, *args):
+    #     if 'ok' in args:
+    #         print 'ok test' + report_string % args
+    #         # print 'ok test' + report_string % (args[0], args[1], args[2])
+    #     elif 'nok' in args:
+    #         print 'nok test' + report_string % args
+
+    @classmethod
+    def exception_err_write(cls):
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
         print ''.join('!! ' + line for line in lines)
         return lines
+
+    @classmethod
+    def unit_test_start(cls):
+        called_method = traceback.extract_stack(None, 2)[0][2]
+        cls.base_line(called_method)
+        # pass
+
+

@@ -4,13 +4,13 @@
 
 from api.network import NetworkTester
 from api.instance import InstanceTester
-from api.reporter import CLog
+from api.reporter import Reporter
 CONFIG_FILE = '../config/config.ini'
 EXT_NETWORK = 'ext-net'
 
 test_network = NetworkTester(CONFIG_FILE)
 test_instance = InstanceTester(CONFIG_FILE)
-clog = CLog()
+clog = Reporter()
 
 
 # SONA Test scenario
@@ -19,10 +19,10 @@ clog = CLog()
 
 print("Test Start ====")
 print("----------------------------")
-test_network.get_network('network11')
-test_instance.get_instance('instance14')
-# test_network.create_network('network4')
-# test_network.create_subnet('subnet1', 'network1')
+# test_network.get_network('network3')
+# test_instance.get_instance('instance1')
+# test_network.create_network('network3')
+# test_network.create_subnet('subnet3', 'network3')
 #
 # test_network.create_network('network2')
 # test_network.create_subnet('subnet2', 'network2')
@@ -40,3 +40,5 @@ test_instance.get_instance('instance14')
 
 
 # test_instance.floatingip_associate('instance1', EXT_NETWORK)
+
+test_network.test_method()
