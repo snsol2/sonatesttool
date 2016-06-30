@@ -36,6 +36,32 @@ class ReadConfig:
         return CONF.DEFAULT.report_path
 
     @classmethod
+    def get_nova_tail_info(self):
+        tail_info_group = cfg.OptGroup(name='nova_tail')
+        tail_info_conf = [
+            cfg.StrOpt('hostname'),
+            cfg.StrOpt('username'),
+            cfg.StrOpt('password'),
+            cfg.StrOpt('filename')
+        ]
+        CONF.register_group(tail_info_group)
+        CONF.register_opts(tail_info_conf, tail_info_group)
+        return CONF.nova_tail
+
+    @classmethod
+    def get_neturon_tail_info(self):
+        tail_info_group = cfg.OptGroup(name='neutron_tail')
+        tail_info_conf = [
+            cfg.StrOpt('hostname'),
+            cfg.StrOpt('username'),
+            cfg.StrOpt('password'),
+            cfg.StrOpt('filename')
+        ]
+        CONF.register_group(tail_info_group)
+        CONF.register_opts(tail_info_conf, tail_info_group)
+        return CONF.neutron_tail
+
+    @classmethod
     def get_net_auth_conf(cls):
         auth_group = cfg.OptGroup(name='net_auth')
         auth_conf = [
