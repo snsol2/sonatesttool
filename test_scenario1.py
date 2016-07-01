@@ -21,6 +21,7 @@ print("Test Start ====")
 print("----------------------------")
 test_network.get_network('network1')
 test_instance.get_instance('instance1')
+test_instance.get_instance('instance1')
 # test_network.create_network('network4')
 # test_network.create_subnet('subnet1', 'network1')
 #
