@@ -12,7 +12,7 @@ import sys
 # TODO
 # - apply log
 # - Exception
-# asdfasdf
+# asdf
 
 
 class NetworkTester:
