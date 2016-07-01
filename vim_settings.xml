@@ -9,6 +9,7 @@
       <file name="/Dummy.txt" timestamp="1467359902523">
         <mark key="[" line="0" column="0" />
       </file>
+      <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test3.py" timestamp="1467360712378" />
       <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test_scenario1.py" timestamp="1467356659396">
         <mark key="[" line="12" column="17" />
       </file>
@@ -36,9 +37,12 @@
       <show-last>false</show-last>
     </search>
     <history>
+      <history-search />
       <history-cmd>
         <entry>w</entry>
       </history-cmd>
+      <history-expr />
+      <history-input />
     </history>
     <shortcut-conflicts />
   </component>
