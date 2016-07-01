@@ -6,7 +6,7 @@
       <file name="vim_settings.xml" timestamp="1467359930928">
         <mark key="[" line="0" column="0" />
       </file>
-      <file name="/Dummy.txt" timestamp="1467362531929">
+      <file name="/Dummy.txt" timestamp="1467363279013">
         <mark key="[" line="0" column="0" />
       </file>
       <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test_network1.py" timestamp="1467362319165">
@@ -23,6 +23,9 @@
         <mark key="." line="15" column="0" />
         <mark key="^" line="15" column="0" />
       </file>
+      <file name="_windows/git.xml" timestamp="1467363024760">
+        <mark key="[" line="0" column="0" />
+      </file>
       <file name="D:/Development/SONA/sn2/sonatesttool/config/config.ini" timestamp="1467362473207">
         <mark key="[" line="32" column="16" />
         <mark key="]" line="32" column="16" />
@@ -35,10 +38,9 @@
         <mark key="." line="14" column="1" />
       </file>
       <file name="D:/Development/SONA/sn2/sonatesttool/test_scenario1.py" timestamp="1467362985833">
-        <mark key="[" line="23" column="0" />
-        <mark key="]" line="23" column="39" />
-        <mark key="." line="23" column="0" />
-        <mark key="^" line="12" column="14" />
+        <mark key="[" line="22" column="0" />
+        <mark key="]" line="22" column="39" />
+        <mark key="." line="22" column="0" />
       </file>
     </filemarks>
     <jumps />
