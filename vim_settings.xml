@@ -3,7 +3,10 @@
     <state version="4" enabled="true" />
     <globalmarks />
     <filemarks>
-      <file name="/Dummy.txt" timestamp="1467359835255">
+      <file name="vim_settings.xml" timestamp="1467359930928">
+        <mark key="[" line="0" column="0" />
+      </file>
+      <file name="/Dummy.txt" timestamp="1467359902523">
         <mark key="[" line="0" column="0" />
       </file>
       <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test_scenario1.py" timestamp="1467356659396">
