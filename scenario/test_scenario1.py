@@ -13,7 +13,6 @@ test_instance = InstanceTester(CONFIG_FILE)
 clog = Reporter()
 
 
-
 # SONA Test scenario
 # Reference default Config
 # =================================================================
