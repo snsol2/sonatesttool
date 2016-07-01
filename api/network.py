@@ -12,8 +12,6 @@ import sys
 # TODO
 # - apply log
 # - Exception
-# neutronclient 나 nova가 객체 생성하면서 인증하지 않고, 명령어 수행시
-# 인증을 처리한다. 인증 실패시 exception error 발생할 수 있도록 수정.
 
 
 class NetworkTester:
