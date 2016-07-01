@@ -3,16 +3,11 @@
     <state version="4" enabled="true" />
     <globalmarks />
     <filemarks>
-      <file name="/Dummy.txt" timestamp="1467358853192">
+      <file name="/Dummy.txt" timestamp="1467359835255">
         <mark key="[" line="0" column="0" />
       </file>
       <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test_scenario1.py" timestamp="1467356659396">
         <mark key="[" line="12" column="17" />
-      </file>
-      <file name="D:/Development/SONA/sn2/sonatesttool/api/remote_ssh.py" timestamp="1467357688172">
-        <mark key="[" line="20" column="0" />
-        <mark key="]" line="20" column="27" />
-        <mark key="." line="20" column="0" />
       </file>
       <file name="D:/Development/Python/temp/sonatesttool/api/network.py" timestamp="1467357029406">
         <mark key="[" line="14" column="1" />
