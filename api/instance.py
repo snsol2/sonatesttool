@@ -20,24 +20,36 @@ class InstanceTester:
 
     def get_instance_lists(self):
         instance_rst = self.nova.servers.list()
-        print 'Instance All --->', instance_rst
+        print ' >> GET Instance All --->', instance_rst
         return instance_rst
 
     def get_instance(self, instance_opt):
+        Reporter.unit_test_start()
         try:
             config_value = self.find_instance(instance_opt)
             if config_value:
                 instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
                 if not instance_rst:
-                    print 'Not exist openstack --->', instance_opt
+                    print ' >> Not exist openstack --->', instance_opt
                     return
             else:
-                print 'Not exist', instance_opt, 'in config --->'
+                print ' >> Not exist', instance_opt, 'in config --->'
                 return
 
-            Reporter.REPORT_MSG("Get Instance  ---> %s %s", instance_opt, instance_rst)
+            Reporter.REPORT_MSG(" >> Get Instance  ---> %s %s", instance_opt, instance_rst)
+            Reporter.unit_test_stop('ok')
+            return instance_rst
         except:
             Reporter.exception_err_write()
+
+    def find_instance(self, instance_opt):
+        instance_conf = dict(self.instance_conf)[instance_opt]
+        if instance_conf:
+            # TODO
+            # when config file is wrong, exception ...
+            config_value = ast.literal_eval(instance_conf)
+            return config_value
+        return None
 
     def create_instance(self, instance_opt, network_opt):
         config_value = self.find_instance(instance_opt)
@@ -45,7 +57,7 @@ class InstanceTester:
         flavor = self.nova.flavors.find(name=config_value['flavor'])
 
         if not config_value:
-            print 'Not exist in config file --->', instance_opt
+            print ' >> Not exist in config file --->', instance_opt
             return
 
         # Get openstack network name from network config
@@ -76,7 +88,7 @@ class InstanceTester:
         if instance_rst:
             time.sleep(5)
 
-        print 'Create Succ --->', instance_rst
+        print ' >> Create Succ --->', instance_rst
         return instance_rst
 
     def delete_instance(self, instance_opt):
@@ -85,17 +97,8 @@ class InstanceTester:
             self.nova.servers.delete(i)
             time.sleep(5)
 
-        print 'Delete Instance --->', instance_opt
+        print ' >> Delete Instance --->', instance_opt
         return
-
-    def find_instance(self, instance_opt):
-        instance_conf = dict(self.instance_conf)[instance_opt]
-        if instance_conf:
-            # TODO
-            # when config file is wrong, exception ...
-            config_value = ast.literal_eval(instance_conf)
-            return config_value
-        return None
 
     #
     # FloatingIP control
@@ -108,7 +111,7 @@ class InstanceTester:
         floatingip_list = self.nova.floating_ips.list()
         server = self.get_instance(instance_opt)
         if not server:
-            print 'Floating IP associate Fail --->'
+            print ' >> Floating IP associate Fail --->'
             return
         extra_floatingip = ''
 
@@ -125,7 +128,7 @@ class InstanceTester:
         print server[0], extra_floatingip
         self.nova.servers.add_floating_ip(server[0], extra_floatingip)
 
-        print 'Floating IP Associate --->', self.nova.floating_ips.list()
+        print ' >> Floating IP Associate --->', self.nova.floating_ips.list()
 
     def floatingip_separate(self, instance_opt):
         floatingip_list = self.get_floatingip_list()
@@ -142,3 +145,7 @@ class InstanceTester:
             self.nova.floating_ips.delete(f)
         return
 
+    @classmethod
+    def instance_test_method(cls):
+        Reporter.unit_test_start()
+        Reporter.test('nok')

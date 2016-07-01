@@ -9,12 +9,12 @@ import traceback
 import sys
 import os
 
-WHITE = '\033[97m'
-BLUE = '\033[94m'
-YELLOW = '\033[93m'
-GREEN = '\033[92m'
-RED = '\033[91m'
-BLACK = '\033[90m'
+WHITE = '\033[1;97m'
+BLUE = '\033[1;94m'
+YELLOW = '\033[1;93m'
+GREEN = '\033[1;92m'
+RED = '\033[1;91m'
+BLACK = '\033[1;90m'
 ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
@@ -23,6 +23,7 @@ UNDERLINE = '\033[4m'
 class Reporter:
     LOG = logging.getLogger(__name__)
     REPORT_LOG = logging.getLogger("report")
+    test_count = 0
 
     def __init__(self):
         # log : console
@@ -39,10 +40,7 @@ class Reporter:
         rpt_formatter = logging.Formatter('%(message)s')
         file_handler = logging.FileHandler(file_name)
         file_handler.setFormatter(rpt_formatter)
-        Reporter.REPORT_LOG.addHandler(file_handler)
-
-        # report result
-        test_count = 0
+        self.REPORT_LOG.addHandler(file_handler)
 
     @classmethod
     def make_line_header(cls):
@@ -52,7 +50,6 @@ class Reporter:
         file_name = file_path_name.split('/')[-1]
         line_header = '[%s] %s:%d : ' % (now_time, file_name, line_number)
         return line_header
-
 
     @classmethod
     def REPORT_MSG(cls, report_msg, *args):
@@ -105,43 +102,50 @@ class Reporter:
 
     @classmethod
     def NRET_PRINT(cls, report_format, *args):
-        print BLUE + report_format % args + ENDC,
-
-    @classmethod
-    def RESULT_PRINT(cls, result):
-        if result == 'OK':
-            cls.PRINTR('OK')
-        elif result == 'NOK' :
-            cls.PRINTR('NOK')
-        else :
-            cls.PRINTR('NONE')
-
-    @classmethod
-    def base_line(cls, text):
-        print_line = text + ' ' + "=" * (80 - len(text))
-        cls.PRINTY(print_line)
-        return
-
+        print report_format % args,
 
     # @classmethod
-    # def test(cls, report_string, *args):
-    #     if 'ok' in args:
-    #         print 'ok test' + report_string % args
-    #         # print 'ok test' + report_string % (args[0], args[1], args[2])
-    #     elif 'nok' in args:
-    #         print 'nok test' + report_string % args
+    # def RESULT_PRINT(cls, result):
+    #     if result == 'OK':
+    #         cls.PRINTR('OK')
+    #     elif result == 'NOK' :
+    #         cls.PRINTR('NOK')
+    #     else :
+    #         cls.PRINTR('NONE')
+
+    @classmethod
+    def start_line(cls, text):
+        print_line = str(cls.test_count) + '. ' + text + ' Test'
+        cls.NRET_PRINT("%s %s", print_line, ("_" * (70 - len(print_line))))
+        cls.REPORT_MSG("%s %s", print_line, ("_" * (70 - len(print_line))))
+        return
 
     @classmethod
     def exception_err_write(cls):
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-        print ''.join('!! ' + line for line in lines)
+        cls.REPORT_MSG("%s", ''.join('!! ' + line for line in lines))
+        cls.unit_test_stop('nok')
         return lines
 
     @classmethod
     def unit_test_start(cls):
+        if cls.test_count == 0:
+            cls.REPORT_MSG("\n\n\n")
+        cls.test_count += 1
         called_method = traceback.extract_stack(None, 2)[0][2]
-        cls.base_line(called_method)
+        cls.start_line(called_method)
         # pass
 
+    @classmethod
+    def unit_test_stop(cls, report_string):
+        if 'ok' == report_string:
+            cls.PRINTG("%s", 'ok')
+            # print 'ok test' + report_string % (args[0], args[1], args[2])
+        elif 'nok' == report_string:
+            cls.PRINTR("%s", 'nok')
+
+    @classmethod
+    def print_count(cls):
+        print cls.test_count
 

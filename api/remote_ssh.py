@@ -1,6 +1,7 @@
 from pexpect import pxssh
 
-class remote_ssh():
+
+class RemoteSSH:
     def __init__(self, config_file):
         self.m_ssh = pxssh.pxssh()
 

@@ -19,7 +19,7 @@ clog = Reporter()
 
 print("Test Start ====")
 print("----------------------------")
-# test_network.get_network('network3')
+# test_network.get_network('network1')
 # test_instance.get_instance('instance1')
 # test_network.create_network('network3')
 # test_network.create_subnet('subnet3', 'network3')
@@ -30,9 +30,11 @@ print("----------------------------")
 # test_network.create_securitygroup('sg2', 'rule1,rule2')
 #
 #
-# # ## create_router CAUTION
-# # ## when create router, if for external routing, second option must be external network.
-# # ##                     if not for external, option is none
+"""
+create_router CAUTION
+when create router, if external routing, second option must be external network.
+                    if not external routing, option is none('')
+"""
 # test_network.create_router('router1', 'network1')
 # test_network.add_router_interface('router1', 'subnet2')
 #
@@ -41,4 +43,3 @@ print("----------------------------")
 
 # test_instance.floatingip_associate('instance1', EXT_NETWORK)
 
-test_network.test_method()
