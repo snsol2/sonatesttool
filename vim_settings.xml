@@ -1,0 +1,48 @@
+<application>
+  <component name="VimSettings">
+    <state version="4" enabled="true" />
+    <globalmarks />
+    <filemarks>
+      <file name="vim_settings.xml" timestamp="1467359930928">
+        <mark key="[" line="0" column="0" />
+      </file>
+      <file name="/Dummy.txt" timestamp="1467361899140">
+        <mark key="[" line="0" column="0" />
+      </file>
+      <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test_scenario1.py" timestamp="1467356659396">
+        <mark key="[" line="12" column="17" />
+      </file>
+      <file name="D:/Development/Python/temp/sonatesttool/api/network.py" timestamp="1467357029406">
+        <mark key="[" line="14" column="1" />
+        <mark key="]" line="14" column="1" />
+        <mark key="^" line="14" column="1" />
+        <mark key="." line="14" column="1" />
+      </file>
+    </filemarks>
+    <jumps />
+    <registers>
+      <register name="0" type="2">
+        <text encoding="base64">ICAgICAgICBzZWxmLm1fc3NoLmxvZ291dCgpCg==</text>
+      </register>
+      <register name="&quot;" type="2">
+        <text encoding="base64">ICAgICAgICBzZWxmLm1fc3NoLmxvZ291dCgpCg==</text>
+      </register>
+      <register name=":" type="4">
+        <text>w</text>
+      </register>
+    </registers>
+    <search>
+      <last-dir>0</last-dir>
+      <show-last>false</show-last>
+    </search>
+    <history>
+      <history-search />
+      <history-cmd>
+        <entry>w</entry>
+      </history-cmd>
+      <history-expr />
+      <history-input />
+    </history>
+    <shortcut-conflicts />
+  </component>
+</application>
