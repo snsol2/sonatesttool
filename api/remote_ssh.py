@@ -19,4 +19,6 @@ class remote_ssh():
 
     def ssh_disconnect(self):
         self.m_ssh.logout()
+        self.m_ssh.logout()
+        self.m_ssh.logout()
 
