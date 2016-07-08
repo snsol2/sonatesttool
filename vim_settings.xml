@@ -9,10 +9,10 @@
       <file name="/Dummy.txt" timestamp="1467363426913">
         <mark key="[" line="0" column="0" />
       </file>
-      <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test_network1.py" timestamp="1467362319165">
-        <mark key="[" line="17" column="0" />
-        <mark key="]" line="17" column="0" />
-        <mark key="." line="17" column="0" />
+      <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test_network1.py" timestamp="1467943944542">
+        <mark key="[" line="48" column="0" />
+        <mark key="]" line="48" column="58" />
+        <mark key="." line="48" column="0" />
       </file>
       <file name="D:/Development/SONA/sn2/sonatesttool/scenario/test_scenario1.py" timestamp="1467356659396">
         <mark key="[" line="12" column="17" />
@@ -26,10 +26,10 @@
       <file name="_windows/git.xml" timestamp="1467363024760">
         <mark key="[" line="0" column="0" />
       </file>
-      <file name="D:/Development/SONA/sn2/sonatesttool/config/config.ini" timestamp="1467362473207">
-        <mark key="[" line="32" column="16" />
-        <mark key="]" line="32" column="16" />
-        <mark key="." line="32" column="16" />
+      <file name="D:/Development/SONA/sn2/sonatesttool/config/config.ini" timestamp="1467943934032">
+        <mark key="[" line="79" column="31" />
+        <mark key="]" line="79" column="32" />
+        <mark key="." line="79" column="32" />
       </file>
       <file name="D:/Development/Python/temp/sonatesttool/api/network.py" timestamp="1467357029406">
         <mark key="[" line="14" column="1" />
@@ -45,38 +45,44 @@
     </filemarks>
     <jumps />
     <registers>
+      <register name="&quot;" type="2">
+        <text encoding="base64">dGVzdF9uZXR3b3JrLnJlbW92ZV9yb3V0ZXJfaW50ZXJmYWNlKCdyb3V0ZXIxJywgJ3N1Ym5ldDInKQo=</text>
+      </register>
+      <register name="-" type="4">
+        <text>1</text>
+      </register>
       <register name="0" type="2">
         <text encoding="base64">dGVzdF9pbnN0YW5jZS5nZXRfaW5zdGFuY2UoJ2luc3RhbmNlMScpCg==</text>
       </register>
-      <register name="1" type="4">
-        <text>1</text>
+      <register name="1" type="2">
+        <text encoding="base64">dGVzdF9uZXR3b3JrLnJlbW92ZV9yb3V0ZXJfaW50ZXJmYWNlKCdyb3V0ZXIxJywgJ3N1Ym5ldDInKQo=</text>
       </register>
-      <register name="&quot;" type="2">
-        <text encoding="base64">dGVzdF9pbnN0YW5jZS5nZXRfaW5zdGFuY2UoJ2luc3RhbmNlMScpCg==</text>
-      </register>
-      <register name="2" type="4">
-        <text>CLog</text>
+      <register name="2" type="2">
+        <text encoding="base64">IyB0ZXN0X25ldHdvcmsucmVtb3ZlX3JvdXRlcl9pbnRlcmZhY2UoJ3JvdXRlcjEnLCAnc3VibmV0MicpCg==</text>
       </register>
       <register name="3" type="4">
+        <text>1</text>
+      </register>
+      <register name="4" type="4">
         <text>CLog</text>
       </register>
-      <register name="4" type="2">
-        <text encoding="base64">IyBwcmludCB0ZXN0X25ldHdvcmsuZ2V0X25ldHdvcmtfbGlzdHMoKQo=</text>
-      </register>
-      <register name="5" type="2">
-        <text encoding="base64">IyBuZXV0cm9uY2xpZW50ILOqIG5vdmGwoSCwtMO8ILv9vLrHz7jpvK0gwM7B9cfPwfYgvsqw7SwguO23yb7uILz2x+C9wwo=</text>
+      <register name="5" type="4">
+        <text>CLog</text>
       </register>
       <register name="6" type="2">
-        <text encoding="base64">Cg==</text>
+        <text encoding="base64">IyBwcmludCB0ZXN0X25ldHdvcmsuZ2V0X25ldHdvcmtfbGlzdHMoKQo=</text>
       </register>
       <register name="7" type="2">
+        <text encoding="base64">IyBuZXV0cm9uY2xpZW50ILOqIG5vdmGwoSCwtMO8ILv9vLrHz7jpvK0gwM7B9cfPwfYgvsqw7SwguO23yb7uILz2x+C9wwo=</text>
+      </register>
+      <register name="8" type="2">
+        <text encoding="base64">Cg==</text>
+      </register>
+      <register name="9" type="2">
         <text encoding="base64">IyDAzsH1wLsgw7O4rsfRtNkuIMDOwfUgvcfG0L3DIGV4Y2VwdGlvbiBlcnJvciC537v9x9IgvPYgwNa1tbfPILz2waQuCg==</text>
       </register>
       <register name=":" type="4">
         <text>w</text>
-      </register>
-      <register name="-" type="4">
-        <text>1</text>
       </register>
     </registers>
     <search>
