@@ -24,7 +24,7 @@ test_network.create_network('network3')
 
 test_network.get_subnet('subneta')
 test_network.create_subnet('subnet3', 'network3')
-# test_network.delete_subnet('subnet3')
+test_network.delete_subnet('subnet3')
 #
 # test_network.create_network('network2')
 # test_network.create_subnet('subnet2', 'network2')
