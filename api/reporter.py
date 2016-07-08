@@ -24,6 +24,9 @@ class Reporter:
     LOG = logging.getLogger(__name__)
     REPORT_LOG = logging.getLogger("report")
     test_count = 0
+    ok_count = 0
+    nok_count = 0
+    skip_count = 0
 
     def __init__(self):
         # log : console
@@ -114,24 +117,25 @@ class Reporter:
     #         cls.PRINTR('NONE')
 
     @classmethod
-    def start_line(cls, text):
-        print_line = str(cls.test_count) + '. ' + text + ' Test'
+    def start_line(cls, call_method):
+        print_line = str(cls.test_count) + '. ' + call_method + ' Test'
         cls.NRET_PRINT("%s %s", print_line, ("_" * (70 - len(print_line))))
-        cls.REPORT_MSG("%s %s", print_line, ("_" * (70 - len(print_line))))
+        cls.REPORT_MSG("\n%s %s", print_line, ("_" * (70 - len(print_line))))
         return
 
     @classmethod
     def exception_err_write(cls):
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-        cls.REPORT_MSG("%s", ''.join('!! ' + line for line in lines))
+        cls.REPORT_MSG("%s", ''.join('   !! ' + line for line in lines))
         cls.unit_test_stop('nok')
         return lines
 
     @classmethod
     def unit_test_start(cls):
         if cls.test_count == 0:
-            cls.REPORT_MSG("\n\n\n")
+            cls.REPORT_MSG("\n\n\n    Test Start\n %s", ('='*70))
+            print "\nTest Start\n" + ('=' * 80)
         cls.test_count += 1
         called_method = traceback.extract_stack(None, 2)[0][2]
         cls.start_line(called_method)
@@ -140,12 +144,26 @@ class Reporter:
     @classmethod
     def unit_test_stop(cls, report_string):
         if 'ok' == report_string:
+            cls.ok_count += 1
             cls.PRINTG("%s", 'ok')
             # print 'ok test' + report_string % (args[0], args[1], args[2])
         elif 'nok' == report_string:
+            cls.nok_count += 1
             cls.PRINTR("%s", 'nok')
+        elif 'skip' == report_string:
+            cls.skip_count += 1
+            cls.PRINTB("%s", 'skip')
 
     @classmethod
     def print_count(cls):
         print cls.test_count
+
+    @classmethod
+    def test_summary(cls):
+        print "=" * 80
+        print "Total: %d (" % cls.test_count,
+        print GREEN + "ok:" + ENDC + "%d    " % cls.ok_count,
+        print BLUE + "skip:" + ENDC + "%d    " % cls.skip_count,
+        print RED + "nok:" + ENDC + "%d )   " % cls.nok_count
+
 
