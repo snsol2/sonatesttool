@@ -287,12 +287,12 @@ class NetworkTester:
     #
     # Router Control Method
     #
-    def get_router_list_all(self):
+    def get_router_lists(self):
         router_rst = self.neutron.list_routers()
         print ' >> Router List --->', router_rst
         return router_rst
 
-    def get_router_list(self, router_opt):
+    def get_router(self, router_opt):
         router_name = self.get_router_name(router_opt)
         if not router_name:
             return
@@ -306,25 +306,27 @@ class NetworkTester:
         if not router_conf:
             print ' >> Not Exist config file --->', router_opt
             return
-        router_name = ast.literal_eval(router_conf)['router']['name']
+        router_name = ast.literal_eval(router_conf)['name']
         return router_name
 
     def get_router_uuid(self, router_opt):
-        router_rst = self.get_router_list(router_opt)
+        router_rst = self.get_router(router_opt)
         router_uuid = router_rst['routers'][0]['id']
         return router_uuid
 
     def create_router(self, router_opt, network_opt):
-        router_body = ast.literal_eval(dict(self.router_conf)[router_opt])
-        if not router_body:
+        router_cfg_body = ast.literal_eval(dict(self.router_conf)[router_opt])
+        if not router_cfg_body:
             print ' >> Not Exist config file --->', router_opt
             return
 
+        router_body = {}
         if network_opt:
             network_uuid = self.get_network_uuid(network_opt)
             if not network_uuid:
                 return
-            router_body['router']['external_gateway_info'] = {'network_id': network_uuid}
+            router_cfg_body['external_gateway_info'] = {'network_id': network_uuid}
+            router_body = {'router': router_cfg_body}
 
         router_rst = self.neutron.create_router(router_body)
         print ' >> Create Router --->', router_rst

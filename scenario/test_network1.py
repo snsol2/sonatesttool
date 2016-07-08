@@ -15,7 +15,7 @@ test_network = NetworkTester(CONFIG_FILE)
 
 print "Test Start ===="
 print "----------------------------"
-test_network.get_network('network3')
+# test_network.get_network('network3')
 # test_network.create_network('network1')
 # test_network.create_network('network3')
 # test_network.delete_network('network3')
@@ -35,8 +35,8 @@ test_network.get_network('network3')
 # test_network.create_securitygroup('sg2', 'rule1,rule4')
 # test_network.delete_seuritygroup('sg2')
 
-# test_network.get_router_list_all()
-# test_network.get_router_list('router1')
+# test_network.get_router_lists()
+# test_network.get_router('router1')
 
 # ## create_router CAUTION
 # ## when create router, if for external routing, second option must be external network.
