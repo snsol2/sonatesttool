@@ -51,11 +51,11 @@ class NetworkTester:
 
             network_rst = self.neutron.list_networks(name=network_name)
             if not dict(network_rst)['networks']:
-                Reporter.REPORT_MSG(" >> Not Exist Network in OpenStack")
+                Reporter.REPORT_MSG("   >> Not Exist Network in OpenStack")
                 Reporter.unit_test_stop('nok')
                 return
 
-            Reporter.REPORT_MSG(" >> Network List ---> %s %s", network_opt, dict(network_rst).values())
+            Reporter.REPORT_MSG("   >> Network List ---> %s %s", network_opt, dict(network_rst).values())
             Reporter.unit_test_stop('ok')
             return network_rst
         except:
@@ -65,7 +65,7 @@ class NetworkTester:
         network_body = dict(self.network_conf)[network_opt]
         if not network_body:
             Reporter.unit_test_stop('nok')
-            Reporter.REPORT_MSG(" >> Not Exist Network in Config ---> %s", network_opt)
+            Reporter.REPORT_MSG("   >> Not Exist Network in Config ---> %s", network_opt)
             return
         network_name = ast.literal_eval(network_body)['name']
         return network_name
@@ -75,35 +75,45 @@ class NetworkTester:
         if not network_name:
             return
         network_rst = self.neutron.list_networks(name=network_name)
-        if not dict(network_rst)['networks']:
-            print ' >> Not Exist Network on OpenStack --->'
+        if dict(network_rst)['networks']:
+            Reporter.REPORT_MSG("   >> Already Exist Network on OpenStack ---> %s", network_rst)
+            network_uuid = dict(network_rst)['networks'][0]['id']
+            return network_uuid
+        else:
+            Reporter.REPORT_MSG("   >> Not Exist Network on OpenStack ---> %s", network_opt)
             return
-        network_uuid = dict(network_rst)['networks'][0]['id']
-        return network_uuid
 
     def create_network(self, network_opt):
-        # Reporter.unit_test_start()
+        Reporter.unit_test_start()
         try:
             network_body = dict(self.network_conf)[network_opt]
             if not network_body:
-                print ' >> Not Exist Network in Config'
+                Reporter.REPORT_MSG("   >> Not Exist Network in config_file")
+                Reporter.unit_test_stop('nok')
                 return
 
             if self.get_network_uuid(network_opt):
-                print ' >> Already Exist same Network name --->'
-
-            network_body = ast.literal_eval("{'network': " + network_body + "}")
-            network_rst = self.neutron.create_network(body=network_body)
-            print " >> Create Network--->", network_opt, dict(network_rst).values()
-            return network_rst
+                # Reporter.REPORT_MSG(" >> Already Exist same Network name")
+                Reporter.unit_test_stop('skip')
+            else:
+                network_body = ast.literal_eval("{'network': " + network_body + "}")
+                network_rst = self.neutron.create_network(body=network_body)
+                Reporter.REPORT_MSG("   >> Create Network Succ ---> %s %s", network_opt, dict(network_rst).values())
+                Reporter.unit_test_stop('ok')
+                return network_rst
         except:
             Reporter.exception_err_write()
 
     def delete_network(self, network_opt):
-        network_uuid = self.get_network_uuid(network_opt)
-        network_rst = self.neutron.delete_network(network_uuid)
-        print " >> Delete Network --->", network_opt, network_uuid
-        return network_rst
+        Reporter.unit_test_start()
+        try:
+            network_uuid = self.get_network_uuid(network_opt)
+            network_rst = self.neutron.delete_network(network_uuid)
+            Reporter.REPORT_MSG("   >> Delete Network ---> %s %s", network_opt, network_uuid)
+            Reporter.unit_test_stop('ok')
+            return network_rst
+        except:
+            Reporter.exception_err_write()
 
     # TODO
     def update_network(self):
@@ -115,30 +125,38 @@ class NetworkTester:
     def get_subnet_lists(self):
         subnet_rst = self.neutron.list_subnets()
         if not subnet_rst:
-            print ' >> Not Exist Subnet --->'
+            Reporter.REPORT_MSG("   >> Not Exist Subnet --->")
             return
 
-        print " >> Subnet All List --->", dict(subnet_rst).values()
+        Reporter.REPORT_MSG("   Subnet All List ---> %s ", dict(subnet_rst).values())
         return subnet_rst
 
     def get_subnet(self, subnet_opt):
-        subnet_name = self.get_subnet_name(subnet_opt)
-        if not subnet_name:
-            print ' >> Not Exist Subnet in Config --->'
-            return
+        Reporter.unit_test_start()
+        try:
+            subnet_name = self.get_subnet_name(subnet_opt)
+            if not subnet_name:
+                Reporter.unit_test_stop('nok')
+                return
 
-        subnet_rst = self.neutron.list_subnets(name=subnet_name)
-        if not subnet_rst:
-            print ' >> Not Exist Subnet --->', subnet_name
-            return
+            subnet_rst = self.neutron.list_subnets(name=subnet_name)
+            if not subnet_rst['subnets']:
+                Reporter.REPORT_MSG("   >> Not Exist Subnet ---> %s, response: %s",
+                                    subnet_name, subnet_rst)
+                Reporter.unit_test_stop('nok')
+                return
 
-        print " >> Subnet List --->", subnet_opt, dict(subnet_rst).values()
-        return subnet_rst
+            Reporter.REPORT_MSG("   >> Subnet List ---> %s, response: %s",
+                                subnet_opt, dict(subnet_rst).values())
+            Reporter.unit_test_stop('ok')
+            return subnet_rst
+        except:
+            Reporter.exception_err_write()
 
     def get_subnet_name(self, subnet_opt):
         subnet_conf = dict(self.subnet_conf)[subnet_opt]
         if not subnet_conf:
-            print ' >> Not Exist Subnet in config --->'
+            Reporter.REPORT_MSG("   >> Not Exist Subnet in config --->")
             return
 
         subnet_name = ast.literal_eval(subnet_conf)['name']
@@ -149,42 +167,55 @@ class NetworkTester:
         if not subnet_name:
             return
         subnet_rst = self.neutron.list_subnets(name=subnet_name)
-        if not dict(subnet_rst)['subnets']:
-            print ' >> Not Exist Subnet --->'
+        if dict(subnet_rst)['subnets']:
+            Reporter.REPORT_MSG("   >> Already Exist Subnet on OpenStack ---> response: %s", subnet_rst)
+            subnet_uuid = dict(subnet_rst)['subnets'][0]['id']
+            return subnet_uuid
+        else:
+            Reporter.REPORT_MSG("   >> Not Exist Subnet on OpenStack --->")
             return
-        subnet_uuid = dict(subnet_rst)['subnets'][0]['id']
-        return subnet_uuid
 
     def create_subnet(self, subnet_opt, network_opt):
-        subnet_body = dict(self.subnet_conf)[subnet_opt]
-        if not subnet_body:
-            print ' >> Not Exist Subnet in config --->'
-            return
+        Reporter.unit_test_start()
+        try:
+            # if not subnet_body:
+            #     Reporter.REPORT_MSG("   >> Not Exist Subnet in config --->")
+            #     return
+            network_uuid = self.get_network_uuid(network_opt)
+            if not network_uuid:
+                Reporter.unit_test_stop('nok')
+                return
 
-        if self.get_subnet_uuid(subnet_opt):
-            print ' >> Already Exist same Subnet name --->'
-            return
+            if self.get_subnet_uuid(subnet_opt):
+                Reporter.unit_test_stop('skip')
+                return
 
-        subnet_body = ast.literal_eval("{'subnets': [" + subnet_body + "]}")
+            subnet_cfg_body = dict(self.subnet_conf)[subnet_opt]
+            subnet_body = ast.literal_eval("{'subnets': [" + subnet_cfg_body + "]}")
 
-        network_uuid = self.get_network_uuid(network_opt)
-        if not network_uuid:
-            print ' >> Not Exist Network --->'
-            return
-
-        subnet_body['subnets'][0]['network_id'] = network_uuid
-        subnet_rst = self.neutron.create_subnet(body=subnet_body)
-        print " >> Create Subnet --->", network_opt, subnet_opt, dict(subnet_rst).values()
-        return subnet_rst
+            subnet_body['subnets'][0]['network_id'] = network_uuid
+            subnet_rst = self.neutron.create_subnet(body=subnet_body)
+            Reporter.REPORT_MSG(" >> Create Subnet --->%s, %s, %s",
+                                network_opt, subnet_opt, dict(subnet_rst).values())
+            Reporter.unit_test_stop('ok')
+            return subnet_rst
+        except:
+            Reporter.exception_err_write()
 
     def delete_subnet(self, subnet_opt):
-        subnet_uuid = self.get_subnet_uuid(subnet_opt)
-        if not subnet_uuid:
-            return
+        Reporter.unit_test_start()
+        try:
+            subnet_uuid = self.get_subnet_uuid(subnet_opt)
+            if not subnet_uuid:
+                Reporter.unit_test_stop('nok')
+                return
 
-        subnet_rst = self.neutron.delete_subnet(subnet_uuid)
-        print " >> Delete network --->", subnet_opt, subnet_uuid
-        return subnet_rst
+            subnet_rst = self.neutron.delete_subnet(subnet_uuid)
+            Reporter.REPORT_MSG(" >> Delete network ---> %s, %s", subnet_opt, subnet_uuid)
+            Reporter.unit_test_stop('ok')
+            return subnet_rst
+        except:
+            Reporter.exception_err_write()
 
     # TODO
     def update_subnet(self):

@@ -17,12 +17,14 @@ clog = Reporter()
 # Reference default Config
 # =================================================================
 
-print("Test Start ====")
-print("----------------------------")
-# test_network.get_network('network1')
+test_network.get_network('network3')
 # test_instance.get_instance('instance1')
-# test_network.create_network('network3')
-# test_network.create_subnet('subnet3', 'network3')
+test_network.create_network('network3')
+# test_network.delete_network('network3')
+
+test_network.get_subnet('subneta')
+test_network.create_subnet('subnet3', 'network3')
+# test_network.delete_subnet('subnet3')
 #
 # test_network.create_network('network2')
 # test_network.create_subnet('subnet2', 'network2')
@@ -31,7 +33,7 @@ print("----------------------------")
 #
 #
 """
-create_router CAUTION
+CAUTION
 when create router, if external routing, second option must be external network.
                     if not external routing, option is none('')
 """
@@ -42,4 +44,5 @@ when create router, if external routing, second option must be external network.
 
 
 # test_instance.floatingip_associate('instance1', EXT_NETWORK)
+Reporter.test_summary()
 

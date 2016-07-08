@@ -23,7 +23,7 @@ print "----------------------------"
 
 
 # test_network.get_subnet_lists()
-# print test_network.get_subnet('subnet2')
+test_network.get_subnet('subnet4')
 # test_network.get_subnet_uuid('subnet2')
 # test_network.create_subnet('subnet1', 'network1')
 # test_network.create_subnet('subnet2', 'network3')
