@@ -27,13 +27,13 @@ class InstanceTester:
         Reporter.unit_test_start()
         try:
             config_value = self.find_instance(instance_opt)
-            if config_value:
-                instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
-                if not instance_rst:
-                    Reporter.REPORT_MSG("   >> Not exist openstack ---> %s", instance_opt)
-                    return
-            else:
-                Reporter.REPORT_MSG("   >> Not exist in config ---> %s", instance_opt)
+            if not config_value:
+                Reporter.unit_test_stop('nok')
+                return
+
+            instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
+            if not instance_rst:
+                Reporter.REPORT_MSG("   >> Not exist openstack ---> %s", instance_opt)
                 return
 
             Reporter.REPORT_MSG(" >> Get Instance  ---> %s %s", instance_opt, instance_rst)
@@ -44,19 +44,27 @@ class InstanceTester:
 
     def find_instance(self, instance_opt):
         instance_conf = dict(self.instance_conf)[instance_opt]
-        if instance_conf:
-            config_value = ast.literal_eval(instance_conf)
-            return config_value
-        return
+        if not instance_conf:
+            Reporter.REPORT_MSG("   >> Not exist in config ---> %s", instance_opt)
+            return
 
-    def create_instance(self, instance_opt, compute_opt, network_opt):
+        config_value = ast.literal_eval(instance_conf)
+        return config_value
+
+    def create_instance(self, instance_opt, network_opt):
         Reporter.unit_test_start()
         try:
             config_value = self.find_instance(instance_opt)
             if not config_value:
-                Reporter.REPORT_MSG('   >> Not exist in config file ---> $s', instance_opt)
                 Reporter.unit_test_stop('nok')
                 return
+
+            instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
+            if instance_rst:
+                Reporter.REPORT_MSG("   >> Already exist in OpenStack ---> %s", instance_rst)
+                Reporter.unit_test_stop('nok')
+                return
+
             image = self.nova.images.find(name=config_value['image'])
             flavor = self.nova.flavors.find(name=config_value['flavor'])
 
@@ -84,8 +92,8 @@ class InstanceTester:
             instance_rst = self.nova.servers.create(name=config_value['name'],
                                                     image=image,
                                                     flavor=flavor,
-                                                    # availability_zone=config_value['zone'],
-                                                    availability_zone=compute_opt,
+                                                    availability_zone=config_value['zone'],
+                                                    # availability_zone=compute_opt,
                                                     nics=nics_list,
                                                     security_groups=sg_list)
 

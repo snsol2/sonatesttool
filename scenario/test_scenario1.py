@@ -40,7 +40,8 @@ when create router, if external routing, second option must be external network.
 # test_network.create_router('router1', 'network1')
 # test_network.add_router_interface('router1', 'subnet2')
 #
-test_instance.create_instance('instance3', 'compute1', 'network3')
+test_instance.create_instance('instance3', 'network3')
+# test_instance.delete_instance('instance3')
 
 
 # test_instance.floatingip_associate('instance1', EXT_NETWORK)
