@@ -5,12 +5,13 @@
 from api.network import NetworkTester
 from api.instance import InstanceTester
 from api.reporter import Reporter
+
 CONFIG_FILE = '../config/config.ini'
 EXT_NETWORK = 'ext-net'
 
 test_network = NetworkTester(CONFIG_FILE)
 test_instance = InstanceTester(CONFIG_FILE)
-clog = Reporter()
+Reporter()
 
 
 # SONA Test scenario

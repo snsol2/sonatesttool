@@ -160,7 +160,3 @@ class InstanceTester:
             self.nova.floating_ips.delete(f)
         return
 
-    @classmethod
-    def instance_test_method(cls):
-        Reporter.unit_test_start()
-        Reporter.test('nok')
