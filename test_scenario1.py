@@ -37,7 +37,7 @@ test_instance.get_instance('instance1')
 # test_network.create_router('router1', 'network1')
 # test_network.add_router_interface('router1', 'subnet2')
 #
-# test_instance.create_instance('instance1', 'network2')
+test_instance.create_instance('instance1', 'network2')
 
 
 # test_instance.floatingip_associate('instance1', EXT_NETWORK)

@@ -162,8 +162,8 @@ class Reporter:
     def test_summary(cls):
         print "=" * 80
         print "Total: %d (" % cls.test_count,
-        print GREEN + "ok:" + ENDC + "%d    " % cls.ok_count,
-        print BLUE + "skip:" + ENDC + "%d    " % cls.skip_count,
-        print RED + "nok:" + ENDC + "%d )   " % cls.nok_count
+        print GREEN + "ok:" + ENDC + " %d    " % cls.ok_count,
+        print BLUE + "skip:" + ENDC + " %d    " % cls.skip_count,
+        print RED + "nok:" + ENDC + " %d )   " % cls.nok_count
 
 

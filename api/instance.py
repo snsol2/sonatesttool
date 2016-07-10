@@ -30,10 +30,10 @@ class InstanceTester:
             if config_value:
                 instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
                 if not instance_rst:
-                    print ' >> Not exist openstack --->', instance_opt
+                    Reporter.REPORT_MSG("   >> Not exist openstack ---> %s", instance_opt)
                     return
             else:
-                print ' >> Not exist', instance_opt, 'in config --->'
+                Reporter.REPORT_MSG("   >> Not exist in config ---> %s", instance_opt)
                 return
 
             Reporter.REPORT_MSG(" >> Get Instance  ---> %s %s", instance_opt, instance_rst)
@@ -45,51 +45,58 @@ class InstanceTester:
     def find_instance(self, instance_opt):
         instance_conf = dict(self.instance_conf)[instance_opt]
         if instance_conf:
-            # TODO
-            # when config file is wrong, exception ...
             config_value = ast.literal_eval(instance_conf)
             return config_value
-        return None
+        return
 
-    def create_instance(self, instance_opt, network_opt):
-        config_value = self.find_instance(instance_opt)
-        image = self.nova.images.find(name=config_value['image'])
-        flavor = self.nova.flavors.find(name=config_value['flavor'])
+    def create_instance(self, instance_opt, compute_opt, network_opt):
+        Reporter.unit_test_start()
+        try:
+            config_value = self.find_instance(instance_opt)
+            if not config_value:
+                Reporter.REPORT_MSG('   >> Not exist in config file ---> $s', instance_opt)
+                Reporter.unit_test_stop('nok')
+                return
+            image = self.nova.images.find(name=config_value['image'])
+            flavor = self.nova.flavors.find(name=config_value['flavor'])
 
-        if not config_value:
-            print ' >> Not exist in config file --->', instance_opt
-            return
+            # Get openstack network name from network config
+            net_name_list = []
+            network_opt = network_opt.split(',')
+            for a in network_opt:
+                net_conf_body = ast.literal_eval(dict(self.network_conf)[a.strip()])
+                if not net_conf_body:
+                    Reporter.REPORT_MSG("   >> Not exist in config file ---> %s", network_opt)
+                    Reporter.unit_test_stop('nok')
+                    return
+                net_name_list.append(net_conf_body['name'])
 
-        # Get openstack network name from network config
-        net_name_list = []
-        network_opt = network_opt.split(',')
-        for a in network_opt:
-            net_conf_body = ast.literal_eval(dict(self.network_conf)[a.strip()])
-            net_name_list.append(net_conf_body['name'])
-            # net_name_list.append(ast.literal_eval(dict(self.network_conf)[a])['network']['name'])
+            # Get network uuid from openstack neutron and make nics list
+            nics_list = []
+            for a in net_name_list:
+                nics_list.append({'net-id':  self.nova.networks.find(label=a).id})
 
-        # Get network uuid from openstack neutron and make nics list
-        nics_list = []
-        for a in net_name_list:
-            nics_list.append({'net-id':  self.nova.networks.find(label=a).id})
+            # TODO
+            # make sg_list for security_groups name from config file
+            sg_list = ['default']
 
-        # TODO
-        # make sg_list for security_groups name from config file
-        sg_list = ['default']
+            # create instance
+            instance_rst = self.nova.servers.create(name=config_value['name'],
+                                                    image=image,
+                                                    flavor=flavor,
+                                                    # availability_zone=config_value['zone'],
+                                                    availability_zone=compute_opt,
+                                                    nics=nics_list,
+                                                    security_groups=sg_list)
 
-        # create instance
-        instance_rst = self.nova.servers.create(name=config_value['name'],
-                                                image=image,
-                                                flavor=flavor,
-                                                availability_zone=config_value['zone'],
-                                                nics=nics_list,
-                                                security_groups=sg_list)
+            if instance_rst:
+                time.sleep(5)
 
-        if instance_rst:
-            time.sleep(5)
-
-        print ' >> Create Succ --->', instance_rst
-        return instance_rst
+            Reporter.REPORT_MSG("   >> Create Succ ---> %s", instance_rst)
+            Reporter.unit_test_stop('ok')
+            return instance_rst
+        except:
+            Reporter.exception_err_write()
 
     def delete_instance(self, instance_opt):
         instance_list = self.get_instance(instance_opt)
