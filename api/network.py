@@ -76,7 +76,7 @@ class NetworkTester:
             return
         network_rst = self.neutron.list_networks(name=network_name)
         if dict(network_rst)['networks']:
-            Reporter.REPORT_MSG("   >> Already Exist Network on OpenStack ---> %s", network_rst)
+            Reporter.REPORT_MSG("   >> Exist Network on OpenStack ---> %s", network_rst)
             network_uuid = dict(network_rst)['networks'][0]['id']
             return network_uuid
         else:
@@ -238,7 +238,7 @@ class NetworkTester:
     def get_sg_name(self, sg_opt):
         sg_conf = dict(self.sg_conf)[sg_opt]
         if not sg_conf:
-            print ' >> Not Exist config file --->', sg_opt
+            Reporter.REPORT_MSG('   >> Not Exist config file ---> %s', sg_opt)
             return
 
         sg_name = ast.literal_eval(sg_conf)['name']
@@ -261,29 +261,33 @@ class NetworkTester:
         return sg_uuid
 
     def create_securitygroup(self, sg_opt, rule_opt_list):
-        if not self.get_sg_name(sg_opt):
-            return
-        if self.get_sg_uuid(sg_opt):
-            print ' >> Already Exist Security Group --->', sg_opt
-            return
+        Reporter.unit_test_start()
+        try:
+            if not self.get_sg_name(sg_opt):
+                return
+            if self.get_sg_uuid(sg_opt):
+                print ' >> Already Exist Security Group --->', sg_opt
+                return
 
-        sg_body = dict(self.sg_conf)[sg_opt]
-        sg_body = ast.literal_eval("{'security_group': " + sg_body + "}")
+            sg_body = dict(self.sg_conf)[sg_opt]
+            sg_body = ast.literal_eval("{'security_group': " + sg_body + "}")
 
-        # Create New Security Group
-        sg_rst = self.neutron.create_security_group(sg_body)
-        print ' >> Create Security Group --->', sg_rst
+            # Create New Security Group
+            sg_rst = self.neutron.create_security_group(sg_body)
+            print ' >> Create Security Group --->', sg_rst
 
-        # Make Rule to Security Group
-        rule_rst = self.add_securitygroup_rule(sg_rst['security_group']['id'],
-                                               rule_opt_list.split(','))
-        if not rule_rst:
-            print ' >> Make Rule Error'
-            self.delete_seuritygroup(sg_opt)
-            return
+            # Make Rule to Security Group
+            rule_rst = self.add_securitygroup_rule(sg_rst['security_group']['id'],
+                                                   rule_opt_list.split(','))
+            if not rule_rst:
+                print ' >> Make Rule Error'
+                self.delete_seuritygroup(sg_opt)
+                return
 
-        print ' >> Make Rule Succ --->', rule_rst
-        return rule_rst
+            print ' >> Make Rule Succ --->', rule_rst
+            return rule_rst
+        except:
+            Reporter.exception_err_write()
 
     def add_securitygroup_rule(self, sg_uuid, rule_opt_list):
         rule_rst = []

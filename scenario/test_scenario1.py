@@ -7,7 +7,6 @@ from api.instance import InstanceTester
 from api.reporter import Reporter
 
 CONFIG_FILE = '../config/config.ini'
-EXT_NETWORK = 'ext-net'
 
 test_network = NetworkTester(CONFIG_FILE)
 test_instance = InstanceTester(CONFIG_FILE)
@@ -45,6 +44,6 @@ test_instance.create_instance('instance3', 'network3')
 # test_instance.delete_instance('instance3')
 
 
-# test_instance.floatingip_associate('instance1', EXT_NETWORK)
+# test_instance.floatingip_associate('instance1', 'ext-net')
 Reporter.test_summary()
 
