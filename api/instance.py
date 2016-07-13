@@ -24,23 +24,17 @@ class InstanceTester:
         return instance_rst
 
     def get_instance(self, instance_opt):
-        Reporter.unit_test_start()
-        try:
-            config_value = self.find_instance(instance_opt)
-            if not config_value:
-                Reporter.unit_test_stop('nok')
-                return
+        config_value = self.find_instance(instance_opt)
+        if not config_value:
+            return
 
-            instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
-            if not instance_rst:
-                Reporter.REPORT_MSG("   >> Not exist openstack ---> %s", instance_opt)
-                return
+        instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
+        if not instance_rst:
+            Reporter.REPORT_MSG("   >> Not exist openstack ---> %s", instance_opt)
+            return
 
-            Reporter.REPORT_MSG(" >> Get Instance  ---> %s %s", instance_opt, instance_rst)
-            Reporter.unit_test_stop('ok')
-            return instance_rst
-        except:
-            Reporter.exception_err_write()
+        Reporter.REPORT_MSG("   >> Get Instance  ---> %s %s", instance_opt, instance_rst)
+        return instance_rst
 
     def find_instance(self, instance_opt):
         instance_conf = dict(self.instance_conf)[instance_opt]
@@ -107,13 +101,17 @@ class InstanceTester:
             Reporter.exception_err_write()
 
     def delete_instance(self, instance_opt):
-        instance_list = self.get_instance(instance_opt)
-        for i in instance_list:
-            self.nova.servers.delete(i)
-            time.sleep(5)
+        Reporter.unit_test_start()
+        try:
+            instance_list = self.get_instance(instance_opt)
+            for i in instance_list:
+                self.nova.servers.delete(i)
+                time.sleep(5)
 
-        print ' >> Delete Instance --->', instance_opt
-        return
+            Reporter.REPORT_MSG("   >> Delete Instance ---> %s", instance_opt)
+            return
+        except:
+            Reporter.exception_err_write()
 
     #
     # FloatingIP control
@@ -159,4 +157,16 @@ class InstanceTester:
         for f in floatingip_list:
             self.nova.floating_ips.delete(f)
         return
+
+    def get_instance_floatingip(self, instance_opt):
+        instance_rst = self.get_instance(instance_opt)
+        if not instance_rst:
+            return
+        instance_uuid = instance_rst[0].id
+
+        floatingip_list = self.get_floatingip_list()
+        if not floatingip_list:
+            print " not exist any floatinip"
+
+        print instance_uuid
 

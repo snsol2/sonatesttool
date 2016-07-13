@@ -107,15 +107,6 @@ class Reporter:
     def NRET_PRINT(cls, report_format, *args):
         print report_format % args,
 
-    # @classmethod
-    # def RESULT_PRINT(cls, result):
-    #     if result == 'OK':
-    #         cls.PRINTR('OK')
-    #     elif result == 'NOK' :
-    #         cls.PRINTR('NOK')
-    #     else :
-    #         cls.PRINTR('NONE')
-
     @classmethod
     def start_line(cls, call_method):
         print_line = str(cls.test_count) + '. ' + call_method + ' Test'
@@ -150,7 +141,7 @@ class Reporter:
         elif 'nok' == report_string:
             cls.nok_count += 1
             cls.PRINTR("%s", 'nok')
-            os._exit(1)
+            # os._exit(1)
         elif 'skip' == report_string:
             cls.skip_count += 1
             cls.PRINTB("%s", 'skip')
