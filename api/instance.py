@@ -166,7 +166,29 @@ class InstanceTester:
 
         floatingip_list = self.get_floatingip_list()
         if not floatingip_list:
-            print " not exist any floatinip"
+            print " not exist any floatin IP"
 
-        print instance_uuid
+        floatingip = ''
+        for i in range(len(floatingip_list)):
+            if instance_uuid == floatingip_list[i].instance_id:
+                floatingip = floatingip_list[i].ip
+        if not floatingip:
+            print 'not exist associate ip'
+            return
+
+        return floatingip
+
+    def get_instance_ip(self, instance_network):
+        instance_opt, network_opt = instance_network.split(':')
+        instance_rst = self.get_instance(instance_opt)[0].__dict__
+        network_cfg_body = self.network_conf[network_opt]
+        if not (instance_rst and network_cfg_body):
+            return
+
+        network_name = ast.literal_eval(network_cfg_body)['name']
+
+        instance_ip = instance_rst['addresses'][network_name][0]['addr']
+        if not instance_ip:
+            return
+        return instance_ip
 

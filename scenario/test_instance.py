@@ -31,3 +31,5 @@ test_instance.get_floatingip_list()
 # test_instance.delete_floatingip_all()
 
 test_instance.get_instance_floatingip('instance1')
+
+test_instance.get_instance_ip('instance1:network2')
