@@ -12,7 +12,7 @@ class InstanceTester:
 
     def __init__(self, config_file):
         # Get config
-        self.auth_conf = ReadConfig(config_file).get_nova_auth_conf()
+        self.auth_conf = ReadConfig(config_file).get_auth_conf()
         self.instance_conf = ReadConfig.get_instance_config()
         self.network_conf = ReadConfig.get_network_config()
         # Get Token and Neutron Object
@@ -104,11 +104,15 @@ class InstanceTester:
         Reporter.unit_test_start()
         try:
             instance_list = self.get_instance(instance_opt)
+            if not instance_list:
+                Reporter.unit_test_stop('nok')
+                return
             for i in instance_list:
                 self.nova.servers.delete(i)
                 time.sleep(5)
 
             Reporter.REPORT_MSG("   >> Delete Instance ---> %s", instance_opt)
+            Reporter.unit_test_stop('ok')
             return
         except:
             Reporter.exception_err_write()
@@ -153,10 +157,16 @@ class InstanceTester:
         return
 
     def delete_floatingip_all(self):
-        floatingip_list = self.get_floatingip_list()
-        for f in floatingip_list:
-            self.nova.floating_ips.delete(f)
-        return
+        Reporter.unit_test_start()
+        try:
+            floatingip_list = self.get_floatingip_list()
+            for f in floatingip_list:
+                self.nova.floating_ips.delete(f)
+            Reporter.REPORT_MSG("   >> All Floating IP Delete Succ --->")
+            Reporter.unit_test_stop('ok')
+            return
+        except:
+            Reporter.exception_err_write()
 
     def get_instance_floatingip(self, instance_opt):
         instance_rst = self.get_instance(instance_opt)

@@ -141,7 +141,9 @@ class Reporter:
         elif 'nok' == report_string:
             cls.nok_count += 1
             cls.PRINTR("%s", 'nok')
-            # os._exit(1)
+            if ReadConfig.get_test_mode() == 'break':
+                cls.test_summary()
+                os._exit(1)
         elif 'skip' == report_string:
             cls.skip_count += 1
             cls.PRINTB("%s", 'skip')

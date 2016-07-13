@@ -25,7 +25,8 @@ class ReadConfig:
             cfg.IntOpt('rule_cnt'),
             cfg.IntOpt('router_cnt'),
             cfg.IntOpt('floatingip_cnt'),
-            cfg.StrOpt('report_path')
+            cfg.StrOpt('report_path'),
+            cfg.StrOpt('test_mode')
         ]
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
@@ -34,6 +35,10 @@ class ReadConfig:
     @classmethod
     def get_file_path(cls):
         return CONF.DEFAULT.report_path
+
+    @classmethod
+    def get_test_mode(cls):
+        return CONF.DEFAULT.test_mode
 
     @classmethod
     def get_nova_tail_info(self):
@@ -61,23 +66,23 @@ class ReadConfig:
         CONF.register_opts(tail_info_conf, tail_info_group)
         return CONF.neutron_tail
 
-    @classmethod
-    def get_net_auth_conf(cls):
-        auth_group = cfg.OptGroup(name='net_auth')
-        auth_conf = [
-            cfg.StrOpt('username'),
-            cfg.StrOpt('password'),
-            cfg.StrOpt('tenant_name'),
-            cfg.StrOpt('version'),
-            cfg.StrOpt('auth_url')
-        ]
-        CONF.register_group(auth_group)
-        CONF.register_opts(auth_conf, auth_group)
-        return CONF.net_auth
+    # @classmethod
+    # def get_net_auth_conf(cls):
+    #     auth_group = cfg.OptGroup(name='net_auth')
+    #     auth_conf = [
+    #         cfg.StrOpt('username'),
+    #         cfg.StrOpt('password'),
+    #         cfg.StrOpt('tenant_name'),
+    #         cfg.StrOpt('version'),
+    #         cfg.StrOpt('auth_url')
+    #     ]
+    #     CONF.register_group(auth_group)
+    #     CONF.register_opts(auth_conf, auth_group)
+    #     return CONF.net_auth
 
     @classmethod
-    def get_nova_auth_conf(cls):
-        auth_group = cfg.OptGroup(name='nova_auth')
+    def get_auth_conf(cls):
+        auth_group = cfg.OptGroup(name='auth')
         auth_conf = [
             cfg.StrOpt('version'),
             cfg.StrOpt('username'),
@@ -87,7 +92,7 @@ class ReadConfig:
         ]
         CONF.register_group(auth_group)
         CONF.register_opts(auth_conf, auth_group)
-        return CONF.nova_auth
+        return CONF.auth
 
     @classmethod
     def get_network_config(cls):
