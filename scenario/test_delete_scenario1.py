@@ -27,23 +27,16 @@ test_network.delete_seuritygroup('sg2')
 
 test_network.remove_router_interface('router1', 'subnet2')
 test_network.remove_router_interface('router1', 'subnet3')
-test_network.remove_router_interface('router2', 'subnet2')
-test_network.remove_router_interface('router2', 'subnet3')
-test_network.remove_router_interface('router3', 'subnet4')
 
-test_network.delete_router('router3')
 test_network.delete_router('router1')
-test_network.delete_router('router2')
 
 test_network.delete_subnet('subnet1')
 test_network.delete_subnet('subnet2')
 test_network.delete_subnet('subnet3')
-test_network.delete_subnet('subnet4')
 
 test_network.delete_network('network1')
 test_network.delete_network('network2')
 test_network.delete_network('network3')
-test_network.delete_network('network4')
 
 # =================================================================
 Reporter.test_summary()

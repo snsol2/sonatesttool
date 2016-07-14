@@ -20,10 +20,10 @@ Reporter()
 # test_network.get_network('network3')
 # test_network.get_subnet('subnet3')
 ### Network
-test_network.create_network('network3')
+test_network.create_network('network1')
 # test_network.delete_network('network3')
 
-test_network.create_subnet('subnet3', 'network3')
+test_network.create_subnet('subnet1', 'network1')
 # test_network.delete_subnet('subnet3')
 
 # test_network.create_network('network2')
@@ -38,10 +38,10 @@ test_network.create_subnet('subnet3', 'network3')
 # test_network.create_securitygroup('sg2', 'rule1,rule2')
 
 
-test_instance.create_instance('instance3', 'network3')
-test_instance.delete_instance('instance3')
+# test_instance.create_instance('instance3', 'network3')
+# test_instance.delete_instance('instance3')
 
-# test_instance.floatingip_associate('instance1', 'ext-net')
+test_instance.floatingip_associate('instance1', 'ext-net')
 
 # test_network.set_port_down('instance1', 'network2')
 # test_network.set_port_up('instance1', 'network2')

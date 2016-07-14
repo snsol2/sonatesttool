@@ -105,7 +105,7 @@ class InstanceTester:
         try:
             instance_list = self.get_instance(instance_opt)
             if not instance_list:
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('skip')
                 return
             for i in instance_list:
                 self.nova.servers.delete(i)
@@ -125,27 +125,36 @@ class InstanceTester:
         return floatingip_list
 
     def floatingip_associate(self, instance_opt, pool_opt):
-        floatingip_list = self.nova.floating_ips.list()
-        server = self.get_instance(instance_opt)
-        if not server:
-            print ' >> Floating IP associate Fail --->'
-            return
-        extra_floatingip = ''
+        Reporter.unit_test_start()
+        try:
+            server = self.get_instance(instance_opt)
+            if not server:
+                Reporter.unit_test_stop('nok')
+                return
 
-        for a in floatingip_list:
-            if not a.fixed_ip:
-                extra_floatingip = a.ip
-                break
+            floatingip_list = self.nova.floating_ips.list()
+            if not floatingip_list:
+                Reporter.REPORT_MSG("   >> Not exist floating IPs --->")
 
-        if not extra_floatingip:
-            extra_floatingip = self.nova.floating_ips.create(pool=pool_opt).ip
+            extra_floatingip = ''
+            for a in floatingip_list:
+                if not a.fixed_ip:
+                    extra_floatingip = a.ip
+                    break
 
-        # TODO
-        # add fixed-ip option
-        print server[0], extra_floatingip
-        self.nova.servers.add_floating_ip(server[0], extra_floatingip)
+            if not extra_floatingip:
+                extra_floatingip = self.nova.floating_ips.create(pool=pool_opt).ip
 
-        print ' >> Floating IP Associate --->', self.nova.floating_ips.list()
+            # TODO
+            # add fixed_address option
+            self.nova.servers.add_floating_ip(server[0],
+                                              extra_floatingip,
+                                              fixed_address=None)
+            Reporter.REPORT_MSG("   >> Floating IP Associate ---> %s",
+                                self.nova.floating_ips.list())
+            Reporter.unit_test_stop('ok')
+        except:
+            Reporter.exception_err_write()
 
     def floatingip_separate(self, instance_opt):
         floatingip_list = self.get_floatingip_list()
@@ -160,6 +169,10 @@ class InstanceTester:
         Reporter.unit_test_start()
         try:
             floatingip_list = self.get_floatingip_list()
+            if not floatingip_list:
+                Reporter.REPORT_MSG("   >> Not exist Floating IP --->")
+                Reporter.unit_test_stop('skip')
+                return
             for f in floatingip_list:
                 self.nova.floating_ips.delete(f)
             Reporter.REPORT_MSG("   >> All Floating IP Delete Succ --->")
