@@ -28,6 +28,7 @@ ssh_util.ssh_ping_test2('', '', '10.10.2.93')
 # =================================================================
 
 # test_network.get_network('network3')
+# test_network.get_network('network3')
 # # test_instance.get_instance('instance1')
 # # test_network.create_network('network3')
 # # test_network.delete_network('network3')
@@ -57,3 +58,6 @@ ssh_util.ssh_ping_test2('', '', '10.10.2.93')
 # # test_instance.floatingip_associate('instance1', 'ext-net')
 # Reporter.test_summary()
 
+
+# test_instance.floatingip_associate('instance1', 'ext-net')
+Reporter.test_summary()

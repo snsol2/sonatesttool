@@ -109,9 +109,9 @@ class Reporter:
 
     @classmethod
     def start_line(cls, call_method):
-        print_line = str(cls.test_count) + '. ' + call_method + ' Test'
-        cls.NRET_PRINT("%s %s", print_line, ("_" * (70 - len(print_line))))
-        cls.REPORT_MSG("\n%s %s", print_line, ("_" * (70 - len(print_line))))
+        test_method = str(cls.test_count) + '. ' + call_method + '... Test'
+        cls.NRET_PRINT("%s %s", test_method, ("_" * (70 - len(test_method))))
+        cls.REPORT_MSG("\n%s %s", test_method, ("_" * (70 - len(test_method))))
         return
 
     @classmethod
@@ -128,8 +128,15 @@ class Reporter:
             cls.REPORT_MSG("\n\n\n    Test Start\n %s", ('='*70))
             print "\nTest Start\n" + ('=' * 80)
         cls.test_count += 1
-        called_method = traceback.extract_stack(None, 2)[0][2]
-        cls.start_line(called_method)
+        method = traceback.extract_stack(None, 2)[0][2]
+        # cls.start_line(called_method)
+        if method in ['create_instance', 'delete_instance']:
+            method = str(cls.test_count) + '. ' + method + ' (wait 5 seconds)'
+        else:
+            method = str(cls.test_count) + '. ' + method + ' '
+
+        cls.NRET_PRINT("%s %s", method, ("_" * (70 - len(method))))
+        cls.REPORT_MSG("\n%s %s", method, ("_" * (70 - len(method))))
         # pass
 
     @classmethod
@@ -141,7 +148,9 @@ class Reporter:
         elif 'nok' == report_string:
             cls.nok_count += 1
             cls.PRINTR("%s", 'nok')
-            # os._exit(1)
+            if ReadConfig.get_test_mode() == 'break':
+                cls.test_summary()
+                os._exit(1)
         elif 'skip' == report_string:
             cls.skip_count += 1
             cls.PRINTB("%s", 'skip')

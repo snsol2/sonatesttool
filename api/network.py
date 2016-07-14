@@ -17,14 +17,18 @@ class NetworkTester:
     def __init__(self, config_file):
             # Get config
             # CLog.__init__(self, config_file)
-            self.auth_conf = ReadConfig(config_file).get_net_auth_conf()
+            self.auth_conf = dict(ReadConfig(config_file).get_auth_conf())
             self.network_conf = ReadConfig.get_network_config()
             self.subnet_conf = ReadConfig.get_subnet_config()
             self.sg_conf = ReadConfig.get_sg_config()
             self.rule_conf = ReadConfig.get_rule_config()
             self.router_conf = ReadConfig.get_router_config()
             # Get Token and Neutron Object
-            self.neutron = client.Client(**self.auth_conf)
+            # self.neutron = client.Client(**self.auth_conf)
+            self.neutron = client.Client(username=self.auth_conf['username'],
+                                         password=self.auth_conf['api_key'],
+                                         tenant_name=self.auth_conf['project_id'],
+                                         auth_url=self.auth_conf['auth_url'])
             # Get Token and Nova Object
             self.nova = InstanceTester(config_file)
 
@@ -50,11 +54,9 @@ class NetworkTester:
             network_rst = self.neutron.list_networks(name=network_name)
             if not dict(network_rst)['networks']:
                 Reporter.REPORT_MSG("   >> Not Exist Network in OpenStack")
-                Reporter.unit_test_stop('nok')
                 return
 
             Reporter.REPORT_MSG("   >> Network List ---> %s %s", network_opt, dict(network_rst).values())
-            Reporter.unit_test_stop('ok')
             return network_rst
         except:
             Reporter.exception_err_write()
@@ -62,7 +64,6 @@ class NetworkTester:
     def get_network_name(self, network_opt):
         network_body = dict(self.network_conf)[network_opt]
         if not network_body:
-            Reporter.unit_test_stop('nok')
             Reporter.REPORT_MSG("   >> Not Exist Network in Config ---> %s", network_opt)
             return
         network_name = ast.literal_eval(network_body)['name']
@@ -106,6 +107,9 @@ class NetworkTester:
         Reporter.unit_test_start()
         try:
             network_uuid = self.get_network_uuid(network_opt)
+            if not network_uuid:
+                Reporter.unit_test_stop('skip')
+                return
             network_rst = self.neutron.delete_network(network_uuid)
             Reporter.REPORT_MSG("   >> Delete Network ---> %s %s", network_opt, network_uuid)
             Reporter.unit_test_stop('ok')
@@ -113,9 +117,40 @@ class NetworkTester:
         except:
             Reporter.exception_err_write()
 
-    # TODO
-    def update_network(self):
-        pass
+    def set_network_down(self, network_opt):
+        Reporter.unit_test_start()
+        try:
+            network_uuid = self.get_network_uuid(network_opt)
+            if not network_uuid:
+                Reporter.unit_test_stop('nok')
+                return
+            body = {'network': {'admin_state_up': False}}
+            network_rst = self.neutron.update_network(network_uuid, body)
+
+            Reporter.REPORT_MSG("   >> Network Down Succ --> %s", network_opt)
+            Reporter.unit_test_stop('ok')
+
+            return network_rst
+        except:
+            Reporter.exception_err_write()
+
+    def set_network_up(self, network_opt):
+        Reporter.unit_test_start()
+        try:
+            network_uuid = self.get_network_uuid(network_opt)
+            if not network_uuid:
+                Reporter.REPORT_MSG("   >> Network not find --> %s", network_opt)
+                Reporter.unit_test_stop('nok')
+                return
+            body = {'network': {'admin_state_up': True}}
+            network_rst = self.neutron.update_network(network_uuid, body)
+
+            Reporter.REPORT_MSG("   >> Network Up Succ --> %s", network_opt)
+            Reporter.unit_test_stop('ok')
+
+            return network_rst
+        except:
+            Reporter.exception_err_write()
 
     #
     # Subnet Methods
@@ -193,7 +228,7 @@ class NetworkTester:
 
             subnet_body['subnets'][0]['network_id'] = network_uuid
             subnet_rst = self.neutron.create_subnet(body=subnet_body)
-            Reporter.REPORT_MSG(" >> Create Subnet --->%s, %s, %s",
+            Reporter.REPORT_MSG("   >> Create Subnet --->%s, %s, %s",
                                 network_opt, subnet_opt, dict(subnet_rst).values())
             Reporter.unit_test_stop('ok')
             return subnet_rst
@@ -214,10 +249,6 @@ class NetworkTester:
             return subnet_rst
         except:
             Reporter.exception_err_write()
-
-    # TODO
-    def update_subnet(self):
-        pass
 
     #
     # Security Group Methods
@@ -309,6 +340,7 @@ class NetworkTester:
         try:
             sg_uuid = self.get_sg_uuid(sg_opt)
             if not sg_uuid:
+                Reporter.unit_test_stop('nok')
                 return
 
             sg_rst = []
@@ -317,13 +349,10 @@ class NetworkTester:
 
             Reporter.REPORT_MSG("   >> Delete Security Group Succ ---> %s, %s",
                                 sg_opt, sg_rst)
+            Reporter.unit_test_stop('ok')
             return sg_rst
         except:
             Reporter.exception_err_write()
-
-    #  TODO
-    def update_securitygroup(self):
-        pass
 
     #
     # Router Control Method
@@ -454,6 +483,45 @@ class NetworkTester:
         except:
             Reporter.exception_err_write()
 
+    def set_router_down(self, router_opt):
+        Reporter.unit_test_start()
+        try:
+            router_uuid = self.get_router_uuid(router_opt)
+            if not router_uuid:
+                Reporter.REPORT_MSG("   >> Router not find --> %s", router_opt)
+                Reporter.unit_test_stop('nok')
+                return
+            body = {'router': {'admin_state_up': False}}
+            network_rst = self.neutron.update_router(router_uuid, body)
+
+            Reporter.REPORT_MSG("   >> Router Down Succ --> %s", router_opt)
+            Reporter.unit_test_stop('ok')
+
+            return network_rst
+        except:
+            Reporter.exception_err_write()
+
+    def set_router_up(self, router_opt):
+        Reporter.unit_test_start()
+        try:
+            router_uuid = self.get_router_uuid(router_opt)
+            if not router_uuid:
+                Reporter.REPORT_MSG("   >> Router not find --> %s", router_opt)
+                Reporter.unit_test_stop('nok')
+                return
+            body = {'router': {'admin_state_up': True}}
+            network_rst = self.neutron.update_router(router_uuid, body)
+
+            Reporter.REPORT_MSG("   >> Router Up Succ --> %s", router_opt)
+            Reporter.unit_test_stop('ok')
+
+            return network_rst
+        except:
+            Reporter.exception_err_write()
+
+    #
+    # Port Control Method
+    #
     def get_port_uuid(self, instance_opt, network_opt):
         instance_uuid = self.nova.get_instance(instance_opt)[0].id
         if not instance_uuid:
@@ -475,51 +543,47 @@ class NetworkTester:
         return port_uuid
 
     def set_port_down(self, instance_opt, network_opt):
-        body = {'port': {'admin_state_up': False}}
-        port_uuid = self.get_port_uuid(instance_opt, network_opt)
-        if not port_uuid:
-            return
+        Reporter.unit_test_start()
+        try:
+            port_uuid = self.get_port_uuid(instance_opt, network_opt)
+            if not port_uuid:
+                Reporter.REPORT_MSG("   >> Port Not find --> %s, %s",
+                                    instance_opt, network_opt)
+                Reporter.unit_test_stop('nok')
+                return
 
-        port_rst = []
-        for i in range(len(port_uuid)):
-            port_rst.append(self.neutron.update_port(port_uuid[i], body))
+            body = {'port': {'admin_state_up': False}}
+            port_rst = []
+            for i in range(len(port_uuid)):
+                port_rst.append(self.neutron.update_port(port_uuid[i], body))
 
-        return port_rst
+            Reporter.REPORT_MSG("   >> Port Down Succ --> %s", port_uuid)
+            Reporter.unit_test_stop('ok')
+            return port_rst
+        except:
+            Reporter.exception_err_write()
 
     def set_port_up(self, instance_opt, network_opt):
-        body = {'port': {'admin_state_up': True}}
-        port_uuid = self.get_port_uuid(instance_opt, network_opt)
-        if not port_uuid:
-            return
+        Reporter.unit_test_start()
+        try:
+            port_uuid = self.get_port_uuid(instance_opt, network_opt)
+            if not port_uuid:
+                Reporter.REPORT_MSG("   >> Port Not find --> %s, %s",
+                                    instance_opt, network_opt)
+                Reporter.unit_test_stop('nok')
+                return
 
-        port_rst = []
-        for i in range(len(port_uuid)):
-            port_rst.append(self.neutron.update_port(port_uuid[i], body))
+            body = {'port': {'admin_state_up': True}}
+            port_rst = []
+            for i in range(len(port_uuid)):
+                port_rst.append(self.neutron.update_port(port_uuid[i], body))
 
-        return port_rst
+            Reporter.REPORT_MSG("   >> Port Down Succ --> %s", port_uuid)
+            Reporter.unit_test_stop('ok')
+            return port_rst
+        except:
+            Reporter.exception_err_write()
 
-    def set_network_down(self, network_opt):
-        network_uuid = self.get_network_uuid(network_opt)
-        if not network_uuid:
-            return
-        body = {'network': {'admin_state_up': False}}
-
-        network_rst = self.neutron.update_network(network_uuid, body)
-        return network_rst
-
-    def set_network_up(self, network_opt):
-        network_uuid = self.get_network_uuid(network_opt)
-        if not network_uuid:
-            return
-        body = {'network': {'admin_state_up': True}}
-
-        network_rst = self.neutron.update_network(network_uuid, body)
-        return network_rst
-
-    def get_floatingip(self, instance_opt):
-        pass
-
-    def get_instanceip(self, instance_network):
-        pass
-
-
+    # def test(self):
+    #     print type(self.auth_conf)
+    #     print self.get_network('network1')
