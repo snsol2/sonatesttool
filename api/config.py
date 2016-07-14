@@ -54,17 +54,21 @@ class ReadConfig:
         return CONF.openstack
 
     @classmethod
-    def get_neturon_tail_info(self):
-        tail_info_group = cfg.OptGroup(name='neutron_tail')
-        tail_info_conf = [
-            cfg.StrOpt('hostname'),
-            cfg.StrOpt('username'),
+    def get_onos_info(self):
+        onos_info_group = cfg.OptGroup(name='onos')
+        onos_info_conf = [
+            cfg.StrOpt('user_id'),
             cfg.StrOpt('password'),
-            cfg.StrOpt('filename')
+            cfg.StrOpt('ssh_port'),
+            cfg.StrOpt('os_username'),
+            cfg.StrOpt('os_password'),
+            cfg.StrOpt('onos_logfile'),
+            cfg.StrOpt('onos_list')
         ]
-        CONF.register_group(tail_info_group)
-        CONF.register_opts(tail_info_conf, tail_info_group)
-        return CONF.neutron_tail
+        CONF.register_group(onos_info_group)
+        CONF.register_opts(onos_info_conf, onos_info_group)
+        CONF.onos.onos_list = CONF.onos.onos_list.split(', ')
+        return CONF.onos
 
     # @classmethod
     # def get_net_auth_conf(cls):

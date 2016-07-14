@@ -13,6 +13,7 @@ CONFIG_FILE = '../config/config.ini'
 class SSHUtil():
 
     instance = InstanceTester(CONFIG_FILE)
+    config = ReadConfig(CONFIG_FILE)
 
     def __init__(self):
         print '__init__'
@@ -21,7 +22,10 @@ class SSHUtil():
     def ssh_connect(cls, host, user, port, password):
         try:
             ssh_newkey = 'Are you sure you want to continue connecting'
-            connStr = 'ssh '+port+user+'@'+host
+            if '' is port:
+                connStr = 'ssh ' + user + '@' + host
+            else:
+                connStr = 'ssh '+ '-p ' + port + ' ' + user + '@' + host
             # print connStr
             conn = pexpect.spawn(connStr)
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
@@ -57,17 +61,12 @@ class SSHUtil():
 
     @classmethod
     def ssh_conn_send_command(cls, conn_info, cmd):
-        if 'port' in conn_info:
-            port = '-p ' + conn_info.port + ' '
-        else:
-            port = ''
-
-        ssh_conn = cls.ssh_connect(conn_info.hostname, conn_info.username, port, conn_info.password)
+        ssh_conn = cls.ssh_connect(conn_info['host'], conn_info['user'], conn_info['port'], conn_info['password'])
         if ssh_conn is False:
             return False
 
         ssh_conn.sendline(cmd)
-        ssh_conn.expect(CMD_PROMPT, timeout=3)
+        ssh_conn.expect(PROMPT, timeout=3)
         ssh_conn.close()
         return ssh_conn.before
 
@@ -88,7 +87,7 @@ class SSHUtil():
         if '' is not inst2:
             name_list = inst2.split(':')
 
-        inst_conf = ReadConfig.get_instance_config()
+        inst_conf = cls.config.get_instance_config()
         inst_info_1 = ast.literal_eval(inst_conf[inst1])
         if '' is not inst2:
             inst_info_2 = ast.literal_eval(inst_conf[name_list[0]])
@@ -148,7 +147,6 @@ class SSHUtil():
                 for x in split_list:
                     if '%' in x:
                         result = x.split('%')
-                        # print result
                         break
 
         cls.ssh_disconnect(conn)
@@ -172,8 +170,7 @@ class SSHUtil():
                 pass
 
     @classmethod
-    def onos_application_status(cls, conn_info):
-        Reporter.unit_test_start()
+    def onos_apps_status(cls, conn_info):
         switching ='openstackswitching'
         routing = 'openstackrouting'
         networking = 'openstacknetworking'
@@ -186,7 +183,7 @@ class SSHUtil():
 
         recv_msg = cls.ssh_conn_send_command(conn_info, 'apps -a -s')
         if recv_msg is False:
-            Reporter.unit_test_stop('nok')
+            # Reporter.unit_test_stop('nok')
             return -1
 
         # serach
@@ -204,16 +201,10 @@ class SSHUtil():
         app_status = (status[switching] & status[routing] &
                       status[networking] & status[node] & status[interface] )
 
-        if app_status == 1:
-            Reporter.unit_test_stop('ok')
-        else:
-            Reporter.unit_test_stop('nok')
-
         return app_status
 
     @classmethod
     def onos_device_status(cls, conn_info):
-        Reporter.unit_test_start()
         dev_msg = cls.ssh_conn_send_command(conn_info, 'devices')
         if dev_msg is False:
             return False
@@ -236,24 +227,8 @@ class SSHUtil():
         br_int_status = 0
         vxlan_status = 0
 
-        # port_list = ['\x1b[0mports of:cafe000000000031\n'
-        # 'id=of:cafe000000000031, available=true, role=MASTER, type=SWITCH, mfr=Nicira, Inc., hw=Open vSwitch, sw=2.3.2, serial=None, managementAddress=10.10.2.31, protocol=OF_13, channelId=10.10.2.31:53397\n'
-        # '  port=local, state=disabled, type=copper, speed=0 , portName=br-int, portMac=08:00:27:7b:0a:d5\n'
-        # '  port=1, state=enabled, type=copper, speed=0 , portName=vxlan, portMac=46:7f:f4:82:e9:a0\n'
-        # '  port=3, state=disabled, type=copper, speed=1000 , portName=eth1, portMac=08:00:27:7b:0a:d5\n\x1b[32m]',
-        # '\x1b[0mports of:cafe000000000032\n'
-        # 'id = of:cafe000000000032, available = true, role = MASTER, type = SWITCH, mfr = Nicira, Inc., hw = Open vSwitch, sw = 2.3.2, serial = None, managementAddress = 10.10.2.32, protocol = OF_13, driver = sona, name = of:cafe000000000033, channelId = 10.10.2.32:57373\n'
-        # '  port = local, state=disabled, type = copper, speed = 0, portName=br-int, portMac = d2:84:d6:37:5f:4b\n'
-        # '  port = 1, state=disabled, type = copper, speed = 0, portName=vxlan, portMac = 92:c4:a7:cd:29:7f\n\x1b[32m',
-        # '\x1b[0mports of:cafe000000000033\n'
-        # 'id = of:cafe000000000033, available = true, role = MASTER, type = SWITCH, mfr = Nicira, Inc., hw = Open vSwitch, sw = 2.3.2, serial = None, managementAddress = 10.10.2.33, protocol = OF_13, driver = sona, name = of:cafe000000000033, channelId = 10.10.2.33:52063\n'
-        # '  port = local, state=enabled, type = copper, speed = 0, portName=aa, portMac = 1e:06:3a:1d:4a:41\n'
-        # '  port = 1, state=disabled, type = copper, speed = 0, portName=vxlan, portMac = 92:4b:d6:25:e1:e5\n\x1b[32m']
-        #
-
         for i in range(len(dev_list)):
             if 'false' in dev_list[i]['available']:
-                Reporter.unit_test_stop('nok')
                 # print 'device status ---------- nok'
                 return False
 
@@ -282,17 +257,12 @@ class SSHUtil():
 
         # print 'device status ---------- ok'
         if len(dev_list) != br_int_status:
-            Reporter.unit_test_stop('nok')
             # print 'port status(br-int) ---------- nok'
             return False
 
         if len(dev_list) != vxlan_status:
-            Reporter.unit_test_stop('nok')
             # print 'port status(vxlan) ---------- nok'
             return False
-
-        Reporter.unit_test_stop('ok')
-        # print 'port status ---------- ok'
 
         return True
 
@@ -311,3 +281,41 @@ class SSHUtil():
 
         return result
 
+    @classmethod
+    def onos_devices_status(cls):
+        # onos statusa
+        Reporter.unit_test_start()
+        conn_info = {}
+        onos_info = cls.config.get_onos_info()
+
+        for onos_ip in onos_info.onos_list:
+            conn_info['host'] = onos_ip
+            conn_info['user'] = onos_info.user_id
+            conn_info['port'] = onos_info.ssh_port
+            conn_info['password'] = onos_info.password
+            ret = cls.onos_device_status(conn_info)
+            if 'False' is ret:
+                Reporter.unit_test_stop('nok')
+                break
+
+        Reporter.unit_test_stop('ok')
+
+
+    @classmethod
+    def onos_application_status(cls):
+        # onos statusa
+        Reporter.unit_test_start()
+        conn_info = {}
+        onos_info = cls.config.get_onos_info()
+
+        for onos_ip in onos_info.onos_list:
+            conn_info['host'] = onos_ip
+            conn_info['user'] = onos_info.user_id
+            conn_info['port'] = onos_info.ssh_port
+            conn_info['password'] = onos_info.password
+            ret = cls.onos_apps_status(conn_info)
+            if 'False' is ret:
+                Reporter.unit_test_stop('nok')
+                break
+
+        Reporter.unit_test_stop('ok')

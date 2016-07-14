@@ -1,21 +1,28 @@
 import pexpect
 import threading
+import time
 from api.reporter import Reporter
+from api.config import ReadConfig
 
 PROMPT = ['~# ', '>>> ', 'onos> ', '\$ ', '\# ', ':~$ ', 'onos1:~']
+CONFIG_FILE = '../config/config.ini'
 
 class SSHTailer():
     thr_status_dic = {}
     result_dic = {}
+    config = ReadConfig(CONFIG_FILE)
 
     def __init__(self):
         print '__init__'
 
     @classmethod
-    def ssh_connect(cls, host, user, port, password):
+    def ssh_connect(cls, port, user, host, password):
         try:
             ssh_newkey = 'Are you sure you want to continue connecting'
-            connStr = 'ssh '+port+user+'@'+host
+            if '' is port:
+                connStr = 'ssh '+ user + '@' + host
+            else:
+                connStr = 'ssh ' + '-p ' + port + ' ' + user + '@' + host
             print connStr
             conn = pexpect.spawn(connStr)
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
@@ -39,12 +46,13 @@ class SSHTailer():
         return conn
 
     @classmethod
-    def ssh_tail_thread(cls, tail_info):
+    def ssh_tail_thread(cls, port, user, host, password, file):
         exit_prompt = False
-        # Reporter.PRINTG('%s, %s, %s, %s', tail_info.hostname, tail_info.username, tail_info.password, tail_info.filename)
-        ssh_conn = cls.ssh_connect(tail_info.hostname, tail_info.username, '', tail_info.password)
+        # Reporter.PRINTG('%s, %s, %s, %s, %s\n', host, user, port, password, file)
+        ssh_conn = cls.ssh_connect(port, user, host, password)
         if ssh_conn is not False:
-            ssh_conn.sendline(tail_info.filename)
+            cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
+            ssh_conn.sendline('tail -f -n 0 ' + file)
             while cls.thr_status_dic[threading.current_thread().getName()][1]:
                 try:
                     # print ('Thread ID : %s' %(threading.current_thread().ident))
@@ -73,17 +81,19 @@ class SSHTailer():
         print 'tail_thread while exit'
 
     @classmethod
-    def ssh_start_tailer(cls, tail_info):
-        thr = threading.Thread(target=cls.ssh_tail_thread, args=(tail_info, ))
+    def start_tailer(cls, port, user, host, password, file):
+        thr = threading.Thread(target=cls.ssh_tail_thread, args=(port, user, host, password, file, ))
         cls.thr_status_dic[thr.getName()] = [thr, True]
         cls.result_dic[thr.getName()] = ''
         thr.start()
-        print cls.thr_status_dic
+        # print cls.thr_status_dic
 
     @classmethod
     def ssh_stop_tailer(cls, result, thr_name):
-        if 'fail' in result:
-            Reporter.REPORT_MSG('%s', cls.result_dic[thr_name])
+        if 'nok' in result:
+            # Reporter.REPORT_MSG('%s', cls.result_dic[thr_name])
+            line_list = cls.result_dic[thr_name].splitlines()
+            Reporter.REPORT_MSG("%s", '\n'.join('   ** ' + line for line in line_list))
         if thr_name in cls.result_dic:
             del cls.result_dic[thr_name]
         if cls.thr_status_dic[thr_name][0].getName().find(thr_name) != -1:
@@ -98,3 +108,19 @@ class SSHTailer():
 
         cls.thr_status_dic.clear()
 
+    @classmethod
+    def ssh_start_tailer(cls):
+        # onos tail
+        onos_info = cls.config.get_onos_info()
+        for onos_ip in onos_info.onos_list:
+            cls.start_tailer('', onos_info.os_username,
+                             onos_ip, onos_info.os_password,
+                             onos_info.onos_logfile)
+            time.sleep(0.5)
+
+        # openstack tail
+        openstack_info = cls.config.get_openstack_info()
+        cls.start_tailer('', openstack_info.username,
+                         openstack_info.hostname,
+                         openstack_info.password,
+                         openstack_info.filename)
