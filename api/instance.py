@@ -91,8 +91,8 @@ class InstanceTester:
                                                     nics=nics_list,
                                                     security_groups=sg_list)
 
-            if instance_rst:
-                time.sleep(5)
+            # if instance_rst:
+            #     time.sleep(5)
 
             Reporter.REPORT_MSG("   >> Create Succ ---> %s", instance_rst)
             Reporter.unit_test_stop('ok')
@@ -109,7 +109,7 @@ class InstanceTester:
                 return
             for i in instance_list:
                 self.nova.servers.delete(i)
-                time.sleep(5)
+                # time.sleep(5)
 
             Reporter.REPORT_MSG("   >> Delete Instance ---> %s", instance_opt)
             Reporter.unit_test_stop('ok')

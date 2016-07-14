@@ -4,7 +4,7 @@
 
 from api.network import NetworkTester
 from api.instance import InstanceTester
-from api.reporter import Reporter
+from api.reporter import Reporter as Reporter
 
 CONFIG_FILE = '../config/config.ini'
 
