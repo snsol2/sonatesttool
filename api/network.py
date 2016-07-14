@@ -54,11 +54,9 @@ class NetworkTester:
             network_rst = self.neutron.list_networks(name=network_name)
             if not dict(network_rst)['networks']:
                 Reporter.REPORT_MSG("   >> Not Exist Network in OpenStack")
-                Reporter.unit_test_stop('nok')
                 return
 
             Reporter.REPORT_MSG("   >> Network List ---> %s %s", network_opt, dict(network_rst).values())
-            Reporter.unit_test_stop('ok')
             return network_rst
         except:
             Reporter.exception_err_write()
@@ -66,7 +64,6 @@ class NetworkTester:
     def get_network_name(self, network_opt):
         network_body = dict(self.network_conf)[network_opt]
         if not network_body:
-            Reporter.unit_test_stop('nok')
             Reporter.REPORT_MSG("   >> Not Exist Network in Config ---> %s", network_opt)
             return
         network_name = ast.literal_eval(network_body)['name']
@@ -110,6 +107,9 @@ class NetworkTester:
         Reporter.unit_test_start()
         try:
             network_uuid = self.get_network_uuid(network_opt)
+            if not network_uuid:
+                Reporter.unit_test_stop('skip')
+                return
             network_rst = self.neutron.delete_network(network_uuid)
             Reporter.REPORT_MSG("   >> Delete Network ---> %s %s", network_opt, network_uuid)
             Reporter.unit_test_stop('ok')
@@ -122,7 +122,6 @@ class NetworkTester:
         try:
             network_uuid = self.get_network_uuid(network_opt)
             if not network_uuid:
-                Reporter.REPORT_MSG("   >> Network not find --> %s", network_opt)
                 Reporter.unit_test_stop('nok')
                 return
             body = {'network': {'admin_state_up': False}}
