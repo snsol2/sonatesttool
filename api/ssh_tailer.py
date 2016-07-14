@@ -93,7 +93,8 @@ class SSHTailer():
     @classmethod
     def ssh_stop_all_tailer(cls, result):
         for key in cls.thr_status_dic:
-            print 'stop_thread_name : ', key
+            # print 'stop_thread_name : ', key
             cls.ssh_stop_tailer(result, key)
 
         cls.thr_status_dic.clear()
+

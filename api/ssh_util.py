@@ -1,14 +1,18 @@
 import pexpect
-import datetime
+import ast
+import socket
+from api.instance import InstanceTester
 from api.reporter import Reporter
+from api.config import ReadConfig
 
-PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ', '\% ']
-# PROMPT = '[#$%] '
+PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ']
 CMD_PROMPT = "\[SONA\]\# "
-# CMD_PROMPT = "[SONA::Prompt] "
-# CMD_PROMPT = "[SONA]\$ "
+
+CONFIG_FILE = '../config/config.ini'
 
 class SSHUtil():
+
+    instance = InstanceTester(CONFIG_FILE)
 
     def __init__(self):
         print '__init__'
@@ -18,7 +22,7 @@ class SSHUtil():
         try:
             ssh_newkey = 'Are you sure you want to continue connecting'
             connStr = 'ssh '+port+user+'@'+host
-            print connStr
+            # print connStr
             conn = pexpect.spawn(connStr)
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
 
@@ -34,8 +38,6 @@ class SSHUtil():
 
             conn.sendline(password)
             conn.expect(PROMPT, timeout=5)
-            # print conn.before
-            # cls.change_prompt(conn)
 
         except Exception, e:
             print e
@@ -51,13 +53,10 @@ class SSHUtil():
     def ssh_send_command(cls, ssh_conn, cmd):
         ssh_conn.sendline(cmd)
         ssh_conn.expect(PROMPT)
-        # print ssh_conn.before
         return ssh_conn.before
 
     @classmethod
     def ssh_conn_send_command(cls, conn_info, cmd):
-        Reporter.PRINTR('%s, %s, %s, %s', conn_info.hostname, conn_info.username, conn_info.password, cmd)
-        # Reporter.PRINTR('%s, %s, %s, %s, %s', conn_info.hostname, conn_info.username, conn_info.password, conn_info.port, cmd)
         if 'port' in conn_info:
             port = '-p ' + conn_info.port + ' '
         else:
@@ -67,16 +66,114 @@ class SSHUtil():
         if ssh_conn is False:
             return False
 
-        # print '====================11'
         ssh_conn.sendline(cmd)
         ssh_conn.expect(CMD_PROMPT, timeout=3)
         ssh_conn.close()
-        # print ssh_conn.before
-        # print '----------------------------222'
         return ssh_conn.before
 
     @classmethod
+    def ssh_ping(cls, inst1, inst2, dest):
+        Reporter.unit_test_start()
+        ping_ip = dest
+        try:
+            socket.inet_aton(dest)
+        except socket.error:
+            ping_ip = cls.instance.get_instance_ip(dest)
+            if None is ping_ip:
+                Reporter.unit_test_stop('nok')
+                return False
+            pass
+
+        # instance connection info
+        if '' is not inst2:
+            name_list = inst2.split(':')
+
+        inst_conf = ReadConfig.get_instance_config()
+        inst_info_1 = ast.literal_eval(inst_conf[inst1])
+        if '' is not inst2:
+            inst_info_2 = ast.literal_eval(inst_conf[name_list[0]])
+
+        # instance connection info
+        # floating ip
+        floating_ip = cls.instance.get_instance_floatingip(inst1)
+        if None is floating_ip:
+            print 'get floating_ip fail : ', floating_ip
+            Reporter.unit_test_stop('nok')
+            return False
+
+        # print '\n1st ssh_cmd : ', floating_ip, inst_info_1['user'], inst_info_1['password']
+        conn = cls.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
+        if conn is False:
+            print 'ssh connection failed!!'
+            Reporter.unit_test_stop('nok')
+            return False
+
+        # instance ip
+        if '' is not inst2:
+            inst2_ip = cls.instance.get_instance_ip(inst2)
+            ssh_cmd = 'ssh ' + inst_info_2['user'] + '@' + inst2_ip
+            conn.sendline(ssh_cmd)
+            # print '2nd ssh_cmd : ', ssh_cmd
+            ssh_newkey = 'Are you sure you want to continue connecting'
+            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
+            if ret == 0:
+                print ("[-] Error Connection to SSH Server \n")
+                Reporter.unit_test_stop('nok')
+                cls.ssh_disconnect(conn)
+                return False
+            if ret == 1:
+                conn.sendline('yes')
+                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
+            if ret == 0:
+                print ("[-] Error Connection to SSH Server \n")
+                Reporter.unit_test_stop('nok')
+                cls.ssh_disconnect(conn)
+                return False
+
+            conn.sendline(inst_info_2['password'])
+            conn.expect(PROMPT, timeout=3)
+
+        cls.change_prompt(conn)
+
+        cmd = 'ping ' + ping_ip + ' -c 2'
+        conn.sendline(cmd)
+        conn.expect(CMD_PROMPT)
+
+        # parsing loss rate
+        # print '\nret : ' + conn.before
+        ping_list = conn.before.splitlines()
+        for list in ping_list:
+            if 'loss' in list:
+                split_list = list.split(', ')
+                for x in split_list:
+                    if '%' in x:
+                        result = x.split('%')
+                        # print result
+                        break
+
+        cls.ssh_disconnect(conn)
+        if int(result[0]) != 0:
+            Reporter.unit_test_stop('nok')
+            return False
+
+        Reporter.unit_test_stop('ok')
+        return True
+
+    @classmethod
+    def change_prompt(self, conn):
+        change_cmd = "set prompt='[SONA]\# '"
+        for i in range(2):
+            try:
+                conn.sendline(change_cmd)
+                conn.expect(CMD_PROMPT, timeout=1)
+                break
+            except Exception, e:
+                change_cmd = "PS1='[SONA]\# '"
+                pass
+
+    @classmethod
     def onos_application_status(cls, conn_info):
+        Reporter.unit_test_start()
         switching ='openstackswitching'
         routing = 'openstackrouting'
         networking = 'openstacknetworking'
@@ -88,8 +185,8 @@ class SSHUtil():
                   interface:0}
 
         recv_msg = cls.ssh_conn_send_command(conn_info, 'apps -a -s')
-        # Reporter.PRINTR("recv : %s", recv_msg)
         if recv_msg is False:
+            Reporter.unit_test_stop('nok')
             return -1
 
         # serach
@@ -108,19 +205,15 @@ class SSHUtil():
                       status[networking] & status[node] & status[interface] )
 
         if app_status == 1:
-            print 'application status ------ ok'
+            Reporter.unit_test_stop('ok')
         else:
-            print 'application status ------ nok'
-
-        # Reporter.PRINTG("open switching : %d, routing : %d, networking : %d, node : %d, interface : %d",
-        #                 status[switching], status[routing],
-        #                 status[networking], status[node],
-        #                 status[interface])
+            Reporter.unit_test_stop('nok')
 
         return app_status
 
     @classmethod
     def onos_device_status(cls, conn_info):
+        Reporter.unit_test_start()
         dev_msg = cls.ssh_conn_send_command(conn_info, 'devices')
         if dev_msg is False:
             return False
@@ -159,13 +252,11 @@ class SSHUtil():
         #
 
         for i in range(len(dev_list)):
-            # print ('Devices(id : %s) : %s' %(dev_list[i]['id'], dev_list[i]['available']))
             if 'false' in dev_list[i]['available']:
-                print 'device status ---------- nok'
+                Reporter.unit_test_stop('nok')
+                # print 'device status ---------- nok'
                 return False
 
-            # port status
-            # port_status = port_list[i]
             port_status = cls.ssh_conn_send_command(conn_info, 'ports '+dev_list[i]['id'])
             if port_status == False:
                 return False
@@ -189,18 +280,19 @@ class SSHUtil():
                     if 'enabled' in str['vxlan']:
                         vxlan_status += 1
 
-        # print len(dev_list), br_int_status, vxlan_status
-
-        print 'device status ---------- ok'
+        # print 'device status ---------- ok'
         if len(dev_list) != br_int_status:
-            print 'port status(br-int) ---------- nok'
+            Reporter.unit_test_stop('nok')
+            # print 'port status(br-int) ---------- nok'
             return False
 
         if len(dev_list) != vxlan_status:
-            print 'port status(vxlan) ---------- nok'
+            Reporter.unit_test_stop('nok')
+            # print 'port status(vxlan) ---------- nok'
             return False
 
-        print 'port status ---------- ok'
+        Reporter.unit_test_stop('ok')
+        # print 'port status ---------- ok'
 
         return True
 
@@ -218,92 +310,4 @@ class SSHUtil():
             result.append({port_info_dic['portName'] : port_info_dic['state']})
 
         return result
-
-    @classmethod
-    def ssh_ping_test(cls, conn_info, dest):
-        cmd = 'ping ' + dest + ' -c 3'
-        recv_msg = cls.ssh_conn_send_command(conn_info, cmd)
-        if recv_msg == False:
-            return False
-
-        print 'recv : ' + recv_msg
-        # ping_list = recv_msg.splitlines()
-        # print ping_list
-        # split_list = ping_list[-3].split(', ')
-        # print split_list
-        # result = split_list[-2].split('%')
-        # print result
-        # if int(result[0]) != 0:
-        #     print dest + ' ping test ---------------- nok'
-        #     return False
-        #
-        # print dest + ' ping test ---------------- ok'
-        return True
-
-    @classmethod
-    def ssh_ping_test2(cls, inst1, inst2, dest):
-        cmd = 'ping ' + dest + ' -c 3'
-
-        ssh_cmd = 'ssh cirros@192.168.0.8'
-        # ssh_cmd = 'ssh' + inst2.username + '@' + inst2.hostname
-
-        # conn = cls.ssh_connect('10.10.2.91', 'ina', '', 'telcowr1')
-        conn = cls.ssh_connect(inst1.hostname, 'ina', '', 'telcowr1')
-        if conn is False:
-            return False
-
-        conn.sendline(ssh_cmd)
-
-        ssh_newkey = 'Are you sure you want to continue connecting'
-        ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
-        if ret == 0:
-            print ("[-] Error Connection to SSH Server \n")
-            return False
-        if ret == 1:
-            conn.sendline('yes')
-            ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
-        if ret == 0:
-            print ("[-] Error Connection to SSH Server \n")
-            return False
-
-        conn.sendline('cubswin:)')
-        conn.expect(PROMPT, timeout=3)
-
-        cls.change_prompt(conn)
-
-        conn.sendline(cmd)
-        conn.expect(CMD_PROMPT)
-
-        # parsing loss rate
-        ping_list = conn.before.splitlines()
-        for list in ping_list:
-            if 'loss' in list:
-                split_list = list.split(', ')
-                for x in split_list:
-                    if '%' in x:
-                        result = x.split('%')
-                        # print result
-                        break
-
-        if int(result[0]) != 0:
-            print dest + ' ping test ---------------- nok'
-            return False
-
-        print dest + ' ping test ---------------- ok'
-        return True
-
-    @classmethod
-    def change_prompt(self, conn):
-        change_cmd = "set prompt='[SONA]\# '"
-        for i in range(2):
-            try:
-                conn.sendline(change_cmd)
-                conn.expect(CMD_PROMPT, timeout=1)
-                # print 'change prompt : ' + change_cmd
-                break
-            except Exception, e:
-                # print e
-                change_cmd = "PS1='[SONA]\# '"
-                pass
-
 
