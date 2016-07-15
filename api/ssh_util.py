@@ -8,7 +8,6 @@ from api.config import ReadConfig
 PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ']
 CMD_PROMPT = "\[SONA\]\# "
 
-
 class Status:
     def __init__(self, config_file):
         self.instance = InstanceTester(config_file)
@@ -312,4 +311,3 @@ class Status:
                 return False
 
         Reporter.unit_test_stop('ok')
-
