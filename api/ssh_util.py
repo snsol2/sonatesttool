@@ -16,7 +16,7 @@ class SSHUtil():
     config = ReadConfig(CONFIG_FILE)
 
     def __init__(self):
-        print '__init__'
+        pass
 
     @classmethod
     def ssh_connect(cls, host, user, port, password):
@@ -31,13 +31,13 @@ class SSHUtil():
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
 
             if ret == 0:
-                print ("[-] Error Connection to SSH Server \n")
+                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
                 return False
             if ret == 1:
                 conn.sendline('yes')
                 ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
             if ret == 0:
-                print ("[-] Error Connection to SSH Server \n")
+                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
                 return False
 
             conn.sendline(password)
@@ -96,14 +96,14 @@ class SSHUtil():
         # floating ip
         floating_ip = cls.instance.get_instance_floatingip(inst1)
         if None is floating_ip:
-            print 'get floating_ip fail : ', floating_ip
+            Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
             Reporter.unit_test_stop('nok')
             return False
 
         # print '\n1st ssh_cmd : ', floating_ip, inst_info_1['user'], inst_info_1['password']
         conn = cls.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
         if conn is False:
-            print 'ssh connection failed!!'
+            Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
             Reporter.unit_test_stop('nok')
             return False
 
@@ -116,7 +116,7 @@ class SSHUtil():
             ssh_newkey = 'Are you sure you want to continue connecting'
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
             if ret == 0:
-                print ("[-] Error Connection to SSH Server \n")
+                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
                 Reporter.unit_test_stop('nok')
                 cls.ssh_disconnect(conn)
                 return False
@@ -124,7 +124,7 @@ class SSHUtil():
                 conn.sendline('yes')
                 ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
             if ret == 0:
-                print ("[-] Error Connection to SSH Server \n")
+                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
                 Reporter.unit_test_stop('nok')
                 cls.ssh_disconnect(conn)
                 return False
@@ -183,7 +183,7 @@ class SSHUtil():
 
         recv_msg = cls.ssh_conn_send_command(conn_info, 'apps -a -s')
         if recv_msg is False:
-            # Reporter.unit_test_stop('nok')
+            Reporter.REPORT_MSG('   >> get ssh apps -a -s error')
             return -1
 
         # serach
@@ -201,6 +201,11 @@ class SSHUtil():
         app_status = (status[switching] & status[routing] &
                       status[networking] & status[node] & status[interface] )
 
+        Reporter.REPORT_MSG('   >> [%s] switch : %d, route : %d, network : %d, node : %d, interface : %d',
+                            conn_info['host'], status[switching], status[routing],
+                            status[networking], status[node], status[interface] )
+        # Reporter.PRINTR('\n switch : %d, route : %d, net : %d, node : %d, inter : %d\n', status[switching], status[routing],
+        #               status[networking], status[node], status[interface] )
         return app_status
 
     @classmethod
@@ -229,11 +234,12 @@ class SSHUtil():
 
         for i in range(len(dev_list)):
             if 'false' in dev_list[i]['available']:
-                # print 'device status ---------- nok'
+                Reporter.REPORT_MSG('   >> device[%s] status nok', dev_list[i]['id'])
                 return False
 
-            port_status = cls.ssh_conn_send_command(conn_info, 'ports '+dev_list[i]['id'])
+            port_status = cls.ssh_conn_send_command(conn_info, 'ports ' + dev_list[i]['id'])
             if port_status == False:
+                Reporter.REPORT_MSG('   >> get ssh port %d status error', dev_list[i]['id'])
                 return False
 
             port_result = cls.onos_port_status(port_status)
@@ -255,15 +261,15 @@ class SSHUtil():
                     if 'enabled' in str['vxlan']:
                         vxlan_status += 1
 
-        # print 'device status ---------- ok'
         if len(dev_list) != br_int_status:
-            # print 'port status(br-int) ---------- nok'
+            Reporter.REPORT_MSG('   >> port status(br-int) -- nok')
             return False
 
         if len(dev_list) != vxlan_status:
-            # print 'port status(vxlan) ---------- nok'
+            Reporter.REPORT_MSG('   >> port status(vxlan)  -- nok')
             return False
 
+        Reporter.REPORT_MSG('   >> [%s] device, port status -- ok', conn_info['host'])
         return True
 
     @classmethod
@@ -294,9 +300,9 @@ class SSHUtil():
             conn_info['port'] = onos_info.ssh_port
             conn_info['password'] = onos_info.password
             ret = cls.onos_device_status(conn_info)
-            if 'False' is ret:
+            if False is ret:
                 Reporter.unit_test_stop('nok')
-                break
+                return
 
         Reporter.unit_test_stop('ok')
 
@@ -314,8 +320,8 @@ class SSHUtil():
             conn_info['port'] = onos_info.ssh_port
             conn_info['password'] = onos_info.password
             ret = cls.onos_apps_status(conn_info)
-            if 'False' is ret:
+            if 0 is ret:
                 Reporter.unit_test_stop('nok')
-                break
+                return False
 
         Reporter.unit_test_stop('ok')

@@ -13,7 +13,7 @@ class SSHTailer():
     config = ReadConfig(CONFIG_FILE)
 
     def __init__(self):
-        print '__init__'
+        pass
 
     @classmethod
     def ssh_connect(cls, port, user, host, password):
@@ -28,13 +28,13 @@ class SSHTailer():
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
 
             if ret == 0:
-                print ("[-] Error Connection to SSH Server \n")
+                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
                 return False
             if ret == 1:
                 conn.sendline('yes')
                 ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
             if ret == 0:
-                print ("[-] Error Connection to SSH Server \n")
+                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
                 return False
 
             conn.sendline(password)
@@ -61,7 +61,6 @@ class SSHTailer():
                     print data
                     for prompt in PROMPT:
                         if prompt in str(data):
-                            print 'prompt.....exit'
                             exit_prompt = True
                             cls.thr_status_dic[threading.current_thread().getName()][1] = False
                             break
@@ -74,11 +73,11 @@ class SSHTailer():
             # Error connection to SSH Server
             exit_prompt = True
 
+        Reporter.REPORT_MSG('   >> Tail_thread[%s] while exit', threading.current_thread().getName())
         if exit_prompt:
             if threading.current_thread().getName() in cls.thr_status_dic:
                 del cls.thr_status_dic[threading.current_thread().getName()]
 
-        print 'tail_thread while exit'
 
     @classmethod
     def start_tailer(cls, port, user, host, password, file):
