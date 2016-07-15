@@ -167,4 +167,6 @@ class Reporter:
         print BLUE + "skip:" + ENDC + " %d    " % cls.skip_count,
         print RED + "nok:" + ENDC + " %d )   " % cls.nok_count
 
+    def test(self):
+        pass
 

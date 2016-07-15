@@ -31,6 +31,7 @@ class ReadConfig:
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
         CONF(default_config_files=[conf_file])
+        self.config_file = conf_file
 
     @classmethod
     def get_file_path(cls):

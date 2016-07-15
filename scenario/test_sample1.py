@@ -2,6 +2,7 @@
 # kimjt Network temporarily test tool
 #
 
+from api.config import ReadConfig
 from api.network import NetworkTester
 from api.instance import InstanceTester
 from api.reporter import Reporter
@@ -9,6 +10,7 @@ from api.ssh_util import SSHUtil
 
 CONFIG_FILE = '../config/config.ini'
 
+conf = ReadConfig(CONFIG_FILE)
 test_network = NetworkTester(CONFIG_FILE)
 test_instance = InstanceTester(CONFIG_FILE)
 test_status = SSHUtil()
@@ -38,10 +40,10 @@ test_status.onos_devices_status()
 #
 # # Security Group
 # test_network.create_securitygroup('sg2', 'rule1,rule2')
-#
+
 # # Instance
-# test_instance.create_instance('instance1', 'network2')
-# test_instance.create_instance('instance2', 'network2')
+test_instance.create_instance('instance1', 'network2')
+test_instance.create_instance('instance2', 'network2')
 # test_instance.create_instance('instance3', 'network3')
 # test_instance.create_instance('instance4', 'network3')
 #
