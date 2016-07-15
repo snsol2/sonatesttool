@@ -18,7 +18,6 @@ class SSHUtil():
     def __init__(self):
         pass
 
-    @classmethod
     def ssh_connect(cls, host, user, port, password):
         try:
             ssh_newkey = 'Are you sure you want to continue connecting'
