@@ -44,7 +44,8 @@ class SSHUtil():
             conn.expect(PROMPT, timeout=5)
 
         except Exception, e:
-            print e
+            Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
+            # print e
             return False
 
         return conn
@@ -170,7 +171,7 @@ class SSHUtil():
                 pass
 
     @classmethod
-    def onos_apps_status(cls, conn_info):
+    def apps_status(cls, conn_info):
         switching ='openstackswitching'
         routing = 'openstackrouting'
         networking = 'openstacknetworking'
@@ -184,7 +185,7 @@ class SSHUtil():
         recv_msg = cls.ssh_conn_send_command(conn_info, 'apps -a -s')
         if recv_msg is False:
             Reporter.REPORT_MSG('   >> get ssh apps -a -s error')
-            return -1
+            return 0
 
         # search
         if recv_msg.find(switching) !=-1:
@@ -209,7 +210,7 @@ class SSHUtil():
         return app_status
 
     @classmethod
-    def onos_device_status(cls, conn_info):
+    def device_status(cls, conn_info):
         dev_msg = cls.ssh_conn_send_command(conn_info, 'devices')
         if dev_msg is False:
             return False
@@ -242,7 +243,7 @@ class SSHUtil():
                 Reporter.REPORT_MSG('   >> get ssh port %d status error', dev_list[i]['id'])
                 return False
 
-            port_result = cls.onos_port_status(port_status)
+            port_result = cls.port_status(port_status)
             result_dic[dev_list[i]['id']] = port_result
 
             # br-int check
@@ -273,7 +274,7 @@ class SSHUtil():
         return True
 
     @classmethod
-    def onos_port_status(cls, str):
+    def port_status(cls, str):
         result = [ ]
         port_info_list = str.splitlines()
         del port_info_list[0]
@@ -299,7 +300,7 @@ class SSHUtil():
             conn_info['user'] = onos_info.user_id
             conn_info['port'] = onos_info.ssh_port
             conn_info['password'] = onos_info.password
-            ret = cls.onos_device_status(conn_info)
+            ret = cls.device_status(conn_info)
             if False is ret:
                 Reporter.unit_test_stop('nok')
                 return
@@ -319,7 +320,7 @@ class SSHUtil():
             conn_info['user'] = onos_info.user_id
             conn_info['port'] = onos_info.ssh_port
             conn_info['password'] = onos_info.password
-            ret = cls.onos_apps_status(conn_info)
+            ret = cls.apps_status(conn_info)
             if 0 is ret:
                 Reporter.unit_test_stop('nok')
                 return False

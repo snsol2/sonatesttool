@@ -40,7 +40,8 @@ class SSHTailer():
             conn.sendline(password)
             conn.expect(PROMPT, timeout=3)
         except Exception, e:
-            print e
+            # print e
+            Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
             return False
 
         return conn
