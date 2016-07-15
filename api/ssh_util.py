@@ -8,7 +8,8 @@ from api.config import ReadConfig
 PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ']
 CMD_PROMPT = "\[SONA\]\# "
 
-class status():
+
+class Status:
     def __init__(self, config_file):
         self.instance = InstanceTester(config_file)
         self.onos_info = ReadConfig(config_file).get_onos_info()

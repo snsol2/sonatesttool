@@ -6,14 +6,14 @@ from api.config import ReadConfig
 from api.network import NetworkTester
 from api.instance import InstanceTester
 from api.reporter import Reporter
-from api.ssh_util import SSHUtil
+from api.ssh_util import Status
 
 CONFIG_FILE = '../config/config.ini'
 
 conf = ReadConfig(CONFIG_FILE)
 test_network = NetworkTester(CONFIG_FILE)
 test_instance = InstanceTester(CONFIG_FILE)
-test_status = SSHUtil()
+test_status = Status(CONFIG_FILE)
 Reporter()
 
 
