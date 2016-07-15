@@ -16,7 +16,7 @@ class SSHUtil():
     config = ReadConfig(CONFIG_FILE)
 
     def __init__(self):
-        print '__init__'
+        pass
 
     @classmethod
     def ssh_connect(cls, host, user, port, password):
@@ -186,7 +186,7 @@ class SSHUtil():
             # Reporter.unit_test_stop('nok')
             return -1
 
-        # serach
+        # search
         if recv_msg.find(switching) !=-1:
             status[switching]=1
         if recv_msg.find(routing) !=-1:
@@ -283,7 +283,7 @@ class SSHUtil():
 
     @classmethod
     def onos_devices_status(cls):
-        # onos statusa
+        # onos status
         Reporter.unit_test_start()
         conn_info = {}
         onos_info = cls.config.get_onos_info()
@@ -303,7 +303,7 @@ class SSHUtil():
 
     @classmethod
     def onos_application_status(cls):
-        # onos statusa
+        # onos status
         Reporter.unit_test_start()
         conn_info = {}
         onos_info = cls.config.get_onos_info()
