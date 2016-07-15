@@ -340,7 +340,7 @@ class NetworkTester:
         try:
             sg_uuid = self.get_sg_uuid(sg_opt)
             if not sg_uuid:
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('skip')
                 return
 
             sg_rst = []
