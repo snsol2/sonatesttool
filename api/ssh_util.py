@@ -8,18 +8,13 @@ from api.config import ReadConfig
 PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ']
 CMD_PROMPT = "\[SONA\]\# "
 
-CONFIG_FILE = '../config/config.ini'
+class status():
+    def __init__(self, config_file):
+        self.instance = InstanceTester(config_file)
+        self.onos_info = ReadConfig(config_file).get_onos_info()
+        self.inst_conf = ReadConfig.get_instance_config()
 
-class SSHUtil():
-
-    instance = InstanceTester(CONFIG_FILE)
-    config = ReadConfig(CONFIG_FILE)
-
-    def __init__(self):
-        pass
-
-    @classmethod
-    def ssh_connect(cls, host, user, port, password):
+    def ssh_connect(self, host, user, port, password):
         try:
             ssh_newkey = 'Are you sure you want to continue connecting'
             if '' is port:
@@ -31,38 +26,35 @@ class SSHUtil():
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
 
             if ret == 0:
-                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
+                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', host)
                 return False
             if ret == 1:
                 conn.sendline('yes')
                 ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
             if ret == 0:
-                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
+                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', host)
                 return False
 
             conn.sendline(password)
             conn.expect(PROMPT, timeout=5)
 
         except Exception, e:
-            Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
+            Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', host)
             # print e
             return False
 
         return conn
 
-    @classmethod
-    def ssh_disconnect(cls, ssh_conn):
+    def ssh_disconnect(self, ssh_conn):
         ssh_conn.close()
 
-    @classmethod
-    def ssh_send_command(cls, ssh_conn, cmd):
+    def ssh_send_command(self, ssh_conn, cmd):
         ssh_conn.sendline(cmd)
         ssh_conn.expect(PROMPT)
         return ssh_conn.before
 
-    @classmethod
-    def ssh_conn_send_command(cls, conn_info, cmd):
-        ssh_conn = cls.ssh_connect(conn_info['host'], conn_info['user'], conn_info['port'], conn_info['password'])
+    def ssh_conn_send_command(self, conn_info, cmd):
+        ssh_conn = self.ssh_connect(conn_info['host'], conn_info['user'], conn_info['port'], conn_info['password'])
         if ssh_conn is False:
             return False
 
@@ -71,14 +63,13 @@ class SSHUtil():
         ssh_conn.close()
         return ssh_conn.before
 
-    @classmethod
-    def ssh_ping(cls, inst1, inst2, dest):
+    def ssh_ping(self, inst1, inst2, dest):
         Reporter.unit_test_start()
         ping_ip = dest
         try:
             socket.inet_aton(dest)
         except socket.error:
-            ping_ip = cls.instance.get_instance_ip(dest)
+            ping_ip = self.instance.get_instance_ip(dest)
             if None is ping_ip:
                 Reporter.unit_test_stop('nok')
                 return False
@@ -88,52 +79,51 @@ class SSHUtil():
         if '' is not inst2:
             name_list = inst2.split(':')
 
-        inst_conf = cls.config.get_instance_config()
-        inst_info_1 = ast.literal_eval(inst_conf[inst1])
+        # inst_conf = self.config.get_instance_config()
+        inst_info_1 = ast.literal_eval(self.inst_conf[inst1])
         if '' is not inst2:
-            inst_info_2 = ast.literal_eval(inst_conf[name_list[0]])
+            inst_info_2 = ast.literal_eval(self.inst_conf[name_list[0]])
 
         # instance connection info
         # floating ip
-        floating_ip = cls.instance.get_instance_floatingip(inst1)
+        floating_ip = self.instance.get_instance_floatingip(inst1)
         if None is floating_ip:
             Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
             Reporter.unit_test_stop('nok')
             return False
 
         # print '\n1st ssh_cmd : ', floating_ip, inst_info_1['user'], inst_info_1['password']
-        conn = cls.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
+        conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
         if conn is False:
-            Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
             Reporter.unit_test_stop('nok')
             return False
 
         # instance ip
         if '' is not inst2:
-            inst2_ip = cls.instance.get_instance_ip(inst2)
+            inst2_ip = self.instance.get_instance_ip(inst2)
             ssh_cmd = 'ssh ' + inst_info_2['user'] + '@' + inst2_ip
             conn.sendline(ssh_cmd)
             # print '2nd ssh_cmd : ', ssh_cmd
             ssh_newkey = 'Are you sure you want to continue connecting'
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
             if ret == 0:
-                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
+                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', inst2_ip)
                 Reporter.unit_test_stop('nok')
-                cls.ssh_disconnect(conn)
+                self.ssh_disconnect(conn)
                 return False
             if ret == 1:
                 conn.sendline('yes')
                 ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
             if ret == 0:
-                Reporter.REPORT_MSG('   >> Error Connection to SSH Server')
+                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', inst2_ip)
                 Reporter.unit_test_stop('nok')
-                cls.ssh_disconnect(conn)
+                self.ssh_disconnect(conn)
                 return False
 
             conn.sendline(inst_info_2['password'])
             conn.expect(PROMPT, timeout=3)
 
-        cls.change_prompt(conn)
+        self.change_prompt(conn)
 
         cmd = 'ping ' + ping_ip + ' -c 2'
         conn.sendline(cmd)
@@ -150,7 +140,7 @@ class SSHUtil():
                         result = x.split('%')
                         break
 
-        cls.ssh_disconnect(conn)
+        self.ssh_disconnect(conn)
         if int(result[0]) != 0:
             Reporter.unit_test_stop('nok')
             return False
@@ -158,7 +148,6 @@ class SSHUtil():
         Reporter.unit_test_stop('ok')
         return True
 
-    @classmethod
     def change_prompt(self, conn):
         change_cmd = "set prompt='[SONA]\# '"
         for i in range(2):
@@ -170,8 +159,7 @@ class SSHUtil():
                 change_cmd = "PS1='[SONA]\# '"
                 pass
 
-    @classmethod
-    def apps_status(cls, conn_info):
+    def apps_status(self, conn_info):
         switching ='openstackswitching'
         routing = 'openstackrouting'
         networking = 'openstacknetworking'
@@ -182,9 +170,8 @@ class SSHUtil():
                   networking:0, node:0,
                   interface:0}
 
-        recv_msg = cls.ssh_conn_send_command(conn_info, 'apps -a -s')
+        recv_msg = self.ssh_conn_send_command(conn_info, 'apps -a -s')
         if recv_msg is False:
-            Reporter.REPORT_MSG('   >> get ssh apps -a -s error')
             return 0
 
         # search
@@ -209,9 +196,8 @@ class SSHUtil():
         #               status[networking], status[node], status[interface] )
         return app_status
 
-    @classmethod
-    def device_status(cls, conn_info):
-        dev_msg = cls.ssh_conn_send_command(conn_info, 'devices')
+    def device_status(self, conn_info):
+        dev_msg = self.ssh_conn_send_command(conn_info, 'devices')
         if dev_msg is False:
             return False
 
@@ -238,12 +224,12 @@ class SSHUtil():
                 Reporter.REPORT_MSG('   >> device[%s] status nok', dev_list[i]['id'])
                 return False
 
-            port_status = cls.ssh_conn_send_command(conn_info, 'ports ' + dev_list[i]['id'])
+            port_status = self.ssh_conn_send_command(conn_info, 'ports ' + dev_list[i]['id'])
             if port_status == False:
                 Reporter.REPORT_MSG('   >> get ssh port %d status error', dev_list[i]['id'])
                 return False
 
-            port_result = cls.port_status(port_status)
+            port_result = self.port_status(port_status)
             result_dic[dev_list[i]['id']] = port_result
 
             # br-int check
@@ -273,8 +259,7 @@ class SSHUtil():
         Reporter.REPORT_MSG('   >> [%s] device, port status -- ok', conn_info['host'])
         return True
 
-    @classmethod
-    def port_status(cls, str):
+    def port_status(self, str):
         result = [ ]
         port_info_list = str.splitlines()
         del port_info_list[0]
@@ -288,19 +273,19 @@ class SSHUtil():
 
         return result
 
-    @classmethod
-    def onos_devices_status(cls):
+    # @classmethod
+    def onos_devices_status(self):
         # onos status
         Reporter.unit_test_start()
         conn_info = {}
-        onos_info = cls.config.get_onos_info()
+        # onos_info = self.config.get_onos_info()
 
-        for onos_ip in onos_info.onos_list:
+        for onos_ip in self.onos_info.onos_list:
             conn_info['host'] = onos_ip
-            conn_info['user'] = onos_info.user_id
-            conn_info['port'] = onos_info.ssh_port
-            conn_info['password'] = onos_info.password
-            ret = cls.device_status(conn_info)
+            conn_info['user'] = self.onos_info.user_id
+            conn_info['port'] = self.onos_info.ssh_port
+            conn_info['password'] = self.onos_info.password
+            ret = self.device_status(conn_info)
             if False is ret:
                 Reporter.unit_test_stop('nok')
                 return
@@ -308,19 +293,19 @@ class SSHUtil():
         Reporter.unit_test_stop('ok')
 
 
-    @classmethod
-    def onos_application_status(cls):
+    # @classmethod
+    def onos_application_status(self):
         # onos status
         Reporter.unit_test_start()
         conn_info = {}
-        onos_info = cls.config.get_onos_info()
+        # onos_info = self.config.get_onos_info()
 
-        for onos_ip in onos_info.onos_list:
+        for onos_ip in self.onos_info.onos_list:
             conn_info['host'] = onos_ip
-            conn_info['user'] = onos_info.user_id
-            conn_info['port'] = onos_info.ssh_port
-            conn_info['password'] = onos_info.password
-            ret = cls.apps_status(conn_info)
+            conn_info['user'] = self.onos_info.user_id
+            conn_info['port'] = self.onos_info.ssh_port
+            conn_info['password'] = self.onos_info.password
+            ret = self.apps_status(conn_info)
             if 0 is ret:
                 Reporter.unit_test_stop('nok')
                 return False
