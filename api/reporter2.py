@@ -32,11 +32,11 @@ class Reporter:
     nok_count = 0
     skip_count = 0
     # tailer
-    config = ReadConfig('../config/config.ini')
+    config = ''
     thr_status_dic = {}
     result_dic = {}
 
-    def __init__(self):
+    def __init__(self, config_file):
         # log : console
         log_formatter = logging.Formatter('[%(asctime)s] (%(levelname)7s) %(filename)s:%(lineno)s : %(message)s')
         stream_handler = logging.StreamHandler()
@@ -47,15 +47,12 @@ class Reporter:
         now = datetime.datetime.now()
         now_time = now.strftime('%Y-%m-%d')
         file_name = ReadConfig.get_file_path() + 'REPORT_' + now_time
-        # print file_name
         rpt_formatter = logging.Formatter('%(message)s')
         file_handler = logging.FileHandler(file_name)
         file_handler.setFormatter(rpt_formatter)
         self.REPORT_LOG.addHandler(file_handler)
 
-        #tailer
-        # self.onos_info = ReadConfig.get_onos_info()
-        # self.openstack_info = ReadConfig.get_openstack_info()
+        Reporter.config = ReadConfig(config_file)
 
     @classmethod
     def make_line_header(cls):
