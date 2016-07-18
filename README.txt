@@ -7,7 +7,7 @@
        a). pip > v8.1 이상
        b). python-neutronclient
        c). python-novaclient
-       d). python-glanceclient
+       d). python-keystoneclient
        e). oslo.config
        f). pexpect
 

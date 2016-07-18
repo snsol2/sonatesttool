@@ -138,8 +138,6 @@ class Reporter:
 
     @classmethod
     def unit_test_start(cls):
-        cls.start_tailer()
-        time.sleep(3)
         if cls.test_count == 0:
             cls.REPORT_MSG("\n\n\n    Test Start\n %s", ('='*70))
             print "\nTest Start\n" + ('=' * 80)
@@ -155,6 +153,9 @@ class Reporter:
 
         cls.NRET_PRINT("%s %s", method, ("_" * (70 - len(method))))
         cls.REPORT_MSG("\n%s %s", method, ("_" * (70 - len(method))))
+
+        cls.start_tailer()
+        time.sleep(3)
         # pass
 
     @classmethod
