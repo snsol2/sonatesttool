@@ -21,7 +21,8 @@ BLACK = '\033[1;90m'
 ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
-PROMPT = ['~# ', '>>> ', 'onos> ', '\$ ', '\# ', ':~$ ', 'onos1:~']
+# PROMPT = ['~# ', '>>> ', 'onos> ', '\$ ', '\# ', ':~$ ', 'onos1:~']
+PROMPT = ['\$ ', '\# ']
 
 
 class Reporter:
@@ -35,7 +36,6 @@ class Reporter:
     # tailer
     thr_status_dic = {}
     result_dic = {}
-    test_mode = ''
     _config = ''
 
     # def __init__(self, config_file):
@@ -55,7 +55,6 @@ class Reporter:
         file_handler.setFormatter(rpt_formatter)
         self.REPORT_LOG.addHandler(file_handler)
 
-        self.test_mode = config.get_test_mode()
         Reporter._config = config
 
     @classmethod
@@ -122,13 +121,6 @@ class Reporter:
         print report_format % args,
 
     @classmethod
-    def start_line(cls, call_method):
-        test_method = str(cls.test_count) + '. ' + call_method + '... Test'
-        cls.NRET_PRINT("%s %s", test_method, ("_" * (70 - len(test_method))))
-        cls.REPORT_MSG("\n%s %s", test_method, ("_" * (70 - len(test_method))))
-        return
-
-    @classmethod
     def exception_err_write(cls):
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
@@ -143,12 +135,6 @@ class Reporter:
             print "\nTest Start\n" + ('=' * 80)
         cls.test_count += 1
         method = traceback.extract_stack(None, 2)[0][2]
-        # cls.start_line(called_method)
-
-        # if method in ['create_instance', 'delete_instance']:
-        #     method = str(cls.test_count) + '. ' + method + ' (wait 5 seconds)'
-        # else:
-        #     method = str(cls.test_count) + '. ' + method + ' '
         method = str(cls.test_count) + '. ' + method + ' '
 
         cls.NRET_PRINT("%s %s", method, ("_" * (70 - len(method))))
@@ -162,20 +148,15 @@ class Reporter:
         if 'ok' == report_string:
             cls.ok_count += 1
             cls.PRINTG("%s", 'ok')
-            # print 'ok test' + report_string % (args[0], args[1], args[2])
         elif 'nok' == report_string:
             cls.nok_count += 1
             cls.PRINTR("%s", 'nok')
-            if cls.test_mode == 'break':
+            if cls._config.get_test_mode() == 'break':
                 cls.test_summary()
                 os._exit(1)
         elif 'skip' == report_string:
             cls.skip_count += 1
             cls.PRINTB("%s", 'skip')
-
-    # @classmethod
-    def print_count(cls):
-        print cls.test_count
 
     @classmethod
     def test_summary(cls):
@@ -197,20 +178,20 @@ class Reporter:
                 connStr = 'ssh ' + '-p ' + port + ' ' + user + '@' + host
 
             conn = pexpect.spawn(connStr)
-            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=1)
+            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=2)
 
             if ret == 0:
                 cls.REPORT_MSG('   >> [%s]:tailer Error Connection to SSH Server', host)
                 return False
             if ret == 1:
                 conn.sendline('yes')
-                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=1)
+                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=2)
             if ret == 0:
                 cls.REPORT_MSG('   >> [%s]:tailer Error Connection to SSH Server', host)
                 return False
 
             conn.sendline(password)
-            conn.expect(PROMPT, timeout=1)
+            conn.expect(PROMPT, timeout=2)
         except Exception, e:
             cls.REPORT_MSG('   >> [%s]:tailer Error Connection to SSH Server', host)
             return False

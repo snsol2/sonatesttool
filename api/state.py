@@ -113,7 +113,7 @@ class State:
             conn.sendline(ssh_cmd)
             # print '2nd ssh_cmd : ', ssh_cmd
             ssh_newkey = 'Are you sure you want to continue connecting'
-            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
+            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=2)
             if ret == 0:
                 Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', inst2_ip)
                 Reporter.unit_test_stop('nok')
@@ -121,7 +121,7 @@ class State:
                 return False
             if ret == 1:
                 conn.sendline('yes')
-                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
+                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=2)
             if ret == 0:
                 Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', inst2_ip)
                 Reporter.unit_test_stop('nok')
@@ -129,7 +129,7 @@ class State:
                 return False
 
             conn.sendline(inst_info_2['password'])
-            conn.expect(PROMPT, timeout=3)
+            conn.expect(PROMPT, timeout=2)
 
         self.change_prompt(conn)
 
@@ -357,4 +357,3 @@ class State:
 
         except:
             Reporter.exception_err_write()
-
