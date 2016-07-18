@@ -138,8 +138,6 @@ class Reporter:
 
     @classmethod
     def unit_test_start(cls):
-        cls.start_tailer()
-        time.sleep(3)
         if cls.test_count == 0:
             cls.REPORT_MSG("\n\n\n    Test Start\n %s", ('='*70))
             print "\nTest Start\n" + ('=' * 80)
@@ -155,6 +153,7 @@ class Reporter:
 
         cls.NRET_PRINT("%s %s", method, ("_" * (70 - len(method))))
         cls.REPORT_MSG("\n%s %s", method, ("_" * (70 - len(method))))
+        cls.start_tailer()
         # pass
 
     @classmethod
@@ -213,7 +212,6 @@ class Reporter:
             conn.sendline(password)
             conn.expect(PROMPT, timeout=1)
         except Exception, e:
-            # print e
             cls.REPORT_MSG('   >> [%s]:tailer Error Connection to SSH Server', host)
             return False
 
@@ -224,13 +222,13 @@ class Reporter:
         exit_prompt = False
         # Reporter.PRINTG('%s, %s, %s, %s, %s\n', host, user, port, password, file)
         ssh_conn = cls.ssh_connect(port, user, host, password)
-        cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
+        # cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
         if ssh_conn is not False:
             ssh_conn.sendline('tail -f -n 0 ' + file)
             while cls.thr_status_dic[threading.current_thread().getName()][1]:
                 try:
                     # print ('Thread ID : %s' %(threading.current_thread().ident))
-                    data = (ssh_conn.read_nonblocking(size=2048, timeout=0.5))
+                    data = (ssh_conn.read_nonblocking(size=2048, timeout=0.05))
                     cls.result_dic[threading.current_thread().getName()] += data
                     # print data
                     for prompt in PROMPT:
@@ -245,32 +243,33 @@ class Reporter:
             ssh_conn.close()
         else:
             # Error connection to SSH Server
-            # print 'Error connection to SSH Server............'
             exit_prompt = True
 
-        cls.REPORT_MSG('   >> Tail_thread[%s] while exit', threading.current_thread().getName())
+        # cls.REPORT_MSG('   >> Tail_thread[%s] while exit', threading.current_thread().getName())
         if exit_prompt:
             if threading.current_thread().getName() in cls.thr_status_dic:
                 del cls.thr_status_dic[threading.current_thread().getName()]
 
-
     @classmethod
-    def create_start_tailer(cls, port, user, host, password, file):
+    def create_start_tailer(cls, port, user, host, password, file, type):
         thr = threading.Thread(target=cls.tailer_thread, args=(port, user, host, password, file, ))
-        cls.thr_status_dic[thr.getName()] = [thr, True]
+        cls.thr_status_dic[thr.getName()] = [thr, True, type]
         cls.result_dic[thr.getName()] = ''
         thr.start()
-        # print cls.thr_status_dic
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
-        # Reporter.REPORT_MSG('%s', cls.result_dic[thr_name])
         if 'nok' in result:
             line_list = cls.result_dic[thr_name].splitlines()
-            Reporter.REPORT_MSG("%s", '\n'.join('   ** ' + line for line in line_list))
+            # for i in range(len(line_list)):
+            #     if 'tail' in line_list[i]:
+            #         del line_list[i]
+            #         break;
+            Reporter.REPORT_MSG("%s", '\n'.join('      **[' + cls.thr_status_dic[thr_name][2] + '] '+ line for line in line_list))
         if thr_name in cls.result_dic:
             del cls.result_dic[thr_name]
         if cls.thr_status_dic[thr_name][0].getName().find(thr_name) != -1:
+            cls.thr_status_dic[thr_name][2] = ''
             cls.thr_status_dic[thr_name][1] = False
             cls.thr_status_dic[thr_name][0].join(1)
 
@@ -286,17 +285,20 @@ class Reporter:
     def start_tailer(cls):
         # openstack tail
         openstack_info = cls._config.get_openstack_info()
-        cls.create_start_tailer('',
-                                openstack_info.os_username,
-                                openstack_info.controller_ip,
-                                openstack_info.os_password,
-                                openstack_info.log_files)
+        if True is openstack_info.tail_enable:
+            cls.create_start_tailer('',
+                                    openstack_info.os_username,
+                                    openstack_info.controller_ip,
+                                    openstack_info.os_password,
+                                    openstack_info.log_files, 'openstack')
         # onos tail
         onos_info = cls._config.get_onos_info()
-        for onos_ip in onos_info.onos_list:
-            cls.create_start_tailer('',
-                                    onos_info.os_username,
-                                    onos_ip,
-                                    onos_info.os_password,
-                                    onos_info.onos_logfile)
+        if True is onos_info.tail_enable:
+            for onos_ip in onos_info.onos_list:
+                cls.create_start_tailer('',
+                                        onos_info.os_username,
+                                        onos_ip,
+                                        onos_info.os_password,
+                                        onos_info.onos_logfile, 'onos')
 
+        time.sleep(cls._config.get_ssh_wait_time())

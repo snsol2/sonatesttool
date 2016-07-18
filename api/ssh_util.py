@@ -45,10 +45,10 @@ class Status:
 
         return conn
 
-    def ssh_disconnect(self, ssh_conn):
+    def ssh_disconnect(ssh_conn):
         ssh_conn.close()
 
-    def ssh_send_command(self, ssh_conn, cmd):
+    def ssh_send_command(ssh_conn, cmd):
         ssh_conn.sendline(cmd)
         ssh_conn.expect(PROMPT)
         return ssh_conn.before

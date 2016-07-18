@@ -17,12 +17,17 @@ class ReadConfig:
             cfg.IntOpt('router_cnt'),
             cfg.IntOpt('floatingip_cnt'),
             cfg.StrOpt('report_path'),
-            cfg.StrOpt('test_mode')
+            cfg.StrOpt('test_mode'),
+            cfg.IntOpt('ssh_wait_time')
         ]
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
         CONF(default_config_files=[conf_file])
         self.config_file = conf_file
+
+    @classmethod
+    def get_ssh_wait_time(cls):
+        return CONF.DEFAULT.ssh_wait_time
 
     @classmethod
     def get_file_path(cls):
@@ -39,7 +44,8 @@ class ReadConfig:
             cfg.StrOpt('os_username'),
             cfg.StrOpt('os_password'),
             cfg.StrOpt('controller_ip'),
-            cfg.StrOpt('log_files')
+            cfg.StrOpt('log_files'),
+            cfg.BoolOpt('tail_enable')
         ]
         CONF.register_group(tail_info_group)
         CONF.register_opts(tail_info_conf, tail_info_group)
@@ -55,7 +61,8 @@ class ReadConfig:
             cfg.StrOpt('os_username'),
             cfg.StrOpt('os_password'),
             cfg.StrOpt('onos_logfile'),
-            cfg.StrOpt('onos_list')
+            cfg.StrOpt('onos_list'),
+            cfg.BoolOpt('tail_enable')
         ]
         CONF.register_group(onos_info_group)
         CONF.register_opts(onos_info_conf, onos_info_group)
