@@ -4,15 +4,6 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-# default_group = cfg.OptGroup(name='DEFAULT')
-#
-# default_conf = [
-#     cfg.IntOpt('network_cnt'),
-# ]
-#
-# CONF.register_group(default_group)
-# CONF.register_opts(default_conf, default_group)
-
 
 class ReadConfig:
     def __init__(self, conf_file):
@@ -42,20 +33,20 @@ class ReadConfig:
         return CONF.DEFAULT.test_mode
 
     @classmethod
-    def get_openstack_info(self):
+    def get_openstack_info(cls):
         tail_info_group = cfg.OptGroup(name='openstack')
         tail_info_conf = [
-            cfg.StrOpt('hostname'),
-            cfg.StrOpt('username'),
-            cfg.StrOpt('password'),
-            cfg.StrOpt('filename')
+            cfg.StrOpt('os_username'),
+            cfg.StrOpt('os_password'),
+            cfg.StrOpt('controller_ip'),
+            cfg.StrOpt('log_files')
         ]
         CONF.register_group(tail_info_group)
         CONF.register_opts(tail_info_conf, tail_info_group)
         return CONF.openstack
 
     @classmethod
-    def get_onos_info(self):
+    def get_onos_info(cls):
         onos_info_group = cfg.OptGroup(name='onos')
         onos_info_conf = [
             cfg.StrOpt('user_id'),

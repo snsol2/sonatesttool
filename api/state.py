@@ -3,18 +3,24 @@ import ast
 import socket
 from api.instance import InstanceTester
 from api.reporter2 import Reporter
-from api.config import ReadConfig
+# from api.config import ReadConfig
 
 PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ']
 CMD_PROMPT = "\[SONA\]\# "
 
-class Status:
-    def __init__(self, config_file):
-        self.instance = InstanceTester(config_file)
-        self.onos_info = ReadConfig(config_file).get_onos_info()
-        self.inst_conf = ReadConfig.get_instance_config()
 
-    def ssh_connect(self, host, user, port, password):
+class State:
+    # def __init__(self, config_file):
+    def __init__(self, config):
+        # self.instance = InstanceTester(config_file)
+        # self.onos_info = ReadConfig(config_file).get_onos_info()
+        # self.inst_conf = ReadConfig.get_instance_config()
+        self.instance = InstanceTester(config)
+        self.onos_info = config.get_onos_info()
+        self.inst_conf = config.get_instance_config()
+
+    @classmethod
+    def ssh_connect(cls, host, user, port, password):
         try:
             ssh_newkey = 'Are you sure you want to continue connecting'
             if '' is port:

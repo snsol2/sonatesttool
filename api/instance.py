@@ -2,19 +2,22 @@
 # network control management classes
 
 from novaclient import client
-from api.config import ReadConfig
-from api.reporter import Reporter
+# from api.config import ReadConfig
+from api.reporter2 import Reporter
 import ast
-import time
 
 
 class InstanceTester:
 
-    def __init__(self, config_file):
+    # def __init__(self, config_file):
+    def __init__(self, config):
         # Get config
-        self.auth_conf = ReadConfig(config_file).get_auth_conf()
-        self.instance_conf = ReadConfig.get_instance_config()
-        self.network_conf = ReadConfig.get_network_config()
+        # self.auth_conf = ReadConfig(config_file).get_auth_conf()
+        # self.instance_conf = ReadConfig.get_instance_config()
+        # self.network_conf = ReadConfig.get_network_config()
+        self.auth_conf = config.get_auth_conf()
+        self.instance_conf = config.get_instance_config()
+        self.network_conf = config.get_network_config()
         # Get Token and Neutron Object
         self.nova = client.Client(**self.auth_conf)
 
@@ -87,7 +90,6 @@ class InstanceTester:
                                                     image=image,
                                                     flavor=flavor,
                                                     availability_zone=config_value['zone'],
-                                                    # availability_zone=compute_opt,
                                                     nics=nics_list,
                                                     security_groups=sg_list)
 

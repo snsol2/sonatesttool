@@ -10,29 +10,29 @@ CONFIG_FILE = '../config/config.ini'
 
 test_network = NetworkTester(CONFIG_FILE)
 test_instance = InstanceTester(CONFIG_FILE)
-Reporter()
+test_reporter = Reporter()
 
 
 # SONA Delete Test scenario
 # =================================================================
 
-# Instance
-test_instance.delete_instance('instance1')
-test_instance.delete_instance('instance2')
-test_instance.delete_instance('instance3')
-test_instance.delete_instance('instance4')
-
-# Floating IP
-test_instance.delete_floatingip_all()
-
-# Security Group
-test_network.delete_seuritygroup('sg2')
+# # Instance
+# test_instance.delete_instance('instance1')
+# test_instance.delete_instance('instance2')
+# test_instance.delete_instance('instance3')
+# test_instance.delete_instance('instance4')
+#
+# # Floating IP
+# test_instance.delete_floatingip_all()
+#
+# # Security Group
+# test_network.delete_seuritygroup('sg2')
 
 # Router
-test_network.remove_router_interface('router1', 'subnet2')
-test_network.remove_router_interface('router1', 'subnet3')
-
-test_network.delete_router('router1')
+# test_network.remove_router_interface('router1', 'subnet2')
+# test_network.remove_router_interface('router1', 'subnet3')
+#
+# test_network.delete_router('router1')
 
 # Subnet
 test_network.delete_subnet('subnet1')
@@ -45,4 +45,4 @@ test_network.delete_network('network2')
 test_network.delete_network('network3')
 
 # =================================================================
-Reporter.test_summary()
+test_reporter.test_summary()

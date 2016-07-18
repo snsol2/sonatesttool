@@ -8,7 +8,7 @@ import pexpect
 import threading
 import time
 import traceback
-from api.config import ReadConfig
+# from api.config import ReadConfig
 import sys
 import os
 
@@ -23,6 +23,7 @@ BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 PROMPT = ['~# ', '>>> ', 'onos> ', '\$ ', '\# ', ':~$ ', 'onos1:~']
 
+
 class Reporter:
     LOG = logging.getLogger(__name__)
     REPORT_LOG = logging.getLogger("report")
@@ -32,11 +33,13 @@ class Reporter:
     nok_count = 0
     skip_count = 0
     # tailer
-    config = ''
     thr_status_dic = {}
     result_dic = {}
+    test_mode = ''
+    _config = ''
 
-    def __init__(self, config_file):
+    # def __init__(self, config_file):
+    def __init__(self, config):
         # log : console
         log_formatter = logging.Formatter('[%(asctime)s] (%(levelname)7s) %(filename)s:%(lineno)s : %(message)s')
         stream_handler = logging.StreamHandler()
@@ -46,13 +49,14 @@ class Reporter:
         # report : file
         now = datetime.datetime.now()
         now_time = now.strftime('%Y-%m-%d')
-        file_name = ReadConfig.get_file_path() + 'REPORT_' + now_time
+        file_name = config.get_file_path() + 'REPORT_' + now_time
         rpt_formatter = logging.Formatter('%(message)s')
         file_handler = logging.FileHandler(file_name)
         file_handler.setFormatter(rpt_formatter)
         self.REPORT_LOG.addHandler(file_handler)
 
-        Reporter.config = ReadConfig(config_file)
+        self.test_mode = config.get_test_mode()
+        Reporter._config = config
 
     @classmethod
     def make_line_header(cls):
@@ -133,21 +137,23 @@ class Reporter:
         return lines
 
     @classmethod
-    def unit_test_start(self):
-        self.start_tailer()
-        if self.test_count == 0:
-            self.REPORT_MSG("\n\n\n    Test Start\n %s", ('='*70))
+    def unit_test_start(cls):
+        if cls.test_count == 0:
+            cls.REPORT_MSG("\n\n\n    Test Start\n %s", ('='*70))
             print "\nTest Start\n" + ('=' * 80)
-        self.test_count += 1
+        cls.test_count += 1
         method = traceback.extract_stack(None, 2)[0][2]
-        # self.start_line(called_method)
-        if method in ['create_instance', 'delete_instance']:
-            method = str(self.test_count) + '. ' + method + ' (wait 5 seconds)'
-        else:
-            method = str(self.test_count) + '. ' + method + ' '
+        # cls.start_line(called_method)
+        cls.start_tailer()
 
-        self.NRET_PRINT("%s %s", method, ("_" * (70 - len(method))))
-        self.REPORT_MSG("\n%s %s", method, ("_" * (70 - len(method))))
+        # if method in ['create_instance', 'delete_instance']:
+        #     method = str(cls.test_count) + '. ' + method + ' (wait 5 seconds)'
+        # else:
+        #     method = str(cls.test_count) + '. ' + method + ' '
+        method = str(cls.test_count) + '. ' + method + ' '
+
+        cls.NRET_PRINT("%s %s", method, ("_" * (70 - len(method))))
+        cls.REPORT_MSG("\n%s %s", method, ("_" * (70 - len(method))))
         # pass
 
     @classmethod
@@ -160,7 +166,7 @@ class Reporter:
         elif 'nok' == report_string:
             cls.nok_count += 1
             cls.PRINTR("%s", 'nok')
-            if ReadConfig.get_test_mode() == 'break':
+            if cls.test_mode == 'break':
                 cls.test_summary()
                 os._exit(1)
         elif 'skip' == report_string:
@@ -189,7 +195,6 @@ class Reporter:
                 connStr = 'ssh '+ user + '@' + host
             else:
                 connStr = 'ssh ' + '-p ' + port + ' ' + user + '@' + host
-            print connStr
             conn = pexpect.spawn(connStr)
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=1)
 
@@ -257,10 +262,10 @@ class Reporter:
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
+        # Reporter.REPORT_MSG('%s', cls.result_dic[thr_name])
         if 'nok' in result:
-            # Reporter.REPORT_MSG('%s', cls.result_dic[thr_name])
             line_list = cls.result_dic[thr_name].splitlines()
-            cls.REPORT_MSG("%s", '\n'.join('   ** ' + line for line in line_list))
+            Reporter.REPORT_MSG("%s", '\n'.join('   ** ' + line for line in line_list))
         if thr_name in cls.result_dic:
             del cls.result_dic[thr_name]
         if cls.thr_status_dic[thr_name][0].getName().find(thr_name) != -1:
@@ -278,16 +283,19 @@ class Reporter:
     @classmethod
     def start_tailer(cls):
         # onos tail
-        onos_info = cls.config.get_onos_info()
+        onos_info = cls._config.get_onos_info()
         for onos_ip in onos_info.onos_list:
-            cls.create_start_tailer('', onos_info.os_username,
-                             onos_ip, onos_info.os_password,
-                             onos_info.onos_logfile)
+            cls.create_start_tailer('',
+                                    onos_info.os_username,
+                                    onos_ip,
+                                    onos_info.os_password,
+                                    onos_info.onos_logfile)
             time.sleep(0.5)
 
         # openstack tail
-        openstack_info = cls.config.get_openstack_info()
-        cls.create_start_tailer('', openstack_info.username,
-                         openstack_info.hostname,
-                         openstack_info.password,
-                         openstack_info.filename)
+        openstack_info = cls._config.get_openstack_info()
+        cls.create_start_tailer('',
+                                openstack_info.os_username,
+                                openstack_info.controller_ip,
+                                openstack_info.os_password,
+                                openstack_info.log_files)

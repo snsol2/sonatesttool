@@ -2,9 +2,9 @@
 # network control management classes
 
 from neutronclient.v2_0 import client
-from api.config import ReadConfig
+# from api.config import ReadConfig
 from api.instance import InstanceTester
-from api.reporter import Reporter
+from api.reporter2 import Reporter
 import ast
 
 # TODO
@@ -14,15 +14,22 @@ import ast
 
 class NetworkTester:
 
-    def __init__(self, config_file):
+    # def __init__(self, config_file):
+    def __init__(self, config):
             # Get config
             # CLog.__init__(self, config_file)
-            self.auth_conf = dict(ReadConfig(config_file).get_auth_conf())
-            self.network_conf = ReadConfig.get_network_config()
-            self.subnet_conf = ReadConfig.get_subnet_config()
-            self.sg_conf = ReadConfig.get_sg_config()
-            self.rule_conf = ReadConfig.get_rule_config()
-            self.router_conf = ReadConfig.get_router_config()
+            # self.auth_conf = dict(ReadConfig(config_file).get_auth_conf())
+            # self.network_conf = ReadConfig.get_network_config()
+            # self.subnet_conf = ReadConfig.get_subnet_config()
+            # self.sg_conf = ReadConfig.get_sg_config()
+            # self.rule_conf = ReadConfig.get_rule_config()
+            # self.router_conf = ReadConfig.get_router_config()
+            self.auth_conf = dict(config.get_auth_conf())
+            self.network_conf = config.get_network_config()
+            self.subnet_conf = config.get_subnet_config()
+            self.sg_conf = config.get_sg_config()
+            self.rule_conf = config.get_rule_config()
+            self.router_conf = config.get_router_config()
             # Get Token and Neutron Object
             # self.neutron = client.Client(**self.auth_conf)
             self.neutron = client.Client(username=self.auth_conf['username'],
@@ -30,7 +37,7 @@ class NetworkTester:
                                          tenant_name=self.auth_conf['project_id'],
                                          auth_url=self.auth_conf['auth_url'])
             # Get Token and Nova Object
-            self.nova = InstanceTester(config_file)
+            self.nova = InstanceTester(config)
 
     #
     # Networks Methods
@@ -344,11 +351,10 @@ class NetworkTester:
                 return
 
             sg_rst = []
-            for uuid in sg_uuid:
-                sg_rst.append(self.neutron.delete_security_group(uuid))
-
-            Reporter.REPORT_MSG("   >> Delete Security Group Succ ---> %s, %s",
-                                sg_opt, sg_rst)
+            for i in range(len(sg_uuid)):
+                sg_rst.append(self.neutron.delete_security_group(sg_uuid[i]))
+                Reporter.REPORT_MSG("   >> Delete Security Group Succ ---> %s, %s",
+                                    sg_opt, sg_rst)
             Reporter.unit_test_stop('ok')
             return sg_rst
         except:
