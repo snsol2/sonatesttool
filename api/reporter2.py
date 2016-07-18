@@ -138,13 +138,14 @@ class Reporter:
 
     @classmethod
     def unit_test_start(cls):
+        cls.start_tailer()
+        time.sleep(3)
         if cls.test_count == 0:
             cls.REPORT_MSG("\n\n\n    Test Start\n %s", ('='*70))
             print "\nTest Start\n" + ('=' * 80)
         cls.test_count += 1
         method = traceback.extract_stack(None, 2)[0][2]
         # cls.start_line(called_method)
-        cls.start_tailer()
 
         # if method in ['create_instance', 'delete_instance']:
         #     method = str(cls.test_count) + '. ' + method + ' (wait 5 seconds)'
@@ -195,6 +196,7 @@ class Reporter:
                 connStr = 'ssh '+ user + '@' + host
             else:
                 connStr = 'ssh ' + '-p ' + port + ' ' + user + '@' + host
+
             conn = pexpect.spawn(connStr)
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=1)
 
@@ -222,8 +224,8 @@ class Reporter:
         exit_prompt = False
         # Reporter.PRINTG('%s, %s, %s, %s, %s\n', host, user, port, password, file)
         ssh_conn = cls.ssh_connect(port, user, host, password)
+        cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
         if ssh_conn is not False:
-            cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
             ssh_conn.sendline('tail -f -n 0 ' + file)
             while cls.thr_status_dic[threading.current_thread().getName()][1]:
                 try:
@@ -282,6 +284,13 @@ class Reporter:
 
     @classmethod
     def start_tailer(cls):
+        # openstack tail
+        openstack_info = cls._config.get_openstack_info()
+        cls.create_start_tailer('',
+                                openstack_info.os_username,
+                                openstack_info.controller_ip,
+                                openstack_info.os_password,
+                                openstack_info.log_files)
         # onos tail
         onos_info = cls._config.get_onos_info()
         for onos_ip in onos_info.onos_list:
@@ -290,12 +299,4 @@ class Reporter:
                                     onos_ip,
                                     onos_info.os_password,
                                     onos_info.onos_logfile)
-            time.sleep(0.5)
 
-        # openstack tail
-        openstack_info = cls._config.get_openstack_info()
-        cls.create_start_tailer('',
-                                openstack_info.os_username,
-                                openstack_info.controller_ip,
-                                openstack_info.os_password,
-                                openstack_info.log_files)

@@ -1,6 +1,7 @@
 import pexpect
 import ast
 import socket
+import keystoneclient.v2_0.client as kclient
 from api.instance import InstanceTester
 from api.reporter2 import Reporter
 # from api.config import ReadConfig
@@ -317,3 +318,11 @@ class State:
                 return False
 
         Reporter.unit_test_stop('ok')
+
+    def get_token(self):
+        # keystone = kclient.Client(auth_url=,
+        #                           username=,
+        #                           password=,
+        #                           tenant_name=)
+        #
+        pass
