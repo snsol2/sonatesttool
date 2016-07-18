@@ -153,6 +153,11 @@ class State:
             Reporter.unit_test_stop('nok')
             return False
 
+        if '' is inst2:
+            Reporter.REPORT_MSG('   >> ping_test : %s --> %s', inst1, dest)
+        else:
+            Reporter.REPORT_MSG('   >> ping_test : %s --> %s --> %s', inst1, inst2, dest)
+
         Reporter.unit_test_stop('ok')
         return True
 
