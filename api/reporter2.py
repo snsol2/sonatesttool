@@ -36,6 +36,8 @@ class Reporter:
     thr_status_dic = {}
     result_dic = {}
     _config = ''
+    test_start_time = datetime.datetime.now()
+    test_total_time = datetime.timedelta()
 
     # def __init__(self, config_file):
     def __init__(self, config):
@@ -48,6 +50,7 @@ class Reporter:
         # report : file
         now = datetime.datetime.now()
         now_time = now.strftime('%Y-%m-%d')
+
         file_name = config.get_file_path() + 'REPORT_' + now_time
         rpt_formatter = logging.Formatter('%(message)s')
         file_handler = logging.FileHandler(file_name)
@@ -129,9 +132,13 @@ class Reporter:
 
     @classmethod
     def unit_test_start(cls):
+        cls.test_start_time = datetime.datetime.now()
         if cls.test_count == 0:
-            cls.REPORT_MSG("\n\n\n    Test Start\n %s", ('='*70))
-            print "\nTest Start\n" + ('=' * 80)
+            start_msg = 'Test Start'
+            start_time = '(' + cls.test_start_time.strftime('%Y-%m-%d %H:%M:%S') + ')'
+            t_msg = start_msg + (' ' * (70 - len(start_msg + start_time))) + start_time
+            cls.REPORT_MSG("\n\n\n %s \n %s", t_msg, ('='*70))
+            print t_msg + "\n" + ('=' * 80)
         cls.test_count += 1
         method = traceback.extract_stack(None, 2)[0][2]
         method = str(cls.test_count) + '. ' + method + ' '
@@ -144,6 +151,12 @@ class Reporter:
     @classmethod
     def unit_test_stop(cls, report_string):
         cls.stop_all_tailer(report_string)
+        test_duration = datetime.datetime.now() - cls.test_start_time
+        cls.test_total_time += test_duration
+        cls.REPORT_MSG("\n   >>>%s TEST RESULT: %s (%s)",
+                       '-'*20+'>',
+                       report_string.upper(),
+                       test_duration)
         if 'ok' == report_string:
             cls.ok_count += 1
             cls.PRINTG("%s", 'ok')
@@ -163,7 +176,9 @@ class Reporter:
         print "Total: %d (" % cls.test_count,
         print GREEN + "ok:" + ENDC + " %d    " % cls.ok_count,
         print BLUE + "skip:" + ENDC + " %d    " % cls.skip_count,
-        print RED + "nok:" + ENDC + " %d )   " % cls.nok_count
+        print RED + "nok:" + ENDC + " %d )    " % cls.nok_count,
+        print "   Test Time:",
+        print cls.test_total_time
 
 
 #### Tailer Function #####
@@ -245,7 +260,7 @@ class Reporter:
             #     if 'tail' in line_list[i]:
             #         del line_list[i]
             #         break;
-            Reporter.REPORT_MSG("%s", '\n'.join('      **[' + cls.thr_status_dic[thr_name][2] + '] '+ line for line in line_list))
+            Reporter.REPORT_MSG("%s", '\n'.join('     **[' + cls.thr_status_dic[thr_name][2] + '] '+ line for line in line_list))
         if thr_name in cls.result_dic:
             del cls.result_dic[thr_name]
         if cls.thr_status_dic[thr_name][0].getName().find(thr_name) != -1:

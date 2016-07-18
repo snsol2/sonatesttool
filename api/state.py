@@ -179,9 +179,11 @@ class State:
         node = 'openstacknode'
         interface = 'openstackinterface'
 
-        status = {switching:0, routing:0,
-                  networking:0, node:0,
-                  interface:0}
+        status = {switching: '',
+                  routing: '',
+                  networking: '',
+                  node: '',
+                  interface: ''}
 
         recv_msg = self.ssh_conn_send_command(conn_info, 'apps -a -s')
         if recv_msg is False:
@@ -189,22 +191,32 @@ class State:
 
         # search
         if recv_msg.find(switching) !=-1:
-            status[switching]=1
+            status[switching]='active'
         if recv_msg.find(routing) !=-1:
-            status[routing]=1
+            status[routing]='active'
         if recv_msg.find(networking) !=-1:
-            status[networking]=1
+            status[networking]='active'
         if recv_msg.find(node) !=-1:
-            status[node]=1
+            status[node]='active'
         if recv_msg.find(interface) !=-1:
-            status[interface]=1
+            status[interface]='active'
 
-        app_status = (status[switching] & status[routing] &
-                      status[networking] & status[node] & status[interface] )
+        app_status = [status[switching],  status[routing],
+                      status[networking], status[node], status[interface]]
 
-        Reporter.REPORT_MSG('   >> [%s] switch : %d, route : %d, network : %d, node : %d, interface : %d',
-                            conn_info['host'], status[switching], status[routing],
-                            status[networking], status[node], status[interface] )
+        # Reporter.REPORT_MSG('   >> [%s] switch : %d, route : %d, network : %d, node : %d, interface : %d',
+        Reporter.REPORT_MSG('   >> [%s] [%s : %s, %s : %s, %s : %s, %s : %s, %s : %s]',
+                            conn_info['host'],
+                            switching,
+                            status[switching],
+                            routing,
+                            status[routing],
+                            networking,
+                            status[networking],
+                            node,
+                            status[node],
+                            interface,
+                            status[interface])
         # Reporter.PRINTR('\n switch : %d, route : %d, net : %d, node : %d, inter : %d\n', status[switching], status[routing],
         #               status[networking], status[node], status[interface] )
         return app_status
@@ -319,7 +331,7 @@ class State:
             conn_info['port'] = self.onos_info.ssh_port
             conn_info['password'] = self.onos_info.password
             ret = self.apps_status(conn_info)
-            if 0 is ret:
+            if '' in ret:
                 Reporter.unit_test_stop('nok')
                 return False
 

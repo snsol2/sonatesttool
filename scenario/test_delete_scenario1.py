@@ -2,15 +2,17 @@
 # kimjt Network temporarily test tool
 #
 
+from api.config import ReadConfig
 from api.network import NetworkTester
 from api.instance import InstanceTester
-from api.reporter import Reporter
+from api.reporter2 import Reporter
 
 CONFIG_FILE = '../config/config.ini'
 
-test_network = NetworkTester(CONFIG_FILE)
-test_instance = InstanceTester(CONFIG_FILE)
-test_reporter = Reporter()
+conf = ReadConfig(CONFIG_FILE)
+test_network = NetworkTester(conf)
+test_instance = InstanceTester(conf)
+test_reporter = Reporter(conf)
 
 
 # SONA Delete Test scenario
@@ -29,10 +31,10 @@ test_reporter = Reporter()
 # test_network.delete_seuritygroup('sg2')
 
 # Router
-# test_network.remove_router_interface('router1', 'subnet2')
-# test_network.remove_router_interface('router1', 'subnet3')
-#
-# test_network.delete_router('router1')
+test_network.remove_router_interface('router1', 'subnet2')
+test_network.remove_router_interface('router1', 'subnet3')
+
+test_network.delete_router('router1')
 
 # Subnet
 test_network.delete_subnet('subnet1')

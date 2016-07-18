@@ -48,7 +48,7 @@ class InstanceTester:
         config_value = ast.literal_eval(instance_conf)
         return config_value
 
-    def create_instance(self, instance_opt, network_opt):
+    def create_instance(self, instance_opt, network_opt, sg_opt):
         Reporter.unit_test_start()
         try:
             config_value = self.find_instance(instance_opt)
@@ -83,7 +83,7 @@ class InstanceTester:
 
             # TODO
             # make sg_list for security_groups name from config file
-            sg_list = ['default']
+            sg_list = ['test-sg2']
 
             # create instance
             instance_rst = self.nova.servers.create(name=config_value['name'],
