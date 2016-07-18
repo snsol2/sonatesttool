@@ -302,3 +302,4 @@ class Reporter:
                                         onos_info.onos_logfile, 'onos')
 
         time.sleep(cls._config.get_ssh_wait_time())
+

@@ -186,3 +186,4 @@ class ReadConfig:
         CONF.register_opts(router_conf, router_group)
 
         return CONF.router
+
