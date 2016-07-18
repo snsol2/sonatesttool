@@ -19,6 +19,7 @@ class State:
         self.instance = InstanceTester(config)
         self.onos_info = config.get_onos_info()
         self.inst_conf = config.get_instance_config()
+        self.auth = config.get_auth_conf()
 
     @classmethod
     def ssh_connect(cls, host, user, port, password):
@@ -319,10 +320,41 @@ class State:
 
         Reporter.unit_test_stop('ok')
 
-    def get_token(self):
-        # keystone = kclient.Client(auth_url=,
-        #                           username=,
-        #                           password=,
-        #                           tenant_name=)
-        #
-        pass
+    def openstack_get_token(self):
+        Reporter.unit_test_start()
+        try:
+            keystone = kclient.Client(auth_url=self.auth['auth_url'],
+                                      username=self.auth['username'],
+                                      password=self.auth['api_key'],
+                                      tenant_name=self.auth['project_id'])
+            token = keystone.auth_token
+            if not token:
+                Reporter.REPORT_MSG("   >> OpentStack Authentication Fail --->")
+                Reporter.unit_test_stop('nok')
+                return
+            Reporter.REPORT_MSG("   >> OpenStack Authentication Succ ---> %s", token)
+            Reporter.unit_test_stop('ok')
+        except:
+            Reporter.exception_err_write()
+
+    def openstack_get_service(self):
+        Reporter.unit_test_start()
+        try:
+            keystone = kclient.Client(auth_url=self.auth['auth_url'],
+                                      username=self.auth['username'],
+                                      password=self.auth['api_key'],
+                                      tenant_name=self.auth['project_id'])
+            service_list = [{a.name: a.enabled} for a in keystone.services.list()]
+
+            for i in range(len(service_list)):
+                if service_list[i].values()[0] is False:
+                    Reporter.REPORT_MSG("   >> OpenStack Service Fail ---> %s", service_list[i])
+                    Reporter.unit_test_stop('nok')
+                    return
+
+            Reporter.REPORT_MSG("   >> OpenStack Service Succ ---> %s", service_list)
+            Reporter.unit_test_stop('ok')
+
+        except:
+            Reporter.exception_err_write()
+
