@@ -246,9 +246,9 @@ class Reporter:
             exit_prompt = True
 
         # cls.REPORT_MSG('   >> Tail_thread[%s] while exit', threading.current_thread().getName())
-        if exit_prompt:
-            if threading.current_thread().getName() in cls.thr_status_dic:
-                del cls.thr_status_dic[threading.current_thread().getName()]
+        # if exit_prompt:
+        #     if threading.current_thread().getName() in cls.thr_status_dic:
+        #         del cls.thr_status_dic[threading.current_thread().getName()]
 
     @classmethod
     def create_start_tailer(cls, port, user, host, password, file, type):
