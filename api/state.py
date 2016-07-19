@@ -247,8 +247,6 @@ class State:
             cvt_dict['mfr'] +=', Inc.'
             dev_list[i]=cvt_dict
 
-        result_dic={}
-
         # avaliable = true check
         br_int_status = 0
         vxlan_status = 0
@@ -264,7 +262,6 @@ class State:
                 return False
 
             port_result = self.port_status(port_status)
-            result_dic[dev_list[i]['id']] = port_result
 
             # br-int check
             status = 0
@@ -311,40 +308,41 @@ class State:
     def onos_devices_status(self):
         # onos status
         Reporter.unit_test_start()
-        conn_info = {}
-        # onos_info = self.config.get_onos_info()
+        try:
+            conn_info = {}
+            for onos_ip in self.onos_info.onos_list:
+                conn_info['host'] = onos_ip
+                conn_info['user'] = self.onos_info.user_id
+                conn_info['port'] = self.onos_info.ssh_port
+                conn_info['password'] = self.onos_info.password
+                ret = self.device_status(conn_info)
+                if False is ret:
+                    Reporter.unit_test_stop('nok')
+                    return
 
-        for onos_ip in self.onos_info.onos_list:
-            conn_info['host'] = onos_ip
-            conn_info['user'] = self.onos_info.user_id
-            conn_info['port'] = self.onos_info.ssh_port
-            conn_info['password'] = self.onos_info.password
-            ret = self.device_status(conn_info)
-            if False is ret:
-                Reporter.unit_test_stop('nok')
-                return
-
-        Reporter.unit_test_stop('ok')
-
+            Reporter.unit_test_stop('ok')
+        except:
+            Reporter.exception_err_write()
 
     # @classmethod
     def onos_application_status(self):
         # onos status
         Reporter.unit_test_start()
-        conn_info = {}
-        # onos_info = self.config.get_onos_info()
+        try:
+            conn_info = {}
+            for onos_ip in self.onos_info.onos_list:
+                conn_info['host'] = onos_ip
+                conn_info['user'] = self.onos_info.user_id
+                conn_info['port'] = self.onos_info.ssh_port
+                conn_info['password'] = self.onos_info.password
+                ret = self.apps_status(conn_info)
+                if '' in ret:
+                    Reporter.unit_test_stop('nok')
+                    return False
 
-        for onos_ip in self.onos_info.onos_list:
-            conn_info['host'] = onos_ip
-            conn_info['user'] = self.onos_info.user_id
-            conn_info['port'] = self.onos_info.ssh_port
-            conn_info['password'] = self.onos_info.password
-            ret = self.apps_status(conn_info)
-            if '' in ret:
-                Reporter.unit_test_stop('nok')
-                return False
-
-        Reporter.unit_test_stop('ok')
+            Reporter.unit_test_stop('ok')
+        except:
+            Reporter.exception_err_write()
 
     def openstack_get_token(self):
         Reporter.unit_test_start()

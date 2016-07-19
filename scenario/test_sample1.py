@@ -50,9 +50,9 @@ test_reporter = Reporter(conf)
 # test_instance.create_instance('instance4', 'network3', '')
 #
 # # Floating IP
-test_instance.floatingip_associate('instance1', 'ext-net')
-# test_status.ssh_ping('instance1','', 'instance2:network2')
-test_status.floating_ip_check('10.10.2.103')
+# test_instance.floatingip_associate('instance1', 'ext-net')
+test_status.ssh_ping('instance1','', 'instance2:network2')
+# test_status.floating_ip_check('10.10.2.93')
 # test_status.ssh_ping('instance1','instance2:network2', '10.10.2.103')
 # =================================================================
 test_reporter.test_summary()
