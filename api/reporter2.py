@@ -165,7 +165,8 @@ class Reporter:
         cls.REPORT_MSG("\n   >>>%s TEST RESULT: %s (%s)",
                        '-'*20+'>',
                        report_string.upper(),
-                       test_duration)
+                       str(test_duration)[:11])
+
         if 'ok' == report_string:
             cls.ok_count += 1
             cls.PRINTG("%s", 'ok')
