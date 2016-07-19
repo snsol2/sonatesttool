@@ -5,23 +5,50 @@
 from api.network import NetworkTester
 from api.instance import InstanceTester
 from api.reporter import Reporter
-from api.ssh_util import SSHUtil
+from api.reporter2 import Reporter
+from api.ssh_util import Status
 from api.config import ReadConfig
-import datetime
+from api.ssh_tailer import tailer
+import threading
+import time
 
 CONFIG_FILE = '../config/config.ini'
 
-test_network = NetworkTester(CONFIG_FILE)
-test_instance = InstanceTester(CONFIG_FILE)
-Reporter()
+config = ReadConfig(CONFIG_FILE)
+test_network = NetworkTester(config)
+test_instance = InstanceTester(config)
+# Reporter()
 
-ssh_util = SSHUtil()
 
-tail_info = ReadConfig(CONFIG_FILE).get_openstack_info()
+
+Reporter(config)
+ssh_util = Status(config)
 # print datetime.datetime.now().time()
-# ssh_util.ssh_ping_test(tail_info, '10.10.2.93')
-ssh_util.ssh_ping_test2('', '', '10.10.2.93')
-# print datetime.datetime.now().time()
+# ssh_util.onos_application_status()
+ssh_util.onos_devices_status()
+# ssh_util.ssh_ping('instance6', '', '10.10.2.93')
+#
+# ssh_tailer = tailer()
+# ssh_tailer.start_tailer()
+# # print datetime.datetime.now().time()
+#
+# log.unit_test_start()
+# for i in range(100):
+#     if i==10:
+#         log.unit_test_stop('nok')
+#         break
+#     #
+#     print ('[%d][%d] : %s' %(i, threading.activeCount(), Reporter.thr_status_dic))
+#     time.sleep(1)
+
+  # print ssh_tt.join_list, ssh_tt.thr_list
+
+  # for thr in ssh_tt.join_list:
+      # thr.join(1)
+      # ssh_tt.join_list.remove(thr)
+      # ssh_tt.thr_list.remove(thr)
+
+
 
 # SONA Test scenario
 # Reference default Config

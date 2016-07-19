@@ -1,5 +1,6 @@
 import pexpect
 import ast
+import time
 import socket
 import keystoneclient.v2_0.client as kclient
 from api.instance import InstanceTester
@@ -7,7 +8,7 @@ from api.reporter2 import Reporter
 # from api.config import ReadConfig
 
 PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ']
-CMD_PROMPT = "\[SONA\]\# "
+CMD_PROMPT = '\[SONA\]\# '
 
 
 class State:
@@ -24,7 +25,8 @@ class State:
     @classmethod
     def ssh_connect(cls, host, user, port, password):
         try:
-            ssh_newkey = 'Are you sure you want to continue connecting'
+            # ssh_newkey = 'Are you sure you want to continue connecting'
+            ssh_newkey = '(?i)want to continue connecting'
             if '' is port:
                 connStr = 'ssh ' + user + '@' + host
             else:
@@ -45,6 +47,7 @@ class State:
 
             conn.sendline(password)
             conn.expect(PROMPT, timeout=5)
+            # print '\nconnection OK'
 
         except Exception, e:
             Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', host)
@@ -84,6 +87,7 @@ class State:
             pass
 
         # instance connection info
+        name_list = []
         if '' is not inst2:
             name_list = inst2.split(':')
 
@@ -112,34 +116,47 @@ class State:
             ssh_cmd = 'ssh ' + inst_info_2['user'] + '@' + inst2_ip
             conn.sendline(ssh_cmd)
             # print '2nd ssh_cmd : ', ssh_cmd
-            ssh_newkey = 'Are you sure you want to continue connecting'
+            # ssh_newkey = ''
+            # ssh_newkey = 'Are you sure you want to continue connecting'
+            # ssh_newkey = 'Do you want to continue connecting?'
+            ssh_newkey = 'Do you want to continue connecting'
+            # ssh_newkey = 'Are you sure you want to continue connecting'
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=2)
-            if ret == 0:
-                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', inst2_ip)
-                Reporter.unit_test_stop('nok')
-                self.ssh_disconnect(conn)
-                return False
-            if ret == 1:
-                conn.sendline('yes')
-                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=2)
-            if ret == 0:
-                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', inst2_ip)
-                Reporter.unit_test_stop('nok')
-                self.ssh_disconnect(conn)
-                return False
+
+            # print '', ret
+            # if ret == 0:
+            #     Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server 125', inst2_ip)
+            #     print 'connection failed'
+            #     Reporter.unit_test_stop('nok')
+            #     self.ssh_disconnect(conn)
+            #     return False
+            # if ret == 1:
+            conn.sendline('yes')
+            ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=2)
+            # if ret == 0:
+            #     Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', inst2_ip)
+            #     Reporter.unit_test_stop('nok')
+            #     self.ssh_disconnect(conn)
+            #     return False
 
             conn.sendline(inst_info_2['password'])
             conn.expect(PROMPT, timeout=2)
 
         self.change_prompt(conn)
-
+        # time.sleep(0.5)
         cmd = 'ping ' + ping_ip + ' -c 2'
-        conn.sendline(cmd)
-        conn.expect(CMD_PROMPT)
+
+        try:
+            conn.sendline(cmd)
+            conn.expect(CMD_PROMPT, timeout=2)
+        except Exception, e:
+            print e
+            pass
 
         # parsing loss rate
         # print '\nret : ' + conn.before
         ping_list = conn.before.splitlines()
+        result = []
         for list in ping_list:
             if 'loss' in list:
                 split_list = list.split(', ')
@@ -165,8 +182,10 @@ class State:
         change_cmd = "set prompt='[SONA]\# '"
         for i in range(2):
             try:
+                # print change_cmd
                 conn.sendline(change_cmd)
                 conn.expect(CMD_PROMPT, timeout=1)
+                # print '===== set comp'
                 break
             except Exception, e:
                 change_cmd = "PS1='[SONA]\# '"
