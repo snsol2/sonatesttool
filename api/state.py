@@ -1,5 +1,6 @@
 import pexpect
 import ast
+import subprocess
 import time
 import socket
 import keystoneclient.v2_0.client as kclient
@@ -7,7 +8,7 @@ from api.instance import InstanceTester
 from api.reporter2 import Reporter
 # from api.config import ReadConfig
 
-PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ']
+PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ', '$ ']
 CMD_PROMPT = '\[SONA\]\# '
 
 
@@ -21,37 +22,32 @@ class State:
         self.onos_info = config.get_onos_info()
         self.inst_conf = config.get_instance_config()
         self.auth = config.get_auth_conf()
+        self.conn_timeout = config.get_ssh_conn_timeout()
+        self.ping_timeout = config.get_floating_ip_check_timeout()
 
-    @classmethod
-    def ssh_connect(cls, host, user, port, password):
+    def ssh_connect(self, host, user, port, password):
         try:
-            # ssh_newkey = 'Are you sure you want to continue connecting'
-            ssh_newkey = '(?i)want to continue connecting'
+            ssh_newkey = 'want to continue connecting'
             if '' is port:
                 connStr = 'ssh ' + user + '@' + host
             else:
                 connStr = 'ssh '+ '-p ' + port + ' ' + user + '@' + host
-            # print connStr
+            # Reporter.REPORT_MSG('   >> connection : %s', connStr)
             conn = pexpect.spawn(connStr)
-            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=3)
-
+            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=self.conn_timeout)
             if ret == 0:
-                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', host)
+                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Servcer(%d)', host, ret)
                 return False
             if ret == 1:
+                # Reporter.REPORT_MSG('   >> [%s] wait %s ', host, ssh_newkey)
                 conn.sendline('yes')
-                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=3)
-            if ret == 0:
-                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', host)
-                return False
+                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
 
             conn.sendline(password)
-            conn.expect(PROMPT, timeout=5)
-            # print '\nconnection OK'
+            conn.expect(PROMPT, timeout=self.conn_timeout)
 
         except Exception, e:
-            Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', host)
-            # print e
+            Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Servcer (timeout except)', host)
             return False
 
         return conn
@@ -76,107 +72,101 @@ class State:
 
     def ssh_ping(self, inst1, inst2, dest):
         Reporter.unit_test_start()
-        ping_ip = dest
         try:
-            socket.inet_aton(dest)
-        except socket.error:
-            ping_ip = self.instance.get_instance_ip(dest)
-            if None is ping_ip:
+            # check dest type
+            ping_ip = dest
+            try:
+                socket.inet_aton(dest)
+            except socket.error:
+                ping_ip = self.instance.get_instance_ip(dest)
+                if None is ping_ip:
+                    Reporter.unit_test_stop('nok')
+                    return False
+                pass
+
+            # floating ip
+            floating_ip = self.instance.get_instance_floatingip(inst1)
+            if None is floating_ip:
+                Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
                 Reporter.unit_test_stop('nok')
                 return False
-            pass
 
-        # instance connection info
-        name_list = []
-        if '' is not inst2:
-            name_list = inst2.split(':')
+            # first ssh connection
+            # get first instance connection info
+            inst_info_1 = ast.literal_eval(self.inst_conf[inst1])
+            conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
+            if conn is False:
+                Reporter.unit_test_stop('nok')
+                return False
 
-        # inst_conf = self.config.get_instance_config()
-        inst_info_1 = ast.literal_eval(self.inst_conf[inst1])
-        if '' is not inst2:
-            inst_info_2 = ast.literal_eval(self.inst_conf[name_list[0]])
+            # get second instance connection info
+            if ':' in inst2:
+                name_list = inst2.split(':')
+                inst_info_2 = ast.literal_eval(self.inst_conf[name_list[0]])
+                inst2_ip = self.instance.get_instance_ip(inst2)
+                ssh_cmd = 'ssh ' + inst_info_2['user'] + '@' + inst2_ip
+                conn.sendline(ssh_cmd)
+                # Reporter.REPORT_MSG('   >> connection: %s', ssh_cmd)
+                ssh_newkey = 'want to continue connecting'
+                ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=self.conn_timeout)
+                if ret == 0:
+                    Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server(%d)', inst2_ip, ret)
+                    Reporter.unit_test_stop('nok')
+                    self.ssh_disconnect(conn)
+                    return False
+                if ret == 1:
+                    conn.sendline('yes')
+                    ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
 
-        # instance connection info
-        # floating ip
-        floating_ip = self.instance.get_instance_floatingip(inst1)
-        if None is floating_ip:
-            Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
-            Reporter.unit_test_stop('nok')
-            return False
+                conn.sendline(inst_info_2['password'])
+                conn.expect(PROMPT, timeout=self.conn_timeout)
 
-        # print '\n1st ssh_cmd : ', floating_ip, inst_info_1['user'], inst_info_1['password']
-        conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
-        if conn is False:
-            Reporter.unit_test_stop('nok')
-            return False
-
-        # instance ip
-        if '' is not inst2:
-            inst2_ip = self.instance.get_instance_ip(inst2)
-            ssh_cmd = 'ssh ' + inst_info_2['user'] + '@' + inst2_ip
-            conn.sendline(ssh_cmd)
-            # print '2nd ssh_cmd : ', ssh_cmd
-            # ssh_newkey = ''
-            # ssh_newkey = 'Are you sure you want to continue connecting'
-            # ssh_newkey = 'Do you want to continue connecting?'
-            ssh_newkey = 'Do you want to continue connecting'
-            # ssh_newkey = 'Are you sure you want to continue connecting'
-            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=2)
-
-            # print '', ret
-            # if ret == 0:
-            #     Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server 125', inst2_ip)
-            #     print 'connection failed'
-            #     Reporter.unit_test_stop('nok')
-            #     self.ssh_disconnect(conn)
-            #     return False
-            # if ret == 1:
-            conn.sendline('yes')
-            ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=2)
-            # if ret == 0:
-            #     Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server', inst2_ip)
-            #     Reporter.unit_test_stop('nok')
-            #     self.ssh_disconnect(conn)
-            #     return False
-
-            conn.sendline(inst_info_2['password'])
-            conn.expect(PROMPT, timeout=2)
-
-        self.change_prompt(conn)
-        # time.sleep(0.5)
-        cmd = 'ping ' + ping_ip + ' -c 2'
-
-        try:
+            cmd = 'ping ' + ping_ip + ' -w 2'
             conn.sendline(cmd)
-            conn.expect(CMD_PROMPT, timeout=2)
-        except Exception, e:
-            print e
-            pass
+            conn.expect(PROMPT, timeout=self.conn_timeout)
 
-        # parsing loss rate
-        # print '\nret : ' + conn.before
-        ping_list = conn.before.splitlines()
-        result = []
-        for list in ping_list:
-            if 'loss' in list:
-                split_list = list.split(', ')
-                for x in split_list:
-                    if '%' in x:
-                        result = x.split('%')
-                        break
+            # parsing loss rate
+            ping_list = conn.before.splitlines()
+            self.ssh_disconnect(conn)
+            ping_result = False
+            for list in ping_list:
+                if 'loss' in list:
+                    split_list = list.split(', ')
+                    for x in split_list:
+                        if '%' in x:
+                            result = x.split('%')
+                            if 0 is int(result[0]):
+                                ping_result = True
+                            break
 
-        self.ssh_disconnect(conn)
-        if int(result[0]) != 0:
-            Reporter.unit_test_stop('nok')
+            # result output
+            if True is ping_result:
+                if '' is not inst2:
+                    Reporter.REPORT_MSG('   >> result : %s --> %s --> %s : ok',
+                                        inst1, inst2, dest)
+                else:
+                    Reporter.REPORT_MSG('   >> result : %s --> %s : ok',
+                                        inst1, dest)
+                Reporter.unit_test_stop('ok')
+            else:
+                if '' is not inst2:
+                    Reporter.REPORT_MSG('   >> result : %s --> %s --> %s : nok',
+                                        inst1, inst2, dest)
+                else:
+                    Reporter.REPORT_MSG('   >> result : %s --> %s : nok',
+                                        inst1, dest)
+
+                Reporter.REPORT_MSG("%s", '\n'.join('     >> '
+                                                    + line for line in ping_list))
+
+                Reporter.unit_test_stop('nok')
+                return False
+
+            return True
+        except:
+            Reporter.exception_err_write()
             return False
 
-        if '' is inst2:
-            Reporter.REPORT_MSG('   >> ping_test : %s --> %s', inst1, dest)
-        else:
-            Reporter.REPORT_MSG('   >> ping_test : %s --> %s --> %s', inst1, inst2, dest)
-
-        Reporter.unit_test_stop('ok')
-        return True
 
     def change_prompt(self, conn):
         change_cmd = "set prompt='[SONA]\# '"
@@ -393,3 +383,41 @@ class State:
 
         except:
             Reporter.exception_err_write()
+
+    def floating_ip_check(self, ip_addr):
+        Reporter.unit_test_start()
+        cmd = 'ping ' + ip_addr + ' -w ' + str(self.ping_timeout)
+        result = self.get_cmd_result(cmd)
+        ping_list = result.splitlines()
+        ping_result = False
+        for list in ping_list:
+            if 'loss' in list:
+                split_list = list.split(', ')
+                for x in split_list:
+                    if '%' in x:
+                        result = x.split('%')
+                        if 0 is int(result[0]):
+                            ping_result = True
+                        break
+
+        # result output
+        if True is ping_result:
+            Reporter.REPORT_MSG('   >> result : local --> %s : ok', ip_addr)
+        else:
+            Reporter.REPORT_MSG('   >> result : local --> %s : nok', ip_addr)
+            Reporter.REPORT_MSG("%s", '\n'.join('     >> '
+                                                + line for line in ping_list))
+            Reporter.unit_test_stop('nok')
+            return False
+
+        Reporter.unit_test_stop('ok')
+        return True
+
+    def get_cmd_result(self, cmd):
+        fd_popen = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE).stdout
+        data = fd_popen.read().strip()
+        fd_popen.close()
+        return data
+
+
+

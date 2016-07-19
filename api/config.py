@@ -17,8 +17,11 @@ class ReadConfig:
             cfg.IntOpt('router_cnt'),
             cfg.IntOpt('floatingip_cnt'),
             cfg.StrOpt('report_path'),
+            cfg.StrOpt('report_format'),
             cfg.StrOpt('test_mode'),
-            cfg.IntOpt('ssh_wait_time')
+            cfg.IntOpt('log_collector_wait_time'),
+            cfg.IntOpt('ssh_conn_timeout'),
+            cfg.IntOpt('floating_ip_check_timeout')
         ]
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
@@ -26,12 +29,24 @@ class ReadConfig:
         self.config_file = conf_file
 
     @classmethod
-    def get_ssh_wait_time(cls):
-        return CONF.DEFAULT.ssh_wait_time
+    def get_log_collector_wait_time(cls):
+        return CONF.DEFAULT.log_collector_wait_time
 
     @classmethod
-    def get_file_path(cls):
+    def get_ssh_conn_timeout(cls):
+        return CONF.DEFAULT.ssh_conn_timeout
+
+    @classmethod
+    def get_report_file_path(cls):
         return CONF.DEFAULT.report_path
+
+    @classmethod
+    def get_report_file_format(cls):
+        return CONF.DEFAULT.report_format
+
+    @classmethod
+    def get_floating_ip_check_timeout(cls):
+        return CONF.DEFAULT.floating_ip_check_timeout
 
     @classmethod
     def get_test_mode(cls):
@@ -45,7 +60,7 @@ class ReadConfig:
             cfg.StrOpt('os_password'),
             cfg.StrOpt('controller_ip'),
             cfg.StrOpt('log_files'),
-            cfg.BoolOpt('tail_enable')
+            cfg.BoolOpt('log_collector')
         ]
         CONF.register_group(tail_info_group)
         CONF.register_opts(tail_info_conf, tail_info_group)
@@ -62,7 +77,7 @@ class ReadConfig:
             cfg.StrOpt('os_password'),
             cfg.StrOpt('onos_logfile'),
             cfg.StrOpt('onos_list'),
-            cfg.BoolOpt('tail_enable')
+            cfg.BoolOpt('log_collector')
         ]
         CONF.register_group(onos_info_group)
         CONF.register_opts(onos_info_conf, onos_info_group)

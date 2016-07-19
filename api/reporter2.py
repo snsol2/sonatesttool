@@ -48,10 +48,19 @@ class Reporter:
         self.LOG.addHandler(stream_handler)
 
         # report : file
+        now_time=''
         now = datetime.datetime.now()
-        now_time = now.strftime('%Y-%m-%d')
+        format = config.get_report_file_format()
+        if 'Day' in format:
+            now_time = now.strftime('%Y-%m-%d')
+        elif 'Hour' in format:
+            now_time = now.strftime('%Y-%m-%d-%H:00')
+        elif 'Min' in format:
+            now_time = now.strftime('%Y-%m-%d-%H:%M')
+        elif 'Sec' in format:
+            now_time = now.strftime('%Y-%m-%d-%H:%M:%S')
 
-        file_name = config.get_file_path() + 'REPORT_' + now_time
+        file_name = config.get_report_file_path() + 'REPORT_' + now_time
         rpt_formatter = logging.Formatter('%(message)s')
         file_handler = logging.FileHandler(file_name)
         file_handler.setFormatter(rpt_formatter)
@@ -185,36 +194,33 @@ class Reporter:
     @classmethod
     def ssh_connect(cls, port, user, host, password):
         try:
-            ssh_newkey = 'Are you sure you want to continue connecting'
+            conn_timeout = cls._config.get_ssh_conn_timeout()
+            ssh_newkey = 'want to continue connecting'
             if '' is port:
                 connStr = 'ssh '+ user + '@' + host
             else:
                 connStr = 'ssh ' + '-p ' + port + ' ' + user + '@' + host
 
             conn = pexpect.spawn(connStr)
-            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=2)
+            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=conn_timeout)
 
             if ret == 0:
-                cls.REPORT_MSG('   >> [%s]:tailer Error Connection to SSH Server', host)
+                cls.REPORT_MSG('   >> [%s] : tailer Error Connection to SSH Server', host)
                 return False
             if ret == 1:
                 conn.sendline('yes')
-                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=2)
-            if ret == 0:
-                cls.REPORT_MSG('   >> [%s]:tailer Error Connection to SSH Server', host)
-                return False
+                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=conn_timeout)
 
             conn.sendline(password)
-            conn.expect(PROMPT, timeout=2)
+            conn.expect(PROMPT, timeout=conn_timeout)
         except Exception, e:
-            cls.REPORT_MSG('   >> [%s]:tailer Error Connection to SSH Server', host)
+            cls.REPORT_MSG('   >> [%s] : tailer Error Connection to SSH Server(timeout except)', host)
             return False
 
         return conn
 
     @classmethod
     def tailer_thread(cls, port, user, host, password, file):
-        exit_prompt = False
         # Reporter.PRINTG('%s, %s, %s, %s, %s\n', host, user, port, password, file)
         ssh_conn = cls.ssh_connect(port, user, host, password)
         # cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
@@ -222,28 +228,18 @@ class Reporter:
             ssh_conn.sendline('tail -f -n 0 ' + file)
             while cls.thr_status_dic[threading.current_thread().getName()][1]:
                 try:
-                    # print ('Thread ID : %s' %(threading.current_thread().ident))
                     data = (ssh_conn.read_nonblocking(size=2048, timeout=0.05))
                     cls.result_dic[threading.current_thread().getName()] += data
                     # print data
-                    for prompt in PROMPT:
-                        if prompt in str(data):
-                            exit_prompt = True
-                            cls.thr_status_dic[threading.current_thread().getName()][1] = False
-                            break
+                    # for prompt in PROMPT:
+                    #     if prompt in str(data):
+                    #         cls.thr_status_dic[threading.current_thread().getName()][1] = False
+                    #         break
                 except Exception, e:
                     if 'Timeout exceeded.' in str(e):
                         pass
 
             ssh_conn.close()
-        else:
-            # Error connection to SSH Server
-            exit_prompt = True
-
-        # cls.REPORT_MSG('   >> Tail_thread[%s] while exit', threading.current_thread().getName())
-        # if exit_prompt:
-        #     if threading.current_thread().getName() in cls.thr_status_dic:
-        #         del cls.thr_status_dic[threading.current_thread().getName()]
 
     @classmethod
     def create_start_tailer(cls, port, user, host, password, file, type):
@@ -280,7 +276,7 @@ class Reporter:
     def start_tailer(cls):
         # openstack tail
         openstack_info = cls._config.get_openstack_info()
-        if True is openstack_info.tail_enable:
+        if True is openstack_info.log_collector:
             cls.create_start_tailer('',
                                     openstack_info.os_username,
                                     openstack_info.controller_ip,
@@ -288,7 +284,7 @@ class Reporter:
                                     openstack_info.log_files, 'openstack')
         # onos tail
         onos_info = cls._config.get_onos_info()
-        if True is onos_info.tail_enable:
+        if True is onos_info.log_collector:
             for onos_ip in onos_info.onos_list:
                 cls.create_start_tailer('',
                                         onos_info.os_username,
@@ -296,5 +292,5 @@ class Reporter:
                                         onos_info.os_password,
                                         onos_info.onos_logfile, 'onos')
 
-        time.sleep(cls._config.get_ssh_wait_time())
+        time.sleep(cls._config.get_log_collector_wait_time())
 
