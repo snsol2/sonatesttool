@@ -12,12 +12,10 @@ class InstanceTester:
     # def __init__(self, config_file):
     def __init__(self, config):
         # Get config
-        # self.auth_conf = ReadConfig(config_file).get_auth_conf()
-        # self.instance_conf = ReadConfig.get_instance_config()
-        # self.network_conf = ReadConfig.get_network_config()
         self.auth_conf = config.get_auth_conf()
         self.instance_conf = config.get_instance_config()
         self.network_conf = config.get_network_config()
+        self.sg_config = config.get_sg_config()
         # Get Token and Neutron Object
         self.nova = client.Client(**self.auth_conf)
 
@@ -81,9 +79,7 @@ class InstanceTester:
             for a in net_name_list:
                 nics_list.append({'net-id':  self.nova.networks.find(label=a).id})
 
-            # TODO
-            # make sg_list for security_groups name from config file
-            sg_list = ['test-sg2']
+            sg_list = ast.literal_eval(dict(self.sg_config)[sg_opt])['name']
 
             # create instance
             instance_rst = self.nova.servers.create(name=config_value['name'],
@@ -92,9 +88,6 @@ class InstanceTester:
                                                     availability_zone=config_value['zone'],
                                                     nics=nics_list,
                                                     security_groups=sg_list)
-
-            # if instance_rst:
-            #     time.sleep(5)
 
             Reporter.REPORT_MSG("   >> Create Succ ---> %s", instance_rst)
             Reporter.unit_test_stop('ok')
@@ -126,7 +119,7 @@ class InstanceTester:
         floatingip_list = self.nova.floating_ips.list()
         return floatingip_list
 
-    def floatingip_associate(self, instance_opt, pool_opt):
+    def floatingip_associate(self, instance_opt, network_opt):
         Reporter.unit_test_start()
         try:
             server = self.get_instance(instance_opt)
@@ -143,6 +136,8 @@ class InstanceTester:
                 if not a.fixed_ip:
                     extra_floatingip = a.ip
                     break
+
+            pool_opt = ast.literal_eval(dict(self.network_conf)[network_opt])['name']
 
             if not extra_floatingip:
                 extra_floatingip = self.nova.floating_ips.create(pool=pool_opt).ip
@@ -214,4 +209,3 @@ class InstanceTester:
         if not instance_ip:
             return
         return instance_ip
-

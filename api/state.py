@@ -417,5 +417,3 @@ class State:
         fd_popen.close()
         return data
 
-
-
