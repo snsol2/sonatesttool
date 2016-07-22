@@ -14,12 +14,8 @@ CMD_PROMPT = '\[SONA\]\# '
 
 
 class State:
-    # def __init__(self, config_file):
 
     def __init__(self, config):
-        # self.instance = InstanceTester(config_file)
-        # self.onos_info = ReadConfig(config_file).get_onos_info()
-        # self.inst_conf = ReadConfig.get_instance_config()
         self.instance = InstanceTester(config)
         self.onos_info = config.get_onos_info()
         self.inst_conf = config.get_instance_config()
