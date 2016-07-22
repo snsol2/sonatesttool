@@ -12,8 +12,10 @@ PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ', '$ ']
 CMD_PROMPT = '\[SONA\]\# '
 
 
+
 class State:
     # def __init__(self, config_file):
+
     def __init__(self, config):
         # self.instance = InstanceTester(config_file)
         # self.onos_info = ReadConfig(config_file).get_onos_info()
@@ -167,7 +169,6 @@ class State:
             Reporter.exception_err_write()
             return False
 
-
     def change_prompt(self, conn):
         change_cmd = "set prompt='[SONA]\# '"
         for i in range(2):
@@ -180,169 +181,6 @@ class State:
             except Exception, e:
                 change_cmd = "PS1='[SONA]\# '"
                 pass
-
-    def apps_status(self, conn_info):
-        switching ='openstackswitching'
-        routing = 'openstackrouting'
-        networking = 'openstacknetworking'
-        node = 'openstacknode'
-        interface = 'openstackinterface'
-
-        status = {switching: '',
-                  routing: '',
-                  networking: '',
-                  node: '',
-                  interface: ''}
-
-        recv_msg = self.ssh_conn_send_command(conn_info, 'apps -a -s')
-        if recv_msg is False:
-            return 0
-
-        # search
-        if recv_msg.find(switching) !=-1:
-            status[switching]='active'
-        if recv_msg.find(routing) !=-1:
-            status[routing]='active'
-        if recv_msg.find(networking) !=-1:
-            status[networking]='active'
-        if recv_msg.find(node) !=-1:
-            status[node]='active'
-        if recv_msg.find(interface) !=-1:
-            status[interface]='active'
-
-        app_status = [status[switching],  status[routing],
-                      status[networking], status[node], status[interface]]
-
-        # Reporter.REPORT_MSG('   >> [%s] switch : %d, route : %d, network : %d, node : %d, interface : %d',
-        Reporter.REPORT_MSG('   >> [%s] [%s : %s, %s : %s, %s : %s, %s : %s, %s : %s]',
-                            conn_info['host'],
-                            switching,
-                            status[switching],
-                            routing,
-                            status[routing],
-                            networking,
-                            status[networking],
-                            node,
-                            status[node],
-                            interface,
-                            status[interface])
-        # Reporter.PRINTR('\n switch : %d, route : %d, net : %d, node : %d, inter : %d\n', status[switching], status[routing],
-        #               status[networking], status[node], status[interface] )
-        return app_status
-
-    def device_status(self, conn_info):
-        dev_msg = self.ssh_conn_send_command(conn_info, 'devices')
-        if dev_msg is False:
-            return False
-
-        #list line split
-        dev_list = dev_msg.splitlines()
-        dev_list.pop(0) # devices
-        dev_list.pop(-1)# onos
-
-        #list to dict
-        for i in range(len(dev_list)) :
-            str = dev_list[i].replace('Inc.,','')
-            cvt_dict = dict(x.split('=') for x in str.split(', '))
-            cvt_dict['mfr'] +=', Inc.'
-            dev_list[i]=cvt_dict
-
-        # avaliable = true check
-        br_int_status = 0
-        vxlan_status = 0
-
-        for i in range(len(dev_list)):
-            if 'false' in dev_list[i]['available']:
-                Reporter.REPORT_MSG('   >> device[%s] status nok', dev_list[i]['id'])
-                return False
-
-            port_status = self.ssh_conn_send_command(conn_info, 'ports ' + dev_list[i]['id'])
-            if port_status == False:
-                Reporter.REPORT_MSG('   >> get ssh port %d status error', dev_list[i]['id'])
-                return False
-
-            port_result = self.port_status(port_status)
-
-            # br-int check
-            status = 0
-            for x in port_result:
-                str = dict(x)
-                if str.has_key('br-int') == True :
-                    status = 1
-                    break
-
-            br_int_status += status
-
-            for x in port_result:
-                str = dict(x)
-                if str.has_key('vxlan') == True:
-                    if 'enabled' in str['vxlan']:
-                        vxlan_status += 1
-
-        if len(dev_list) != br_int_status:
-            Reporter.REPORT_MSG('   >> port status(br-int) -- nok')
-            return False
-
-        if len(dev_list) != vxlan_status:
-            Reporter.REPORT_MSG('   >> port status(vxlan)  -- nok')
-            return False
-
-        Reporter.REPORT_MSG('   >> [%s] device, port status -- ok', conn_info['host'])
-        return True
-
-    def port_status(self, str):
-        result = [ ]
-        port_info_list = str.splitlines()
-        del port_info_list[0]
-        del port_info_list[0]
-        del port_info_list[-1]
-
-        # br-int, vxlan .........proc
-        for i in range(len(port_info_list)) :
-            port_info_dic = dict(x.split('=') for x in port_info_list[i].split(', '))
-            result.append({port_info_dic['portName'] : port_info_dic['state']})
-
-        return result
-
-    # @classmethod
-    def onos_devices_status(self):
-        # onos status
-        Reporter.unit_test_start()
-        try:
-            conn_info = {}
-            for onos_ip in self.onos_info.onos_list:
-                conn_info['host'] = onos_ip
-                conn_info['user'] = self.onos_info.user_id
-                conn_info['port'] = self.onos_info.ssh_port
-                conn_info['password'] = self.onos_info.password
-                ret = self.device_status(conn_info)
-                if False is ret:
-                    Reporter.unit_test_stop('nok')
-                    return
-
-            Reporter.unit_test_stop('ok')
-        except:
-            Reporter.exception_err_write()
-
-    # @classmethod
-    def onos_application_status(self):
-        # onos status
-        Reporter.unit_test_start()
-        try:
-            conn_info = {}
-            for onos_ip in self.onos_info.onos_list:
-                conn_info['host'] = onos_ip
-                conn_info['user'] = self.onos_info.user_id
-                conn_info['port'] = self.onos_info.ssh_port
-                conn_info['password'] = self.onos_info.password
-                ret = self.apps_status(conn_info)
-                if '' in ret:
-                    Reporter.unit_test_stop('nok')
-                    return False
-
-            Reporter.unit_test_stop('ok')
-        except:
-            Reporter.exception_err_write()
 
     def openstack_get_token(self):
         Reporter.unit_test_start()
