@@ -222,27 +222,27 @@ class State:
 
     def floating_ip_check(self, ip_addr):
         Reporter.unit_test_start()
-        cmd = 'ping ' + ip_addr + ' -w ' + str(self.ping_timeout)
-        result = self.get_cmd_result(cmd)
-        ping_list = result.splitlines()
-        ping_result = False
-        for list in ping_list:
-            if 'loss' in list:
-                split_list = list.split(', ')
-                for x in split_list:
-                    if '%' in x:
-                        result = x.split('%')
-                        if 0 is int(result[0]):
-                            ping_result = True
-                        break
+        cmd = 'ping ' + ip_addr + ' -c ' + str(self.ping_timeout)
+        fd_popen = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE).stdout
+        sucs_cnt = 0
+        ping_result = []
+        for i in range(self.ping_timeout):
+            data = fd_popen.readline(1024).strip()
+            # print data
+            ping_result.append(data)
+            if 'from ' + ip_addr in data:
+                sucs_cnt += 1
+                if 2 is sucs_cnt:
+                    break
+            time.sleep(1)
+        fd_popen.close()
 
-        # result output
-        if True is ping_result:
+        if 2 is sucs_cnt:
             Reporter.REPORT_MSG('   >> result : local --> %s : ok', ip_addr)
         else:
             Reporter.REPORT_MSG('   >> result : local --> %s : nok', ip_addr)
             Reporter.REPORT_MSG("%s", '\n'.join('     >> '
-                                                + line for line in ping_list))
+                                                + line for line in ping_result))
             Reporter.unit_test_stop('nok')
             return False
 
@@ -254,4 +254,3 @@ class State:
         data = fd_popen.read().strip()
         fd_popen.close()
         return data
-
