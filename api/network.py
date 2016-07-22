@@ -16,22 +16,12 @@ class NetworkTester:
 
     # def __init__(self, config_file):
     def __init__(self, config):
-            # Get config
-            # CLog.__init__(self, config_file)
-            # self.auth_conf = dict(ReadConfig(config_file).get_auth_conf())
-            # self.network_conf = ReadConfig.get_network_config()
-            # self.subnet_conf = ReadConfig.get_subnet_config()
-            # self.sg_conf = ReadConfig.get_sg_config()
-            # self.rule_conf = ReadConfig.get_rule_config()
-            # self.router_conf = ReadConfig.get_router_config()
             self.auth_conf = dict(config.get_auth_conf())
             self.network_conf = config.get_network_config()
             self.subnet_conf = config.get_subnet_config()
             self.sg_conf = config.get_sg_config()
             self.rule_conf = config.get_rule_config()
             self.router_conf = config.get_router_config()
-            # Get Token and Neutron Object
-            # self.neutron = client.Client(**self.auth_conf)
             self.neutron = client.Client(username=self.auth_conf['username'],
                                          password=self.auth_conf['api_key'],
                                          tenant_name=self.auth_conf['project_id'],

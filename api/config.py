@@ -84,23 +84,9 @@ class ReadConfig:
         CONF.onos.onos_list = CONF.onos.onos_list.split(', ')
         return CONF.onos
 
-    # @classmethod
-    # def get_net_auth_conf(cls):
-    #     auth_group = cfg.OptGroup(name='net_auth')
-    #     auth_conf = [
-    #         cfg.StrOpt('username'),
-    #         cfg.StrOpt('password'),
-    #         cfg.StrOpt('tenant_name'),
-    #         cfg.StrOpt('version'),
-    #         cfg.StrOpt('auth_url')
-    #     ]
-    #     CONF.register_group(auth_group)
-    #     CONF.register_opts(auth_conf, auth_group)
-    #     return CONF.net_auth
-
     @classmethod
     def get_auth_conf(cls):
-        auth_group = cfg.OptGroup(name='auth')
+        auth_group = cfg.OptGroup(name='openstack')
         auth_conf = [
             cfg.StrOpt('version'),
             cfg.StrOpt('username'),
@@ -110,7 +96,7 @@ class ReadConfig:
         ]
         CONF.register_group(auth_group)
         CONF.register_opts(auth_conf, auth_group)
-        return CONF.auth
+        return CONF.openstack
 
     @classmethod
     def get_network_config(cls):
