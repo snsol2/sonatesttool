@@ -7,7 +7,7 @@ class ONOSInfo():
 
     def __init__(self, config):
         # print 'init'
-        ONOSCtrl._config = config
+        ONOSInfo._config = config
 
     def onos_create_session(self, conn_info):
         conn = requests.session()

@@ -7,6 +7,7 @@ from api.network import NetworkTester
 from api.instance import InstanceTester
 from api.reporter2 import Reporter
 from api.state import State
+from api.onos_info import ONOSInfo
 
 CONFIG_FILE = '../config/config.ini'
 
@@ -14,14 +15,15 @@ conf = ReadConfig(CONFIG_FILE)
 test_network = NetworkTester(conf)
 test_instance = InstanceTester(conf)
 test_status = State(conf)
+test_onos = ONOSInfo(conf)
 test_reporter = Reporter(conf)
 
 
 # SONA Test scenario
 # =================================================================
 # # status check
-# test_status.onos_application_status()
-# test_status.onos_devices_status()
+test_onos.onos_application_status()
+test_onos.onos_devices_status()
 # test_status.openstack_get_token()
 # test_status.openstack_get_service()
 #
@@ -50,9 +52,7 @@ test_reporter = Reporter(conf)
 # test_instance.create_instance('instance4', 'network3', '')
 #
 # # Floating IP
-# test_instance.floatingip_associate('instance1', 'network1')
-
-# # Traffic Test
+# test_instance.floatingip_associate('instance1', 'ext-net')
 # test_status.ssh_ping('instance1','', 'instance2:network2')
 # test_status.floating_ip_check('10.10.2.93')
 # test_status.ssh_ping('instance1','instance2:network2', '10.10.2.103')
