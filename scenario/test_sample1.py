@@ -22,8 +22,8 @@ test_reporter = Reporter(conf)
 # SONA Test scenario
 # =================================================================
 # # status check
-test_onos.onos_application_status()
-test_onos.onos_devices_status()
+# test_onos.onos_application_status()
+# test_onos.onos_devices_status()
 # test_status.openstack_get_token()
 # test_status.openstack_get_service()
 #
@@ -54,7 +54,7 @@ test_onos.onos_devices_status()
 # # Floating IP
 # test_instance.floatingip_associate('instance1', 'ext-net')
 # test_status.ssh_ping('instance1','', 'instance2:network2')
-# test_status.floating_ip_check('10.10.2.93')
+test_status.floating_ip_check('instance1')
 # test_status.ssh_ping('instance1','instance2:network2', '10.10.2.103')
 # =================================================================
 test_reporter.test_summary()
