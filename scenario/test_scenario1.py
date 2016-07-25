@@ -19,8 +19,6 @@ test_network = NetworkTester(config)
 test_instance = InstanceTester(config)
 # Reporter()
 
-
-
 Reporter(config)
 ssh_util = Status(config)
 # print datetime.datetime.now().time()

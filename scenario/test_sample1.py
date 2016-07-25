@@ -58,4 +58,3 @@ test_onos.onos_devices_status()
 # test_status.ssh_ping('instance1','instance2:network2', '10.10.2.103')
 # =================================================================
 test_reporter.test_summary()
-

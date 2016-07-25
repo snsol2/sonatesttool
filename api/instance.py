@@ -79,7 +79,10 @@ class InstanceTester:
             for a in net_name_list:
                 nics_list.append({'net-id':  self.nova.networks.find(label=a).id})
 
-            sg_list = ast.literal_eval(dict(self.sg_config)[sg_opt])['name']
+            if sg_opt is '':
+                sg_list = ['default']
+            else:
+                sg_list = [ast.literal_eval(dict(self.sg_config)[sg_opt])['name']]
 
             # create instance
             instance_rst = self.nova.servers.create(name=config_value['name'],

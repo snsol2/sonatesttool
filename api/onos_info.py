@@ -95,8 +95,9 @@ class ONOSInfo():
         except:
             Reporter.exception_err_write()
 
-    def onos_application_status(self):
-        Reporter.unit_test_start()
+    def application_status(self, report_flag=None):
+        if report_flag is None:
+            Reporter.unit_test_start()
         try:
             onos_info = self._config.get_onos_info()
             state_list=[]
@@ -119,17 +120,22 @@ class ONOSInfo():
                 state_info['openstackinterface'] = ret; state_list.append(ret)
 
                 if 'INSTALLED' in state_list:
-                    Reporter.REPORT_MSG('   >> [%s][NOK] : %s', onos_ip, state_info)
-                    Reporter.unit_test_stop('nok')
-                    return False
-                Reporter.REPORT_MSG('   >> [%s][OK] : %s', onos_ip, state_info)
-            Reporter.unit_test_stop('ok')
+                    Reporter.REPORT_MSG('   >> [%s][Application NOK] : %s', onos_ip, state_info)
+                    if report_flag is None:
+                        Reporter.unit_test_stop('nok')
+                        return False
+                Reporter.REPORT_MSG('   >> [%s][Application OK] : %s', onos_ip, state_info)
+
+            if report_flag is None:
+                Reporter.unit_test_stop('ok')
+
             return True
         except:
             Reporter.exception_err_write()
 
-    def onos_devices_status(self):
-        Reporter.unit_test_start()
+    def devices_status(self, report_flag=None):
+        if report_flag is None:
+            Reporter.unit_test_start()
         try:
             onos_info = self._config.get_onos_info()
             conn_info = {}
@@ -140,9 +146,12 @@ class ONOSInfo():
                 conn_info['password'] = onos_info.password
                 ret = self.device_status(conn_info)
                 if False is ret:
-                    Reporter.unit_test_stop('nok')
-                    return
+                    if report_flag is None:
+                        Reporter.unit_test_stop('nok')
+                        return False
 
-            Reporter.unit_test_stop('ok')
+            if report_flag is None:
+                Reporter.unit_test_stop('ok')
+            return True
         except:
             Reporter.exception_err_write()

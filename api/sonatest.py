@@ -4,23 +4,30 @@ import subprocess
 import time
 import socket
 import keystoneclient.v2_0.client as kclient
+from api.config import ReadConfig
 from api.instance import InstanceTester
+from api.network import NetworkTester
 from api.reporter2 import Reporter
 # from api.config import ReadConfig
+from api.onos_info import ONOSInfo
 
 PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ', '$ ']
 CMD_PROMPT = '\[SONA\]\# '
 
 
-class State:
+class SonaTest:
 
-    def __init__(self, config):
-        self.instance = InstanceTester(config)
-        self.onos_info = config.get_onos_info()
-        self.inst_conf = config.get_instance_config()
-        self.auth = config.get_auth_conf()
-        self.conn_timeout = config.get_ssh_conn_timeout()
-        self.ping_timeout = config.get_floating_ip_check_timeout()
+    def __init__(self, config_file):
+        self.conf = ReadConfig(config_file)
+        self.onos_info = self.conf.get_onos_info()
+        self.inst_conf = self.conf.get_instance_config()
+        self.auth = self.conf.get_auth_conf()
+        self.conn_timeout = self.conf.get_ssh_conn_timeout()
+        self.ping_timeout = self.conf.get_floating_ip_check_timeout()
+        self.instance = InstanceTester(self.conf)
+        self.network = NetworkTester(self.conf)
+        self.onos = ONOSInfo(self.conf)
+        self.reporter = Reporter(self.conf)
 
     def ssh_connect(self, host, user, port, password):
         try:
@@ -177,8 +184,9 @@ class State:
                 change_cmd = "PS1='[SONA]\# '"
                 pass
 
-    def openstack_get_token(self):
-        Reporter.unit_test_start()
+    def openstack_get_token(self, report_flag=None):
+        if report_flag is None:
+            Reporter.unit_test_start()
         try:
             keystone = kclient.Client(auth_url=self.auth['auth_url'],
                                       username=self.auth['username'],
@@ -186,16 +194,21 @@ class State:
                                       tenant_name=self.auth['project_id'])
             token = keystone.auth_token
             if not token:
-                Reporter.REPORT_MSG("   >> OpentStack Authentication Fail --->")
-                Reporter.unit_test_stop('nok')
-                return
-            Reporter.REPORT_MSG("   >> OpenStack Authentication Succ ---> %s", token)
-            Reporter.unit_test_stop('ok')
+                Reporter.REPORT_MSG("   >> OpentStack Authentication NOK --->")
+                if report_flag is None:
+                    Reporter.unit_test_stop('nok')
+                    return False
+            Reporter.REPORT_MSG("   >> OpenStack Authentication OK ---> %s", token)
+
+            if report_flag is None:
+                Reporter.unit_test_stop('ok')
+            return True
         except:
             Reporter.exception_err_write()
 
-    def openstack_get_service(self):
-        Reporter.unit_test_start()
+    def openstack_get_service(self, report_flag=None):
+        if report_flag is None:
+            Reporter.unit_test_start()
         try:
             keystone = kclient.Client(auth_url=self.auth['auth_url'],
                                       username=self.auth['username'],
@@ -205,12 +218,17 @@ class State:
 
             for i in range(len(service_list)):
                 if service_list[i].values()[0] is False:
-                    Reporter.REPORT_MSG("   >> OpenStack Service Fail ---> %s", service_list[i])
-                    Reporter.unit_test_stop('nok')
-                    return
+                    Reporter.REPORT_MSG("   >> OpenStack Service NOK ---> %s", service_list[i])
+                    if report_flag is None:
+                        Reporter.unit_test_stop('nok')
+                    return False
 
-            Reporter.REPORT_MSG("   >> OpenStack Service Succ ---> %s", service_list)
-            Reporter.unit_test_stop('ok')
+            Reporter.REPORT_MSG("   >> OpenStack Service OK ---> %s", service_list)
+
+            if report_flag is None:
+                Reporter.unit_test_stop('ok')
+
+            return True
 
         except:
             Reporter.exception_err_write()
@@ -249,3 +267,18 @@ class State:
         data = fd_popen.read().strip()
         fd_popen.close()
         return data
+
+    def onos_and_openstack_check(self):
+        Reporter.unit_test_start()
+        try:
+            flag = 'no'
+
+            app_stat = self.onos.application_status(report_flag=flag)
+            device_stat = self.onos.devices_status(report_flag=flag)
+            token_stat = self.openstack_get_token(report_flag=flag)
+            service_stat = self.openstack_get_service(report_flag=flag)
+
+            if (app_stat and device_stat and token_stat and service_stat):
+                Reporter.unit_test_stop('ok')
+        except:
+            Reporter.exception_err_write()
