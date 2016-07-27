@@ -2,20 +2,11 @@
 # kimjt Network temporarily test tool
 #
 
-# from api.config import ReadConfig
-# from api.network import NetworkTester
-# from api.instance import InstanceTester
-# from api.reporter2 import Reporter
 from api.sonatest import SonaTest
 
 CONFIG_FILE = '../config/config.ini'
 
 test = SonaTest(CONFIG_FILE)
-# conf = ReadConfig(CONFIG_FILE)
-# test_network = NetworkTester(conf)
-# test_instance = InstanceTester(conf)
-# test_reporter = Reporter(conf)
-
 
 # SONA Delete Test scenario
 # =================================================================

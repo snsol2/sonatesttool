@@ -131,7 +131,8 @@ class ONOSInfo():
 
             return True
         except:
-            Reporter.exception_err_write()
+            # Reporter.exception_err_write()
+            return False
 
     def devices_status(self, report_flag=None):
         if report_flag is None:
@@ -154,4 +155,5 @@ class ONOSInfo():
                 Reporter.unit_test_stop('ok')
             return True
         except:
-            Reporter.exception_err_write()
+            # Reporter.exception_err_write()
+            return False

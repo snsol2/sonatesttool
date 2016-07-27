@@ -1,8 +1,9 @@
 import pexpect
 import ast
-import subprocess
-import time
 import socket
+import commands
+import os
+import time
 import keystoneclient.v2_0.client as kclient
 from api.config import ReadConfig
 from api.instance import InstanceTester
@@ -36,7 +37,7 @@ class SonaTest:
                 connStr = 'ssh ' + user + '@' + host
             else:
                 connStr = 'ssh '+ '-p ' + port + ' ' + user + '@' + host
-            # Reporter.REPORT_MSG('   >> connection : %s', connStr)
+            Reporter.REPORT_MSG('   >> connection : %s', connStr)
             conn = pexpect.spawn(connStr)
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=self.conn_timeout)
             if ret == 0:
@@ -90,6 +91,11 @@ class SonaTest:
 
             # floating ip
             floating_ip = self.instance.get_instance_floatingip(inst1)
+
+            # clear ssh key
+            clear_key = 'ssh-keygen -f "' + os.path.expanduser('~')+'/.ssh/known_hosts" -R ' + floating_ip
+            commands.getstatusoutput(clear_key)
+
             if None is floating_ip:
                 Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
                 Reporter.unit_test_stop('nok')
@@ -233,40 +239,39 @@ class SonaTest:
         except:
             Reporter.exception_err_write()
 
-    def floating_ip_check(self, ip_addr):
+    def floating_ip_check(self, inst1):
         Reporter.unit_test_start()
-        cmd = 'ping ' + ip_addr + ' -c ' + str(self.ping_timeout)
-        fd_popen = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE).stdout
-        sucs_cnt = 0
-        ping_result = []
-        for i in range(self.ping_timeout):
-            data = fd_popen.readline(1024).strip()
-            # print data
-            ping_result.append(data)
-            if 'from ' + ip_addr in data:
-                sucs_cnt += 1
-                if 2 is sucs_cnt:
-                    break
-            time.sleep(1)
-        fd_popen.close()
+        try:
+            # floating ip
+            floating_ip = self.instance.get_instance_floatingip(inst1)
+            if None is floating_ip:
+                Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
+                Reporter.unit_test_stop('nok')
+                return False
+            # floating_ip = '10.10.2.93'
+            cmd = 'ping ' + floating_ip + ' -w 1'
+            ping_result = []
+            sucs_cnt = 0
+            for i in range(self.ping_timeout):
+                (exitstatus, outtext) = commands.getstatusoutput(cmd)
+                # print outtext
+                ping_result.append(outtext)
+                if 'from ' + floating_ip in outtext:
+                    sucs_cnt += 1
+                    if 2 is sucs_cnt:
+                        break
 
-        if 2 is sucs_cnt:
-            Reporter.REPORT_MSG('   >> result : local --> %s : ok', ip_addr)
-        else:
-            Reporter.REPORT_MSG('   >> result : local --> %s : nok', ip_addr)
-            Reporter.REPORT_MSG("%s", '\n'.join('     >> '
-                                                + line for line in ping_result))
-            Reporter.unit_test_stop('nok')
+            if 2 is sucs_cnt:
+                Reporter.REPORT_MSG('   >> result : local --> %s : ok', floating_ip)
+                time.sleep(5)
+                Reporter.unit_test_stop('ok')
+                return True
+            else:
+                Reporter.REPORT_MSG('   >> result : local --> %s : nok', floating_ip)
+                Reporter.unit_test_stop('nok')
             return False
-
-        Reporter.unit_test_stop('ok')
-        return True
-
-    def get_cmd_result(self, cmd):
-        fd_popen = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE).stdout
-        data = fd_popen.read().strip()
-        fd_popen.close()
-        return data
+        except:
+            Reporter.exception_err_write()
 
     def onos_and_openstack_check(self):
         Reporter.unit_test_start()
