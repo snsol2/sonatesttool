@@ -56,7 +56,8 @@ class ONOSInfo():
             dev_cnt = 0
             for i in range(len(dev_list)):
                 dev_info_dic = dict(dev_list[i])
-                if 'OF_13' not in dict(dev_info_dic['annotations'])['protocol']:
+                proto = dict(dev_info_dic['annotations']).get('protocol')
+                if 'None' is proto:
                     continue
                 dev_cnt += 1
                 if False is dev_info_dic['available']:

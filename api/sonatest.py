@@ -75,45 +75,50 @@ class SonaTest:
         ssh_conn.close()
         return ssh_conn.before
 
-    def ssh_ping(self, inst1, inst2, dest):
-        Reporter.unit_test_start()
+    # def ssh_ping(self, inst1, inst2, dest):
+    def ssh_ping(self, inst1, *insts):
+        Reporter.unit_test_start(False)
+        if len(insts) > 2 or len(insts) < 1:
+            Reporter.REPORT_MSG('   >> Check the arguments(Min : 2, Max : 3)')
+            Reporter.unit_test_stop('nok', False)
+            return False
         try:
-            # check dest type
-            ping_ip = dest
-            try:
-                socket.inet_aton(dest)
-            except socket.error:
-                ping_ip = self.instance.get_instance_ip(dest)
-                if None is ping_ip:
-                    Reporter.unit_test_stop('nok')
-                    return False
-                pass
-
             # floating ip
             floating_ip = self.instance.get_instance_floatingip(inst1)
+            if None is floating_ip:
+                Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
+                Reporter.unit_test_stop('nok', False)
+                return False
+
+            # check dest type
+            ping_ip = insts[-1]
+            try:
+                socket.inet_aton(insts[-1])
+            except socket.error:
+                ping_ip = self.instance.get_instance_ip(insts[-1])
+                if None is ping_ip:
+                    Reporter.unit_test_stop('nok', False)
+                    return False
+                pass
 
             # clear ssh key
             clear_key = 'ssh-keygen -f "' + os.path.expanduser('~')+'/.ssh/known_hosts" -R ' + floating_ip
             commands.getstatusoutput(clear_key)
-
-            if None is floating_ip:
-                Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
-                Reporter.unit_test_stop('nok')
-                return False
 
             # first ssh connection
             # get first instance connection info
             inst_info_1 = ast.literal_eval(self.inst_conf[inst1])
             conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
             if conn is False:
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('nok', False)
                 return False
 
             # get second instance connection info
-            if ':' in inst2:
-                name_list = inst2.split(':')
+            if len(insts) > 1:
+            # if ':' in inst2:
+                name_list = insts[0].split(':')
                 inst_info_2 = ast.literal_eval(self.inst_conf[name_list[0]])
-                inst2_ip = self.instance.get_instance_ip(inst2)
+                inst2_ip = self.instance.get_instance_ip(insts[0])
                 ssh_cmd = 'ssh ' + inst_info_2['user'] + '@' + inst2_ip
                 conn.sendline(ssh_cmd)
                 # Reporter.REPORT_MSG('   >> connection: %s', ssh_cmd)
@@ -121,7 +126,7 @@ class SonaTest:
                 ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=self.conn_timeout)
                 if ret == 0:
                     Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server(%d)', inst2_ip, ret)
-                    Reporter.unit_test_stop('nok')
+                    Reporter.unit_test_stop('nok', False)
                     self.ssh_disconnect(conn)
                     return False
                 if ret == 1:
@@ -151,25 +156,25 @@ class SonaTest:
 
             # result output
             if True is ping_result:
-                if '' is not inst2:
+                if len(insts) > 1:
                     Reporter.REPORT_MSG('   >> result : %s --> %s --> %s : ok',
-                                        inst1, inst2, dest)
+                                        inst1, insts[0], insts[-1])
                 else:
                     Reporter.REPORT_MSG('   >> result : %s --> %s : ok',
-                                        inst1, dest)
-                Reporter.unit_test_stop('ok')
+                                        inst1, insts[-1])
+                Reporter.unit_test_stop('ok', False)
             else:
-                if '' is not inst2:
+                if len(insts) > 1:
                     Reporter.REPORT_MSG('   >> result : %s --> %s --> %s : nok',
-                                        inst1, inst2, dest)
+                                        inst1, insts[0], insts[-1])
                 else:
                     Reporter.REPORT_MSG('   >> result : %s --> %s : nok',
-                                        inst1, dest)
+                                        inst1, insts[-1])
 
                 Reporter.REPORT_MSG("%s", '\n'.join('     >> '
                                                     + line for line in ping_list))
 
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('nok', False)
                 return False
 
             return True
@@ -240,13 +245,13 @@ class SonaTest:
             Reporter.exception_err_write()
 
     def floating_ip_check(self, inst1):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(False)
         try:
             # floating ip
             floating_ip = self.instance.get_instance_floatingip(inst1)
             if None is floating_ip:
                 Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('nok', False)
                 return False
             # floating_ip = '10.10.2.93'
             cmd = 'ping ' + floating_ip + ' -w 1'
@@ -264,11 +269,11 @@ class SonaTest:
             if 2 is sucs_cnt:
                 Reporter.REPORT_MSG('   >> result : local --> %s : ok', floating_ip)
                 time.sleep(5)
-                Reporter.unit_test_stop('ok')
+                Reporter.unit_test_stop('ok', False)
                 return True
             else:
                 Reporter.REPORT_MSG('   >> result : local --> %s : nok', floating_ip)
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('nok', False)
             return False
         except:
             Reporter.exception_err_write()

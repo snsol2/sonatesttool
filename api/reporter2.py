@@ -140,7 +140,7 @@ class Reporter:
         return lines
 
     @classmethod
-    def unit_test_start(cls):
+    def unit_test_start(cls, tail_enable=True):
         cls.test_start_time = datetime.datetime.now()
         if cls.test_count == 0:
             start_msg = 'Test Start'
@@ -154,12 +154,14 @@ class Reporter:
 
         cls.NRET_PRINT("%s %s", method, ("_" * (70 - len(method))))
         cls.REPORT_MSG("\n%s %s", method, ("_" * (70 - len(method))))
-        cls.start_tailer()
+        if True is tail_enable:
+            cls.start_tailer()
         # pass
 
     @classmethod
-    def unit_test_stop(cls, report_string):
-        cls.stop_all_tailer(report_string)
+    def unit_test_stop(cls, report_string, tail_enable=True):
+        if True is tail_enable:
+            cls.stop_all_tailer(report_string)
         test_duration = datetime.datetime.now() - cls.test_start_time
         cls.test_total_time += test_duration
         cls.REPORT_MSG("\n   >>>%s TEST RESULT: %s (%s)",

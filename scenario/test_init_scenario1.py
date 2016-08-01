@@ -1,5 +1,5 @@
 #
-# SONA temporarily test tool
+# SONA test tool sample
 #        Telcoware 2016/7/25
 #
 
@@ -11,15 +11,16 @@ test = SonaTest(CONFIG_FILE)
 
 # SONA Test scenario
 # =================================================================
-# status check
-# test.onos_and_openstack_check()
-#
+# # status check
+test.onos_and_openstack_check()
+
+"""
 # Network
 test.network.create_network('network1')
 test.network.create_network('network2')
 test.network.create_network('network3')
 
-# Subnet
+ # Subnet
 test.network.create_subnet('subnet1', 'network1')
 test.network.create_subnet('subnet2', 'network2')
 test.network.create_subnet('subnet3', 'network3')
@@ -40,10 +41,12 @@ test.instance.create_instance('instance4', 'network3', '')
 
 # Floating IP
 test.instance.floatingip_associate('instance1', 'network1')
+"""
 
 # Traffic Test
 test.floating_ip_check('instance1')
-test.ssh_ping('instance1', '', 'instance3:network3')
-test.ssh_ping('instance1', 'instance3:network3', '10.10.2.1')
+test.ssh_ping('instance1', 'instance3:network3')
+test.ssh_ping('instance1', 'instance3:network3', '10.10.2.91')
+
 # =================================================================
 test.reporter.test_summary()
