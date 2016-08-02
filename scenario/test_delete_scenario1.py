@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # kimjt Network temporarily test tool
 #

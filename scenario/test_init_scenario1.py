@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 # SONA test tool sample
 #        Telcoware 2016/7/25
