@@ -260,15 +260,13 @@ class SonaTest:
             ping_result = []
             sucs_cnt = 0
             (exitstatus, outtext) = commands.getstatusoutput('uname -a')
-            # print outtext
             if 'Linux' in outtext:
                 cmd = 'ping ' + floating_ip + ' -w 1'
             else:
-                cmd = 'ping -t 1' + floating_ip
+                cmd = 'ping -t 1 ' + floating_ip
 
             for i in range(self.ping_timeout):
                 (exitstatus, outtext) = commands.getstatusoutput(cmd)
-                # print outtext
                 ping_result.append(outtext)
                 if 'from ' + floating_ip in outtext:
                     sucs_cnt += 1
