@@ -47,7 +47,7 @@ class InstanceTester:
         return config_value
 
     def create_instance(self, instance_opt, network_opt, sg_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, instance_opt, network_opt, sg_opt)
         try:
             config_value = self.find_instance(instance_opt)
             if not config_value:
@@ -99,7 +99,7 @@ class InstanceTester:
             Reporter.exception_err_write()
 
     def delete_instance(self, instance_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, instance_opt)
         try:
             instance_list = self.get_instance(instance_opt)
             if not instance_list:
@@ -123,7 +123,7 @@ class InstanceTester:
         return floatingip_list
 
     def floatingip_associate(self, instance_opt, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, instance_opt, network_opt)
         try:
             server = self.get_instance(instance_opt)
             if not server:
@@ -166,7 +166,7 @@ class InstanceTester:
         return
 
     def delete_floatingip_all(self):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True)
         try:
             floatingip_list = self.get_floatingip_list()
             if not floatingip_list:

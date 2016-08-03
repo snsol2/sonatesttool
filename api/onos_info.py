@@ -19,13 +19,13 @@ class ONOSInfo():
         url = 'http://' + conn_info['host'] + ':8181/onos/v1/applications/' + app_name
         header = {'Accept': 'application/json'}
         # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
-        return dict(conn.get(url, headers=header).json())['state'].encode('utf-8')
+        return dict(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json())['state'].encode('utf-8')
 
     def device_info(self, conn_info):
         conn = self.onos_create_session(conn_info)
         url = 'http://' + conn_info['host'] + ':8181/onos/v1/devices/'
         header = {'Accept': 'application/json'}
-        ret = json.dumps(conn.get(url, headers=header).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
+        ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
         dev_list = json.loads(ret)
         return dev_list['devices']
 
@@ -34,7 +34,7 @@ class ONOSInfo():
         url = 'http://' + conn_info['host'] + ':8181/onos/v1/devices/' + dev_id + '/ports'
         header = {'Accept': 'application/json'}
         # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
-        ret = json.dumps(conn.get(url, headers=header).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
+        ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
         port_list = json.loads(ret)
 
         result = []
@@ -98,7 +98,7 @@ class ONOSInfo():
 
     def application_status(self, report_flag=None):
         if report_flag is None:
-            Reporter.unit_test_start()
+            Reporter.unit_test_start(True)
         try:
             onos_info = self._config.get_onos_info()
             state_list=[]
@@ -137,7 +137,7 @@ class ONOSInfo():
 
     def devices_status(self, report_flag=None):
         if report_flag is None:
-            Reporter.unit_test_start()
+            Reporter.unit_test_start(True)
         try:
             onos_info = self._config.get_onos_info()
             conn_info = {}

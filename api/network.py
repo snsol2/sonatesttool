@@ -42,7 +42,7 @@ class NetworkTester:
         return network_rst
 
     def get_network(self, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, network_opt)
         try:
             network_name = self.get_network_name(network_opt)
             if not network_name:
@@ -80,7 +80,7 @@ class NetworkTester:
             return
 
     def create_network(self, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, network_opt)
         try:
             network_body = dict(self.network_conf)[network_opt]
             if not network_body:
@@ -101,7 +101,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def delete_network(self, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, network_opt)
         try:
             network_uuid = self.get_network_uuid(network_opt)
             if not network_uuid:
@@ -115,7 +115,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def set_network_down(self, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, network_opt)
         try:
             network_uuid = self.get_network_uuid(network_opt)
             if not network_uuid:
@@ -132,7 +132,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def set_network_up(self, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, network_opt)
         try:
             network_uuid = self.get_network_uuid(network_opt)
             if not network_uuid:
@@ -162,7 +162,7 @@ class NetworkTester:
         return subnet_rst
 
     def get_subnet(self, subnet_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, subnet_opt)
         try:
             subnet_name = self.get_subnet_name(subnet_opt)
             if not subnet_name:
@@ -206,7 +206,7 @@ class NetworkTester:
             return
 
     def create_subnet(self, subnet_opt, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, subnet_opt, network_opt)
         try:
             # if not subnet_body:
             #     Reporter.REPORT_MSG("   >> Not Exist Subnet in config --->")
@@ -233,7 +233,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def delete_subnet(self, subnet_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, subnet_opt)
         try:
             subnet_uuid = self.get_subnet_uuid(subnet_opt)
             if not subnet_uuid:
@@ -288,7 +288,7 @@ class NetworkTester:
         return sg_uuid
 
     def create_securitygroup(self, sg_opt, rule_opt_list):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, sg_opt, rule_opt_list)
         try:
             if self.get_sg_uuid(sg_opt):
                 Reporter.REPORT_MSG("   >> Already Exist Security Group ---> %s", sg_opt)
@@ -333,7 +333,7 @@ class NetworkTester:
         return rule_rst
 
     def delete_seuritygroup(self, sg_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, sg_opt)
         try:
             sg_uuid = self.get_sg_uuid(sg_opt)
             if not sg_uuid:
@@ -391,7 +391,7 @@ class NetworkTester:
         return router_uuid
 
     def create_router(self, router_opt, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, router_opt, network_opt)
         try:
             if self.get_router(router_opt):
                 Reporter.unit_test_stop('skip')
@@ -420,7 +420,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def delete_router(self, router_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, router_opt)
         try:
             router_uuid = self.get_router_uuid(router_opt)
             if not router_uuid:
@@ -433,7 +433,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def add_router_interface(self, router_opt, subnet_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, router_opt, subnet_opt)
         try:
             router_uuid = self.get_router_uuid(router_opt)
             if not router_uuid:
@@ -456,7 +456,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def remove_router_interface(self, router_opt, subnet_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, router_opt, subnet_opt)
         try:
             router_uuid = self.get_router_uuid(router_opt)
             if not router_uuid:
@@ -480,7 +480,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def set_router_down(self, router_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, router_opt)
         try:
             router_uuid = self.get_router_uuid(router_opt)
             if not router_uuid:
@@ -498,7 +498,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def set_router_up(self, router_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, router_opt)
         try:
             router_uuid = self.get_router_uuid(router_opt)
             if not router_uuid:
@@ -539,7 +539,7 @@ class NetworkTester:
         return port_uuid
 
     def set_port_down(self, instance_opt, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, instance_opt, network_opt)
         try:
             port_uuid = self.get_port_uuid(instance_opt, network_opt)
             if not port_uuid:
@@ -560,7 +560,7 @@ class NetworkTester:
             Reporter.exception_err_write()
 
     def set_port_up(self, instance_opt, network_opt):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True, instance_opt, network_opt)
         try:
             port_uuid = self.get_port_uuid(instance_opt, network_opt)
             if not port_uuid:

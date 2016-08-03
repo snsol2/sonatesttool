@@ -21,6 +21,7 @@ class ReadConfig:
             cfg.StrOpt('test_mode'),
             cfg.IntOpt('log_collector_wait_time'),
             cfg.IntOpt('ssh_conn_timeout'),
+            cfg.IntOpt('onos_get_timeout'),
             cfg.IntOpt('floating_ip_check_timeout')
         ]
         CONF.register_group(default_group)
@@ -35,6 +36,10 @@ class ReadConfig:
     @classmethod
     def get_ssh_conn_timeout(cls):
         return CONF.DEFAULT.ssh_conn_timeout
+
+    @classmethod
+    def get_onos_timeout(cls):
+        return CONF.DEFAULT.onos_get_timeout
 
     @classmethod
     def get_report_file_path(cls):

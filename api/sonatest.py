@@ -197,7 +197,7 @@ class SonaTest:
 
     def openstack_get_token(self, report_flag=None):
         if report_flag is None:
-            Reporter.unit_test_start()
+            Reporter.unit_test_start(True)
         try:
             keystone = kclient.Client(auth_url=self.auth['auth_url'],
                                       username=self.auth['username'],
@@ -219,7 +219,7 @@ class SonaTest:
 
     def openstack_get_service(self, report_flag=None):
         if report_flag is None:
-            Reporter.unit_test_start()
+            Reporter.unit_test_start(True)
         try:
             keystone = kclient.Client(auth_url=self.auth['auth_url'],
                                       username=self.auth['username'],
@@ -279,7 +279,7 @@ class SonaTest:
             Reporter.exception_err_write()
 
     def onos_and_openstack_check(self):
-        Reporter.unit_test_start()
+        Reporter.unit_test_start(True)
         try:
             flag = 'no'
 

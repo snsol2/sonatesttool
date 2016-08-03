@@ -21,7 +21,8 @@ BLACK = '\033[1;90m'
 ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
-PROMPT = ['~# ', '>>> ', 'onos> ', '\$ ', '\# ', ':~$ ', 'onos1:~']
+#PROMPT = ['~# ', '>>> ', 'onos> ', '\$ ', '\# ', ':~$ ', 'onos1:~']
+PROMPT = '[#$]'
 
 
 class Reporter:
@@ -140,7 +141,7 @@ class Reporter:
         return lines
 
     @classmethod
-    def unit_test_start(cls, tail_enable=True):
+    def unit_test_start(cls, tail_enable, *args):
         cls.test_start_time = datetime.datetime.now()
         if cls.test_count == 0:
             start_msg = 'Test Start'
@@ -150,7 +151,8 @@ class Reporter:
             print t_msg + "\n" + ('=' * 80)
         cls.test_count += 1
         method = traceback.extract_stack(None, 2)[0][2]
-        method = str(cls.test_count) + '. ' + method + ' '
+        method = str(cls.test_count) + '. ' + method + '(' + ', '.join(args) + ')' + ' '
+        # method = str(cls.test_count) + '. ' + method
 
         cls.NRET_PRINT("%s %s", method, ("_" * (70 - len(method))))
         cls.REPORT_MSG("\n%s %s", method, ("_" * (70 - len(method))))
@@ -205,14 +207,13 @@ class Reporter:
                 connStr = 'ssh ' + '-p ' + port + ' ' + user + '@' + host
 
             conn = pexpect.spawn(connStr)
-            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=conn_timeout)
-
+            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:', PROMPT], timeout=conn_timeout)
             if ret == 0:
                 cls.REPORT_MSG('   >> [%s] : tailer Error Connection to SSH Server', host)
                 return False
             if ret == 1:
                 conn.sendline('yes')
-                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=conn_timeout)
+                ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword', PROMPT], timeout=conn_timeout)
 
             conn.sendline(password)
             conn.expect(PROMPT, timeout=conn_timeout)
@@ -223,33 +224,29 @@ class Reporter:
         return conn
 
     @classmethod
-    def tailer_thread(cls, port, user, host, password, file):
-        # Reporter.PRINTG('%s, %s, %s, %s, %s\n', host, user, port, password, file)
-        ssh_conn = cls.ssh_connect(port, user, host, password)
-        # cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
-        if ssh_conn is not False:
-            ssh_conn.sendline('tail -f -n 0 ' + file)
-            while cls.thr_status_dic[threading.current_thread().getName()][1]:
-                try:
-                    data = (ssh_conn.read_nonblocking(size=2048, timeout=0.05))
-                    cls.result_dic[threading.current_thread().getName()] += data
-                    # print data
-                    # for prompt in PROMPT:
-                    #     if prompt in str(data):
-                    #         cls.thr_status_dic[threading.current_thread().getName()][1] = False
-                    #         break
-                except Exception, e:
-                    if 'Timeout exceeded.' in str(e):
-                        pass
+    def tailer_thread(cls, ssh_conn):
+        while cls.thr_status_dic[threading.current_thread().getName()][1]:
+            try:
+                data = (ssh_conn.read_nonblocking(size=2048, timeout=0.05))
+                cls.result_dic[threading.current_thread().getName()] += data
+                # print data
+            except Exception, e:
+                if 'Timeout exceeded.' in str(e):
+                    pass
 
             ssh_conn.close()
 
     @classmethod
     def create_start_tailer(cls, port, user, host, password, file, type):
-        thr = threading.Thread(target=cls.tailer_thread, args=(port, user, host, password, file, ))
-        cls.thr_status_dic[thr.getName()] = [thr, True, type]
-        cls.result_dic[thr.getName()] = ''
-        thr.start()
+        # Reporter.PRINTG('%s, %s, %s, %s, %s\n', host, user, port, password, file)
+        ssh_conn = cls.ssh_connect(port, user, host, password)
+        # cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
+        if ssh_conn is not False:
+            ssh_conn.sendline('tail -f -n 0 ' + file)
+            thr = threading.Thread(target=cls.tailer_thread, args=(ssh_conn, ))
+            cls.thr_status_dic[thr.getName()] = [thr, True, type]
+            cls.result_dic[thr.getName()] = ''
+            thr.start()
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
