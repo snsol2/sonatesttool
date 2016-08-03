@@ -39,6 +39,7 @@ class Reporter:
     _config = ''
     test_start_time = datetime.datetime.now()
     test_total_time = datetime.timedelta()
+    report_lock = threading.Lock()
 
     # def __init__(self, config_file):
     def __init__(self, config):
@@ -228,13 +229,15 @@ class Reporter:
         while cls.thr_status_dic[threading.current_thread().getName()][1]:
             try:
                 data = (ssh_conn.read_nonblocking(size=2048, timeout=0.05))
+                cls.report_lock.acquire()
                 cls.result_dic[threading.current_thread().getName()] += data
+                cls.report_lock.release()
                 # print data
             except Exception, e:
                 if 'Timeout exceeded.' in str(e):
                     pass
 
-            ssh_conn.close()
+        ssh_conn.close()
 
     @classmethod
     def create_start_tailer(cls, port, user, host, password, file, type):
@@ -242,6 +245,7 @@ class Reporter:
         ssh_conn = cls.ssh_connect(port, user, host, password)
         # cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
         if ssh_conn is not False:
+            Reporter.REPORT_MSG("%s, join : %s", file, ' '.join(file))
             ssh_conn.sendline('tail -f -n 0 ' + ' '.join(file))
             thr = threading.Thread(target=cls.tailer_thread, args=(ssh_conn, ))
             cls.thr_status_dic[thr.getName()] = [thr, True, type]
