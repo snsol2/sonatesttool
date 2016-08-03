@@ -209,13 +209,15 @@ class SonaTest:
                 if report_flag is None:
                     Reporter.unit_test_stop('nok')
                     return False
-            Reporter.REPORT_MSG("   >> OpenStack Authentication OK ---> %s", token)
+            Reporter.REPORT_MSG("   >> OpenStack Authentication OK ---> token: %s", token)
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
             return True
         except:
-            Reporter.exception_err_write()
+            if report_flag is None:
+                Reporter.exception_err_write()
+            return False
 
     def openstack_get_service(self, report_flag=None):
         if report_flag is None:
@@ -229,12 +231,12 @@ class SonaTest:
 
             for i in range(len(service_list)):
                 if service_list[i].values()[0] is False:
-                    Reporter.REPORT_MSG("   >> OpenStack Service NOK ---> %s", service_list[i])
+                    Reporter.REPORT_MSG("   >> OpenStack Service status NOK ---> %s", service_list[i])
                     if report_flag is None:
                         Reporter.unit_test_stop('nok')
                     return False
 
-            Reporter.REPORT_MSG("   >> OpenStack Service OK ---> %s", service_list)
+            Reporter.REPORT_MSG("   >> OpenStack Service status OK ---> %s", service_list)
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
@@ -242,7 +244,9 @@ class SonaTest:
             return True
 
         except:
-            Reporter.exception_err_write()
+            if report_flag is None:
+                Reporter.exception_err_write()
+            return False
 
     def floating_ip_check(self, inst1):
         Reporter.unit_test_start(False)
