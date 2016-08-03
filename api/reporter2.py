@@ -248,7 +248,7 @@ class Reporter:
             Reporter.REPORT_MSG("%s, join : %s", file, ' '.join(file))
             ssh_conn.sendline('tail -f -n 0 ' + ' '.join(file))
             thr = threading.Thread(target=cls.tailer_thread, args=(ssh_conn, ))
-            cls.thr_status_dic[thr.getName()] = [thr, True, type]
+            cls.thr_status_dic[thr.getName()] = [thr, True, type, host]
             cls.result_dic[thr.getName()] = ''
             thr.start()
 
@@ -260,7 +260,7 @@ class Reporter:
             #     if 'tail' in line_list[i]:
             #         del line_list[i]
             #         break;
-            Reporter.REPORT_MSG("%s", '\n'.join('     **[' + cls.thr_status_dic[thr_name][2] + '] '+ line for line in line_list))
+            Reporter.REPORT_MSG("%s", '\n'.join('     **[' + cls.thr_status_dic[thr_name][2] + ':' + cls.thr_status_dic[thr_name][3] + '] '+ line for line in line_list))
         if thr_name in cls.result_dic:
             del cls.result_dic[thr_name]
         if cls.thr_status_dic[thr_name][0].getName().find(thr_name) != -1:
