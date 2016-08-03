@@ -257,9 +257,15 @@ class SonaTest:
                 Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
                 Reporter.unit_test_stop('nok', False)
                 return False
-            cmd = 'ping ' + floating_ip + ' -w 1'
             ping_result = []
             sucs_cnt = 0
+            (exitstatus, outtext) = commands.getstatusoutput('uname -a')
+            # print outtext
+            if 'Linux' in outtext:
+                cmd = 'ping ' + floating_ip + ' -w 1'
+            else:
+                cmd = 'ping -t 1' + floating_ip
+
             for i in range(self.ping_timeout):
                 (exitstatus, outtext) = commands.getstatusoutput(cmd)
                 # print outtext
