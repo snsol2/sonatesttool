@@ -253,7 +253,6 @@ class SonaTest:
                 Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
                 Reporter.unit_test_stop('nok', False)
                 return False
-            # floating_ip = '10.10.2.93'
             cmd = 'ping ' + floating_ip + ' -w 1'
             ping_result = []
             sucs_cnt = 0
