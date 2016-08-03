@@ -242,7 +242,7 @@ class Reporter:
         ssh_conn = cls.ssh_connect(port, user, host, password)
         # cls.result_dic[threading.current_thread().getName()] = '[' + host + ', ' + user + ', ' + file + ']\n'
         if ssh_conn is not False:
-            ssh_conn.sendline('tail -f -n 0 ' + file)
+            ssh_conn.sendline('tail -f -n 0 ' + ' '.join(file))
             thr = threading.Thread(target=cls.tailer_thread, args=(ssh_conn, ))
             cls.thr_status_dic[thr.getName()] = [thr, True, type]
             cls.result_dic[thr.getName()] = ''

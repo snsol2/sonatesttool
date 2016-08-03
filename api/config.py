@@ -69,6 +69,7 @@ class ReadConfig:
         ]
         CONF.register_group(tail_info_group)
         CONF.register_opts(tail_info_conf, tail_info_group)
+        CONF.openstack.log_files = CONF.openstack.log_files.split(', ')
         return CONF.openstack
 
     @classmethod
@@ -87,6 +88,7 @@ class ReadConfig:
         CONF.register_group(onos_info_group)
         CONF.register_opts(onos_info_conf, onos_info_group)
         CONF.onos.onos_list = CONF.onos.onos_list.split(', ')
+        CONF.onos.onos_logfile = CONF.onos.onos_logfile.split(', ')
         return CONF.onos
 
     @classmethod
