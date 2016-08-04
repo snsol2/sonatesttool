@@ -234,9 +234,6 @@ class Reporter:
     def ssh_disconnect(self, ssh_conn, host):
         if ssh_conn.isalive():
             ssh_conn.close()
-            # print '[%s] ssh_close [%d]\n' %(host, ssh_conn.isalive())
-            if True is ssh_conn.isalive():
-                print '\n[%s] ssh_close filed\n' %(host)
 
     @classmethod
     def tailer_thread(cls, ssh_conn, host):
@@ -251,17 +248,13 @@ class Reporter:
                 if 'Timeout exceeded.' in str(e):
                     pass
                 else:
-                    print 'thr excpt : ', e, ', cur thread : ', threading.current_thread().getName()
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                    print '\n traceback ::: \n ', ''.join('   !! ' + line for line in lines)
+                    cls.REPORT_MSG("%s", ''.join('   !! ' + line for line in lines))
         try:
             cls.ssh_disconnect(ssh_conn, host)
-            # Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
         except Exception, e:
-            Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] except : %s\n', host, e)
-
-
+            Reporter.REPORT_MSG('   >> [%s] except : %s\n', host, e)
 
     @classmethod
     def create_start_tailer(cls, port, user, host, password, file, type):
@@ -273,13 +266,11 @@ class Reporter:
             ssh_conn.sendline('tail -f -n 0 ' + ' '.join(file))
             thr = threading.Thread(target=cls.tailer_thread, args=(ssh_conn, host, ))
             cls.thr_status_dic[thr.getName()] = [thr, True, type, host]
-            print 'create thread : ', thr.getName()
             cls.result_dic[thr.getName()] = ''
             thr.start()
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
-        print 'delete thread : ', thr_name
         if 'nok' in result:
             line_list = cls.result_dic[thr_name].splitlines()
             # for i in range(len(line_list)):
@@ -303,7 +294,6 @@ class Reporter:
                 cls.stop_tailer(result, key)
             cls.thr_status_dic.clear()
 
-
     @classmethod
     def start_tailer(cls):
         # openstack tail
@@ -324,5 +314,5 @@ class Reporter:
                                         onos_info.os_password,
                                         onos_info.onos_logfile, 'onos')
 
-        # time.sleep(cls._config.get_log_collector_wait_time())
+        time.sleep(cls._config.get_log_collector_wait_time())
 
