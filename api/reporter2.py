@@ -252,6 +252,7 @@ class Reporter:
                     pass
                 else:
                     print 'thr excpt : ', e
+                    cls.exception_err_write()
         try:
             cls.ssh_disconnect(ssh_conn, host)
             # Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
