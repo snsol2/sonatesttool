@@ -251,7 +251,7 @@ class Reporter:
                 if 'Timeout exceeded.' in str(e):
                     pass
                 else:
-                    print 'thr excpt : ', e
+                    print 'thr excpt : ', e, ', cur thread : ', threading.current_thread().getName()
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
                     print '\n traceback ::: \n ', ''.join('   !! ' + line for line in lines)
