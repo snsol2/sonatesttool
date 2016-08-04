@@ -87,7 +87,7 @@ fi
 echo "====================================="
 echo "3. Set an environment variable. Current Shell($SHELL)." 
 echo "   bash: export PYTHONPATH=`pwd`:."
-echo "   csh:  setenv PYTHONPATH  `pwd`:."
+echo "   csh:  setenv PYTHONPATH `pwd`:."
 echo "====================================="
 echo ""
 echo "====================================="
