@@ -288,8 +288,8 @@ class Reporter:
             #         del line_list[i]
             #         break;
             Reporter.REPORT_MSG("%s", '\n'.join('     **[' + cls.thr_status_dic[thr_name][2] + ':' + cls.thr_status_dic[thr_name][3] + '] '+ line for line in line_list))
-        if thr_name in cls.result_dic:
-            del cls.result_dic[thr_name]
+        # if thr_name in cls.result_dic:
+        #     del cls.result_dic[thr_name]
         if cls.thr_status_dic[thr_name][0].getName().find(thr_name) != -1:
             cls.thr_status_dic[thr_name][2] = ''
             cls.thr_status_dic[thr_name][1] = False
