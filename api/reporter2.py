@@ -243,9 +243,9 @@ class Reporter:
         while cls.thr_status_dic[threading.current_thread().getName()][1]:
             try:
                 data = (ssh_conn.read_nonblocking(size=2048, timeout=0.05))
-                cls.report_lock.acquire()
+                # cls.report_lock.acquire()
                 cls.result_dic[threading.current_thread().getName()] += data
-                cls.report_lock.release()
+                # cls.report_lock.release()
                 # print data
             except Exception, e:
                 if 'Timeout exceeded.' in str(e):
