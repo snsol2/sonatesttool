@@ -229,10 +229,10 @@ class Reporter:
         return conn
 
     @classmethod
-    def ssh_disconnect(self, ssh_conn):
+    def ssh_disconnect(self, ssh_conn, host):
         if ssh_conn.isalive():
             ssh_conn.close()
-            time.sleep(0.5)
+            print '[%s] ssh_close[%d]\n' %(host, ssh_conn.isalive())
 
     @classmethod
     def tailer_thread(cls, ssh_conn, host):
