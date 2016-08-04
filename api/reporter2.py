@@ -279,6 +279,7 @@ class Reporter:
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
+        cls.thr_status_dic[thr_name][1]=False
         print 'delete thread : ', thr_name
         if 'nok' in result:
             line_list = cls.result_dic[thr_name].splitlines()
@@ -299,8 +300,8 @@ class Reporter:
         if threading.activeCount() > 1:
             for key in cls.thr_status_dic:
                 cls.stop_tailer(result, key)
-
             cls.thr_status_dic.clear()
+
 
     @classmethod
     def start_tailer(cls):
@@ -322,5 +323,5 @@ class Reporter:
                                         onos_info.os_password,
                                         onos_info.onos_logfile, 'onos')
 
-        time.sleep(cls._config.get_log_collector_wait_time())
+        # time.sleep(cls._config.get_log_collector_wait_time())
 
