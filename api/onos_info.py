@@ -75,7 +75,7 @@ class ONOSInfo():
                 if None is proto:
                     continue
                 dev_cnt += 1
-                Reporter.REPORT_MSG('   >>[%d] %s', i, dev_info_dic)
+                # Reporter.REPORT_MSG('   >>[%d] %s', i, dev_info_dic)
                 if False is dev_info_dic['available']:
                     Reporter.REPORT_MSG('   >> [%s] device[%s] status nok', conn_info['host'], dev_info_dic['id'])
                     return False
