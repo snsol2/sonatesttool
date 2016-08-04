@@ -136,12 +136,13 @@ class ONOSInfo():
                 ret = self.app_info(conn_info, 'org.onosproject.openstackinterface')
                 state_info['openstackinterface'] = ret; state_list.append(ret)
 
-                if 'INSTALLED' in state_list:
+                if 'ACTIVE' in state_list:
+                    Reporter.REPORT_MSG('   >> [%s][Application OK] : %s', onos_ip, state_info)
+                else:
                     Reporter.REPORT_MSG('   >> [%s][Application NOK] : %s', onos_ip, state_info)
                     if report_flag is None:
                         Reporter.unit_test_stop('nok')
                         return False
-                Reporter.REPORT_MSG('   >> [%s][Application OK] : %s', onos_ip, state_info)
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
