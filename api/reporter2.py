@@ -229,6 +229,12 @@ class Reporter:
         return conn
 
     @classmethod
+    def ssh_disconnect(self, ssh_conn):
+        if ssh_conn.isalive():
+            ssh_conn.close()
+            time.sleep(0.5)
+
+    @classmethod
     def tailer_thread(cls, ssh_conn, host):
         while cls.thr_status_dic[threading.current_thread().getName()][1]:
             try:
@@ -241,10 +247,8 @@ class Reporter:
                 if 'Timeout exceeded.' in str(e):
                     pass
         try:
-            time.sleep(0.5)
-            if ssh_conn.isalive():
-                ssh_conn.close()
-                # Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
+            cls.ssh_disconnect(ssh_conn)
+            # Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
         except Exception, e:
             Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] except : %s\n', host, e)
 
@@ -263,8 +267,7 @@ class Reporter:
             cls.result_dic[thr.getName()] = ''
             thr.start()
         else:
-            if ssh_conn.isalive():
-                ssh_conn.close()
+            cls.ssh_disconnect(ssh_conn)
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
