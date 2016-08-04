@@ -279,7 +279,7 @@ class Reporter:
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
-        print 'delete thread : ', thr_name()
+        print 'delete thread : ', thr_name
         if 'nok' in result:
             line_list = cls.result_dic[thr_name].splitlines()
             # for i in range(len(line_list)):
