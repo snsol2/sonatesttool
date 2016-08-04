@@ -69,6 +69,7 @@ if [ "$answer" = "y" ]; then
     apt-get install python-pexpect
   elif [ "$SYS_OS" = "Darwin" ]; then
     easy_install --upgrade six
+    easy_install pip
     pip install python-neutronclient
     pip install python-novaclient
     pip install python-keystoneclient
