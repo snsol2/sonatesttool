@@ -215,6 +215,7 @@ class Reporter:
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:', PROMPT], timeout=conn_timeout)
             if ret == 0:
                 cls.REPORT_MSG('   >> [%s] : tailer Error Connection to SSH Server', host)
+                cls.ssh_disconnect(conn, host)
                 return False
             if ret == 1:
                 conn.sendline('yes')
@@ -224,6 +225,7 @@ class Reporter:
             conn.expect(PROMPT, timeout=conn_timeout)
         except Exception, e:
             cls.REPORT_MSG('   >> [%s] : tailer Error Connection to SSH Server(timeout except)', host)
+            cls.ssh_disconnect(conn, host)
             return False
 
         return conn
@@ -232,7 +234,9 @@ class Reporter:
     def ssh_disconnect(self, ssh_conn, host):
         if ssh_conn.isalive():
             ssh_conn.close()
-            print '[%s] ssh_close[%d]\n' %(host, ssh_conn.isalive())
+            # print '[%s] ssh_close [%d]\n' %(host, ssh_conn.isalive())
+            if False is ssh_conn.isalive():
+                print '\n[%s] ssh_close filed\n' %(host)
 
     @classmethod
     def tailer_thread(cls, ssh_conn, host):
@@ -246,6 +250,8 @@ class Reporter:
             except Exception, e:
                 if 'Timeout exceeded.' in str(e):
                     pass
+                else:
+                    print 'thr excpt : ', e
         try:
             cls.ssh_disconnect(ssh_conn, host)
             # Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
@@ -266,8 +272,6 @@ class Reporter:
             cls.thr_status_dic[thr.getName()] = [thr, True, type, host]
             cls.result_dic[thr.getName()] = ''
             thr.start()
-        else:
-            cls.ssh_disconnect(ssh_conn, host)
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
