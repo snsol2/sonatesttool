@@ -15,7 +15,7 @@ class ONOSInfo():
             conn.auth = (conn_info['user'], conn_info['password'])
             return conn
         except:
-            return False
+            return
 
     def app_info(self, conn_info, app_name):
         try:
@@ -25,7 +25,7 @@ class ONOSInfo():
             # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
             return dict(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json())['state'].encode('utf-8')
         except:
-            return False
+            return
 
     def device_info(self, conn_info):
         try:
@@ -36,7 +36,7 @@ class ONOSInfo():
             dev_list = json.loads(ret)
             return dev_list['devices']
         except:
-            return False
+            return
 
     def port_info(self, conn_info, dev_id):
         try:
@@ -58,11 +58,14 @@ class ONOSInfo():
 
             return result
         except:
-            return False
+            return
 
     def device_status(self, conn_info):
         try:
             dev_list = self.device_info(conn_info)
+            if None is dev_list:
+                return False
+
             br_int_status = 0
             vxlan_status = 0
             dev_cnt = 0
