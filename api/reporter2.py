@@ -273,11 +273,13 @@ class Reporter:
             ssh_conn.sendline('tail -f -n 0 ' + ' '.join(file))
             thr = threading.Thread(target=cls.tailer_thread, args=(ssh_conn, host, ))
             cls.thr_status_dic[thr.getName()] = [thr, True, type, host]
+            print 'create thread : ', thr.getName()
             cls.result_dic[thr.getName()] = ''
             thr.start()
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
+        print 'delete thread : ', thr_name()
         if 'nok' in result:
             line_list = cls.result_dic[thr_name].splitlines()
             # for i in range(len(line_list)):
