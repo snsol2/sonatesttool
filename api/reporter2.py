@@ -130,6 +130,10 @@ class Reporter:
         print WHITE + report_format % args + ENDC
 
     @classmethod
+    def PRINTBL(cls, report_format, *args):
+        print BLACK + report_format % args + ENDC
+
+    @classmethod
     def NRET_PRINT(cls, report_format, *args):
         print report_format % args,
 
@@ -225,7 +229,7 @@ class Reporter:
         return conn
 
     @classmethod
-    def tailer_thread(cls, ssh_conn):
+    def tailer_thread(cls, ssh_conn, host):
         while cls.thr_status_dic[threading.current_thread().getName()][1]:
             try:
                 data = (ssh_conn.read_nonblocking(size=2048, timeout=0.05))
@@ -236,8 +240,14 @@ class Reporter:
             except Exception, e:
                 if 'Timeout exceeded.' in str(e):
                     pass
+        try:
+            if ssh_conn.isalive():
+                ssh_conn.close()
+                Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
+        except Exception, e:
+            Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] except : %s\n', host, e)
 
-        ssh_conn.close()
+
 
     @classmethod
     def create_start_tailer(cls, port, user, host, password, file, type):
@@ -247,7 +257,7 @@ class Reporter:
         if ssh_conn is not False:
             # Reporter.REPORT_MSG("%s, join : %s", file, ' '.join(file))
             ssh_conn.sendline('tail -f -n 0 ' + ' '.join(file))
-            thr = threading.Thread(target=cls.tailer_thread, args=(ssh_conn, ))
+            thr = threading.Thread(target=cls.tailer_thread, args=(ssh_conn, host, ))
             cls.thr_status_dic[thr.getName()] = [thr, True, type, host]
             cls.result_dic[thr.getName()] = ''
             thr.start()
