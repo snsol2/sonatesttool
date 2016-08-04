@@ -10,43 +10,55 @@ class ONOSInfo():
         ONOSInfo._config = config
 
     def onos_create_session(self, conn_info):
-        conn = requests.session()
-        conn.auth = (conn_info['user'], conn_info['password'])
-        return conn
+        try:
+            conn = requests.session()
+            conn.auth = (conn_info['user'], conn_info['password'])
+            return conn
+        except:
+            return False
 
     def app_info(self, conn_info, app_name):
-        conn = self.onos_create_session(conn_info)
-        url = 'http://' + conn_info['host'] + ':8181/onos/v1/applications/' + app_name
-        header = {'Accept': 'application/json'}
-        # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
-        return dict(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json())['state'].encode('utf-8')
+        try:
+            conn = self.onos_create_session(conn_info)
+            url = 'http://' + conn_info['host'] + ':8181/onos/v1/applications/' + app_name
+            header = {'Accept': 'application/json'}
+            # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
+            return dict(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json())['state'].encode('utf-8')
+        except:
+            return False
 
     def device_info(self, conn_info):
-        conn = self.onos_create_session(conn_info)
-        url = 'http://' + conn_info['host'] + ':8181/onos/v1/devices/'
-        header = {'Accept': 'application/json'}
-        ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
-        dev_list = json.loads(ret)
-        return dev_list['devices']
+        try:
+            conn = self.onos_create_session(conn_info)
+            url = 'http://' + conn_info['host'] + ':8181/onos/v1/devices/'
+            header = {'Accept': 'application/json'}
+            ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
+            dev_list = json.loads(ret)
+            return dev_list['devices']
+        except:
+            return False
 
     def port_info(self, conn_info, dev_id):
-        conn = self.onos_create_session(conn_info)
-        url = 'http://' + conn_info['host'] + ':8181/onos/v1/devices/' + dev_id + '/ports'
-        header = {'Accept': 'application/json'}
-        # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
-        ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
-        port_list = json.loads(ret)
+        try:
+            conn = self.onos_create_session(conn_info)
+            url = 'http://' + conn_info['host'] + ':8181/onos/v1/devices/' + dev_id + '/ports'
+            header = {'Accept': 'application/json'}
+            # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
+            ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
+            port_list = json.loads(ret)
 
-        result = []
-        for x in dict(port_list)['ports']:
-            port_name = dict(dict(x)['annotations'])
-            port_status = dict(x)
-            # test
-            # if 'vxlan' in port_name['portName']:
-            #     port_status['isEnabled'] = False
-            result.append({port_name['portName'] : port_status['isEnabled']})
+            result = []
+            for x in dict(port_list)['ports']:
+                port_name = dict(dict(x)['annotations'])
+                port_status = dict(x)
+                # test
+                # if 'vxlan' in port_name['portName']:
+                #     port_status['isEnabled'] = False
+                result.append({port_name['portName'] : port_status['isEnabled']})
 
-        return result
+            return result
+        except:
+            return False
 
     def device_status(self, conn_info):
         try:
@@ -57,9 +69,10 @@ class ONOSInfo():
             for i in range(len(dev_list)):
                 dev_info_dic = dict(dev_list[i])
                 proto = dict(dev_info_dic['annotations']).get('protocol')
-                if 'None' is proto:
+                if None is proto:
                     continue
                 dev_cnt += 1
+                Reporter.REPORT_MSG('   >>[%d] %s', i, dev_info_dic)
                 if False is dev_info_dic['available']:
                     Reporter.REPORT_MSG('   >> [%s] device[%s] status nok', conn_info['host'], dev_info_dic['id'])
                     return False
