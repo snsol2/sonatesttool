@@ -252,7 +252,9 @@ class Reporter:
                     pass
                 else:
                     print 'thr excpt : ', e
-                    cls.exception_err_write()
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                    print '\n traceback ::: \n ', ''.join('   !! ' + line for line in lines)
         try:
             cls.ssh_disconnect(ssh_conn, host)
             # Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
