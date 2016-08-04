@@ -58,7 +58,8 @@ class SonaTest:
         return conn
 
     def ssh_disconnect(self, ssh_conn):
-        ssh_conn.close()
+        if ssh_conn.isalive():
+            ssh_conn.close()
 
     def ssh_send_command(self, ssh_conn, cmd):
         ssh_conn.sendline(cmd)
@@ -110,6 +111,7 @@ class SonaTest:
             inst_info_1 = ast.literal_eval(self.inst_conf[inst1])
             conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
             if conn is False:
+                self.ssh_disconnect(conn)
                 Reporter.unit_test_stop('nok', False)
                 return False
 
@@ -179,6 +181,7 @@ class SonaTest:
 
             return True
         except:
+            self.ssh_disconnect(conn)
             Reporter.exception_err_write()
             return False
 

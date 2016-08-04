@@ -241,9 +241,10 @@ class Reporter:
                 if 'Timeout exceeded.' in str(e):
                     pass
         try:
+            time.sleep(0.5)
             if ssh_conn.isalive():
                 ssh_conn.close()
-                Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
+                # Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] ssh_close[%d]\n', host, ssh_conn.isalive())
         except Exception, e:
             Reporter.REPORT_MSG('   >>>>>>>>>>>>>> [%s] except : %s\n', host, e)
 
@@ -261,6 +262,9 @@ class Reporter:
             cls.thr_status_dic[thr.getName()] = [thr, True, type, host]
             cls.result_dic[thr.getName()] = ''
             thr.start()
+        else:
+            if ssh_conn.isalive():
+                ssh_conn.close()
 
     @classmethod
     def stop_tailer(cls, result, thr_name):
