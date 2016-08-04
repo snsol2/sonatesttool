@@ -142,7 +142,7 @@ class ONOSInfo():
                     Reporter.REPORT_MSG('   >> [%s][Application NOK] : %s', onos_ip, state_info)
                     if report_flag is None:
                         Reporter.unit_test_stop('nok')
-                        return False
+                    return False
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
@@ -167,7 +167,7 @@ class ONOSInfo():
                 if False is ret:
                     if report_flag is None:
                         Reporter.unit_test_stop('nok')
-                        return False
+                    return False
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')

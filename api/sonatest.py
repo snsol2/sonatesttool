@@ -297,5 +297,7 @@ class SonaTest:
 
             if (app_stat and device_stat and token_stat and service_stat):
                 Reporter.unit_test_stop('ok')
+            else:
+                Reporter.unit_test_stop('nok')
         except:
             Reporter.exception_err_write()
