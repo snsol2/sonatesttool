@@ -205,8 +205,8 @@ class NetworkTester:
             Reporter.REPORT_MSG("   >> Not Exist Subnet on OpenStack --->")
             return
 
-    def create_subnet(self, subnet_opt, network_opt):
-        Reporter.unit_test_start(True, subnet_opt, network_opt)
+    def create_subnet(self, network_opt, subnet_opt):
+        Reporter.unit_test_start(True, network_opt, subnet_opt)
         try:
             # if not subnet_body:
             #     Reporter.REPORT_MSG("   >> Not Exist Subnet in config --->")
