@@ -235,7 +235,7 @@ class Reporter:
         if ssh_conn.isalive():
             ssh_conn.close()
             # print '[%s] ssh_close [%d]\n' %(host, ssh_conn.isalive())
-            if False is ssh_conn.isalive():
+            if True is ssh_conn.isalive():
                 print '\n[%s] ssh_close filed\n' %(host)
 
     @classmethod
