@@ -91,6 +91,6 @@ echo "   csh:  setenv PYTHONPATH `pwd`:."
 echo "====================================="
 echo ""
 echo "====================================="
-echo " Tool Setup End"
+echo " Installation is complete."
 echo "====================================="
 
