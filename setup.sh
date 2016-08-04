@@ -42,6 +42,8 @@ else
   echo "Invalid Answer($answer). Stop & Exit." ; exit;
 fi
 
+
+
 SYS_OS=$(uname -s)
 echo "====================================="
 echo "2. Install Package. OS($SYS_OS)." 
@@ -82,6 +84,12 @@ else
 fi
 
 
+echo "====================================="
+echo "3. Set an environment variable. Current Shell($SHELL)." 
+echo "   bash: export PYTHONPATH=`pwd`:."
+echo "   csh:  setenv PYTHONPATH  `pwd`:."
+echo "====================================="
+echo ""
 echo "====================================="
 echo " Tool Setup End"
 echo "====================================="
