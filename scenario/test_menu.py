@@ -103,7 +103,7 @@ def report_log_viewer():
             (exitstatus, outtext) = commands.getstatusoutput('cat '+ Reporter.report_file_name)
             print outtext
             print '\n================================== END LOG ==================================\n\n'
-            ret = raw_input(RED + "\n press any key " + ENDC)
+            ret = raw_input(RED + "\n press any key to ENTER " + ENDC)
             if ret:
                 break
         elif 'n' in sel_log:
