@@ -237,7 +237,7 @@ class NetworkTester:
         try:
             subnet_uuid = self.get_subnet_uuid(subnet_opt)
             if not subnet_uuid:
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('skip')
                 return
 
             subnet_rst = self.neutron.delete_subnet(subnet_uuid)
@@ -424,7 +424,7 @@ class NetworkTester:
         try:
             router_uuid = self.get_router_uuid(router_opt)
             if not router_uuid:
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('skip')
                 return
             router_rst = self.neutron.delete_router(router_uuid)
             Reporter.REPORT_MSG("   >> Delete Router ---> %s", router_rst)
@@ -461,13 +461,13 @@ class NetworkTester:
             router_uuid = self.get_router_uuid(router_opt)
             if not router_uuid:
                 Reporter.REPORT_MSG("   >> Router Not Exist --->> %s", router_opt)
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('skip')
                 return
 
             subnet_uuid = self.get_subnet_uuid(subnet_opt)
             if not subnet_uuid:
                 Reporter.REPORT_MSG("   >> Subnet Not Exist --->> %s", router_opt)
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('skip')
                 return
 
             router_if_body = {'subnet_id': subnet_uuid}
