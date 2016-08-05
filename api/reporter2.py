@@ -18,6 +18,14 @@ YELLOW = '\033[1;93m'
 GREEN = '\033[1;92m'
 RED = '\033[1;91m'
 BLACK = '\033[1;90m'
+BG_WHITE = '\033[0;97m'
+BG_BLUEW = '\033[0;37;44m'
+BG_SKYW = '\033[0;37;46m'
+BG_PINKW = '\033[0;37;45m'
+BG_YELLOWW = '\033[0;30;43m'
+BG_GREENW = '\033[0;37;42m'
+BG_RED = '\033[0;91m'
+BG_BLACK = '\033[0;90m'
 ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
@@ -40,6 +48,7 @@ class Reporter:
     test_start_time = datetime.datetime.now()
     test_total_time = datetime.timedelta()
     report_lock = threading.Lock()
+    report_file_name =''
 
     # def __init__(self, config_file):
     def __init__(self, config):
@@ -63,6 +72,7 @@ class Reporter:
             now_time = now.strftime('%Y-%m-%d-%H:%M:%S')
 
         file_name = config.get_report_file_path() + 'REPORT_' + now_time
+        Reporter.report_file_name = file_name
         rpt_formatter = logging.Formatter('%(message)s')
         file_handler = logging.FileHandler(file_name)
         file_handler.setFormatter(rpt_formatter)
@@ -137,6 +147,28 @@ class Reporter:
     def NRET_PRINT(cls, report_format, *args):
         print report_format % args,
 
+    ### Menu Color Func Start ####
+    @classmethod
+    def PRINTBW(cls, report_format, *args):
+        print BG_BLUEW + report_format % args + ENDC
+
+    @classmethod
+    def PRINTGW(cls, report_format, *args):
+        print BG_GREENW + report_format % args + ENDC
+
+    @classmethod
+    def PRINTYW(cls, report_format, *args):
+        print BG_YELLOWW + report_format % args + ENDC
+
+    @classmethod
+    def PRINTSW(cls, report_format, *args):
+        print BG_SKYW + report_format % args + ENDC
+
+    @classmethod
+    def PRINTPW(cls, report_format, *args):
+        print BG_PINKW + report_format % args + ENDC
+    ### Menu Color Func End ####
+
     @classmethod
     def exception_err_write(cls):
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -199,6 +231,13 @@ class Reporter:
         print "   Test Time:",
         print cls.test_total_time
 
+    @classmethod
+    def initial_test_count(cls):
+        cls.test_count=0
+        cls.ok_count=0
+        cls.skip_count=0
+        cls.nok_count=0
+        cls.test_total_time=0
 
 #### Tailer Function #####
     @classmethod
