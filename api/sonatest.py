@@ -43,6 +43,7 @@ class SonaTest:
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=self.conn_timeout)
             if ret == 0:
                 Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Servcer(%d)', host, ret)
+                self.ssh_disconnect(conn)
                 return False
             if ret == 1:
                 # Reporter.REPORT_MSG('   >> [%s] wait %s ', host, ssh_newkey)
@@ -54,6 +55,7 @@ class SonaTest:
 
         except Exception, e:
             Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Servcer (timeout except)', host)
+            self.ssh_disconnect(conn)
             return False
 
         return conn
@@ -112,7 +114,6 @@ class SonaTest:
             inst_info_1 = ast.literal_eval(self.inst_conf[inst1])
             conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
             if conn is False:
-                self.ssh_disconnect(conn)
                 Reporter.unit_test_stop('nok', False)
                 return False
 
