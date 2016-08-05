@@ -429,7 +429,8 @@ etc_menu_map = {
 }
 
 
-PROMPT = BOLD + WHITE + ' Select Menu : '+ENDC
+# PROMPT = BOLD + WHITE + ' Select Menu : '+ENDC
+PROMPT = BOLD + RED + ' Select Menu : '+ENDC
 
 def main():
     global exit_flag
