@@ -237,7 +237,7 @@ class Reporter:
         cls.ok_count=0
         cls.skip_count=0
         cls.nok_count=0
-        cls.test_total_time=0
+        cls.test_total_time = datetime.timedelta()
 
 #### Tailer Function #####
     @classmethod
