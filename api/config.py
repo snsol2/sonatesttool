@@ -22,7 +22,8 @@ class ReadConfig:
             cfg.IntOpt('log_collector_wait_time'),
             cfg.IntOpt('ssh_conn_timeout'),
             cfg.IntOpt('onos_get_timeout'),
-            cfg.IntOpt('floating_ip_check_timeout')
+            cfg.IntOpt('floating_ip_check_timeout'),
+            cfg.BoolOpt('state_check_result_skip_mode')
         ]
         CONF.register_group(default_group)
         CONF.register_opts(default_conf, default_group)
@@ -48,6 +49,10 @@ class ReadConfig:
     @classmethod
     def get_report_file_format(cls):
         return CONF.DEFAULT.report_format
+
+    @classmethod
+    def get_state_check_result_skip_mode(cls):
+        return CONF.DEFAULT.state_check_result_skip_mode
 
     @classmethod
     def get_floating_ip_check_timeout(cls):

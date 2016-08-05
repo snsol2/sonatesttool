@@ -25,6 +25,7 @@ class SonaTest:
         self.auth = self.conf.get_auth_conf()
         self.conn_timeout = self.conf.get_ssh_conn_timeout()
         self.ping_timeout = self.conf.get_floating_ip_check_timeout()
+        self.result_skip_mode = self.conf.get_state_check_result_skip_mode()
         self.instance = InstanceTester(self.conf)
         self.network = NetworkTester(self.conf)
         self.onos = ONOSInfo(self.conf)
@@ -302,5 +303,8 @@ class SonaTest:
                 Reporter.unit_test_stop('ok')
             else:
                 Reporter.unit_test_stop('nok')
+                if False is self.result_skip_mode:
+                    Reporter.test_summary()
+                    os._exit(1)
         except:
             Reporter.exception_err_write()
