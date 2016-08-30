@@ -65,10 +65,13 @@ def main_menu():
 
 def state_test_menu():
     os.system('clear')
-    title_print(' # etc test')
-    Reporter.PRINTB("| 1. onos state            |")
+    title_print(' # update & traffic test')
+    Reporter.PRINTB("| 1. get onos state        |")
     Reporter.PRINTB("| 2. traffic test          |")
-    Reporter.PRINTB("| 3. port test             |")
+    Reporter.PRINTB("| 3. set router up         |")
+    Reporter.PRINTB("| 4. set router down       |")
+    Reporter.PRINTB("| 5. set port up           |")
+    Reporter.PRINTB("| 6. set port down         |")
     Reporter.PRINTB("| 0. return to main menu   |")
     Reporter.PRINTB("|--------------------------|")
 
@@ -118,9 +121,6 @@ def report_log_viewer():
             Reporter.PRINTR('invalid value, retry! ')
             continue
 
-
-
-
 def scenario_file_search():
     file_list=[]
     filenames = os.listdir(SCENARIO_PATH)
@@ -141,7 +141,6 @@ def get_config_key_list(section):
     key_list = item.keys()
     del key_list[0]
     return key_list
-
 
 def scenario_test():
     # navi_menu = SCEN_TEST_MENU
@@ -983,19 +982,122 @@ def config_floatingip_associate(type):
             value_list.append('yes')
             save_scenario('delete_floatingip_all', value_list, type)
 
-
-
-def onos_state():
+def get_onos_state():
+    Reporter.initial_test_count()
     print 'onos_state'
+    test.onos_and_openstack_check()
+    test.reporter.test_summary()
+    report_log_viewer()
 
 def traffic_test():
-    print 'traffic_test'
+    Reporter.initial_test_count()
+    # arg1 : flaoting instance1, arg2 : instance, network, arg3 : instance, network
+    value = []
+    arg = []
+    title_print(' # traffic test')
+    inst_list = get_config_key_list('instance')
+    net_list = get_config_key_list('network')
+
+    # Instance
+    Reporter.PRINTB("|--------------------------|")
+    for i in range(len(inst_list)):
+        Reporter.PRINTB("| %d. %-21s |", i+1, inst_list[i])
+    Reporter.PRINTB("|--------------------------|")
+    inst_sel = input(RED +'Select association Instance : '+ENDC)
+    arg.append(inst_list[inst_sel-1])
+
+    Reporter.PRINTB("|--------------------------|")
+    Reporter.PRINTB("| 1. 1step                 |")
+    Reporter.PRINTB("| 2. 2step                 |")
+    Reporter.PRINTB("|--------------------------|")
+    step_sel = input(RED +' Select Inatance step : '+ENDC)
+
+    type_sel = 1
+
+    for i in range(step_sel):
+        if i is (step_sel-1):
+            Reporter.PRINTB("|--------------------------|")
+            Reporter.PRINTB("| 1. Instance              |")
+            Reporter.PRINTB("| 2. IP                    |")
+            Reporter.PRINTB("|--------------------------|")
+            type_sel = input(RED +' Instance or ip : '+ENDC)
+
+        if 2 is type_sel:
+            value.append(raw_input(RED +' destnation ip : '+ENDC))
+        else:
+            # Instance
+            Reporter.PRINTB("|--------------------------|")
+            for i in range(len(inst_list)):
+                Reporter.PRINTB("| %d. %-21s |", i+1, inst_list[i])
+            Reporter.PRINTB("|--------------------------|")
+            inst_sel = input(RED +' Select Instance : '+ENDC)
+            value.append(inst_list[inst_sel-1])
+
+            # Network
+            Reporter.PRINTB("|--------------------------|")
+            for x in range(len(net_list)):
+                Reporter.PRINTB("| %d. %-21s |", x+1, net_list[x])
+            Reporter.PRINTB("|--------------------------|")
+            net_sel = input(RED +'Select Network : '+ENDC)
+            value.append(net_list[net_sel-1])
+
+        arg.append(':'.join(value))
+        value = []
+
+
+    if 1 is step_sel:
+        test.ssh_ping(arg[0], arg[1])
+    else:
+        test.ssh_ping(arg[0], arg[1], arg[2])
+
+    test.reporter.test_summary()
+    report_log_viewer()
+
+def set_router_state(type):
+    Reporter.initial_test_count()
+    print 'router ' + type
+    title_print(' # router ' + type)
+    router_list = get_config_key_list('router')
+    # Router
+    for i in range(len(router_list)):
+         Reporter.PRINTB("| %d. %-21s |", i+1, router_list[i])
+    Reporter.PRINTB("|--------------------------|")
+
+    sel = input(RED +'Select Router : '+ENDC)
+    test.network.set_router_up(router_list[sel-1])
+    test.reporter.test_summary()
+    report_log_viewer()
+
+def set_port_state(type):
+    Reporter.initial_test_count()
+    print 'port ' + type
+    title_print(' # port ' + type)
+    inst_list = get_config_key_list('instance')
+    net_list = get_config_key_list('network')
+
+    # Instance
+    Reporter.PRINTB("|--------------------------|")
+    for i in range(len(inst_list)):
+        Reporter.PRINTB("| %d. %-21s |", i+1, inst_list[i])
+    Reporter.PRINTB("|--------------------------|")
+    inst_sel = input(RED +'Select Instance : '+ENDC)
+    inst_list[inst_sel-1]
+
+    # Network
+    Reporter.PRINTB("|--------------------------|")
+    for x in range(len(net_list)):
+        Reporter.PRINTB("| %d. %-21s |", x+1, net_list[x])
+    Reporter.PRINTB("|--------------------------|")
+    net_sel = input(RED +'Select Network : '+ENDC)
+
+    test.network.set_port_up(inst_list[inst_sel-1], net_list[net_sel-1])
+    test.reporter.test_summary()
+    report_log_viewer()
 
 def termination():
     print 'termination!!!!!'
     global exit_flag
     exit_flag=False
-
 
 main_menu_map = {
     1:scenario_test,
@@ -1032,8 +1134,12 @@ scen_delete_menu_map = {
 }
 
 etc_menu_map = {
-    1:onos_state,
+    1:get_onos_state,
     2:traffic_test,
+    3:set_router_state,
+    4:set_router_state,
+    5:set_port_state,
+    6:set_port_state,
     0:main_menu
 }
 
@@ -1080,7 +1186,14 @@ def main():
                     scen_delete_menu()
             elif ETC_MENU is navi_menu:
                 menu = input(PROMPT)
-                etc_menu_map.get(menu)()
+                if menu > 2:
+                    if 0 is menu%2:
+                        etc_menu_map.get(menu)('down')
+                    else:
+                        etc_menu_map.get(menu)('up')
+                else:
+                    etc_menu_map.get(menu)()
+
                 if 0 is menu:
                     navi_menu = MAIN_MENU
                 else:
