@@ -77,6 +77,8 @@ def state_test_menu():
 
 def scen_delete_menu():
     os.system('clear')
+    if len(save_scenario_dic) > 0:
+        display_save_scenario(save_scenario_dic, 'delete')
     title_print(' # delete scenario')
     Reporter.PRINTB("| 1. delete_instance       |")
     Reporter.PRINTB("| 2. delete_floatingip_all |")
@@ -92,6 +94,8 @@ def scen_delete_menu():
 
 def scen_create_menu():
     os.system('clear')
+    if len(save_scenario_dic) > 0:
+        display_save_scenario(save_scenario_dic, 'create')
     title_print(' # create scenario')
     Reporter.PRINTB("| 1. create_netowk         |")
     Reporter.PRINTB("| 2. create_subnet         |")
@@ -133,6 +137,13 @@ def scenario_file_search():
                 file_list.append((file_name.split('.ini'))[0])
 
     return file_list
+
+def scenario_file_duplicate_check(file_name):
+    file_list = scenario_file_search()
+    for x in file_list:
+        if x == file_name:
+            return True
+    return False
 
 def get_config_key_list(section):
     config = ConfigParser()
@@ -370,7 +381,7 @@ def delete_start_scenario(scen_name):
 def save_scenario(section, value, type):
     # global save_scenario_dic
     # verify check
-    print save_scenario_dic
+    # print save_scenario_dic
     save_value_list = save_scenario_dic.get(section)
     if None is not save_value_list:
         if len(value) > 1:
@@ -384,12 +395,12 @@ def save_scenario(section, value, type):
     else:
         save_scenario_dic[section] = value
 
-    display_save_scenario(save_scenario_dic, type)
+    # display_save_scenario(save_scenario_dic, type)
 
 def display_save_scenario(dic, type, test_num=False):
     size_list=[]
     test_index = 0
-    print dic
+    # print dic
     # Network
     net_item = dic.get('network')
     if None is not net_item:
@@ -537,69 +548,85 @@ def display_save_scenario(dic, type, test_num=False):
 
 # scenario save config
 def save_config_scenario(type):
-    scen_name = raw_input(RED +'Enter a name for the file. : '+ENDC)
-    dic = save_scenario_dic
-    scen_file = SCENARIO_PATH + type + '_' + scen_name + '.ini'
-    scen_ini = ConfigParser()
+    if len(save_scenario_dic) > 0:
+        display_save_scenario(save_scenario_dic, type)
+        save_check = raw_input(RED +'Do you want to save the above information?(y/n) : '+ENDC)
+        if 'y' == save_check:
+            while 1:
+                scen_name = raw_input(RED +'Input Save File Name : '+ENDC)
+                scen_file = SCENARIO_PATH + type + '_' + scen_name + '.ini'
+                dup_check = scenario_file_duplicate_check(type + '_' + scen_name)
+                if True is dup_check:
+                    Reporter.PRINTR(" The file name exists. Please enter again!")
+                    continue
+                else:
+                    break
 
-    # Network
-    net_item = dic.get('network')
-    if None is not net_item:
-        scen_ini.add_section('network')
-        for i in range(len(net_item)):
-            set_str = 'set' + str(i+1)
-            scen_ini.set('network', set_str, net_item[i])
+            dic = save_scenario_dic
+            scen_ini = ConfigParser()
 
-    # Subnet
-    sub_item = dic.get('subnet')
-    if None is not sub_item:
-        scen_ini.add_section('subnet')
-        for i in range(len(sub_item)):
-            set_str = 'set' + str(i+1)
-            scen_ini.set('subnet', set_str, sub_item[i])
+            # Network
+            net_item = dic.get('network')
+            if None is not net_item:
+                scen_ini.add_section('network')
+                for i in range(len(net_item)):
+                    set_str = 'set' + str(i+1)
+                    scen_ini.set('network', set_str, net_item[i])
 
-    # Router
-    router_item = dic.get('router')
-    if None is not router_item:
-        scen_ini.add_section('router')
-        for i in range(len(router_item)):
-            set_str = 'set' + str(i+1)
-            scen_ini.set('router', set_str, router_item[i])
+            # Subnet
+            sub_item = dic.get('subnet')
+            if None is not sub_item:
+                scen_ini.add_section('subnet')
+                for i in range(len(sub_item)):
+                    set_str = 'set' + str(i+1)
+                    scen_ini.set('subnet', set_str, sub_item[i])
 
-    # Router Interface
-    router_if_item = dic.get('router-interface')
-    if None is not router_if_item:
-        scen_ini.add_section('router-interface')
-        for i in range(len(router_if_item)):
-            set_str = 'set' + str(i+1)
-            scen_ini.set('router-interface', set_str, router_if_item[i])
+            # Router
+            router_item = dic.get('router')
+            if None is not router_item:
+                scen_ini.add_section('router')
+                for i in range(len(router_item)):
+                    set_str = 'set' + str(i+1)
+                    scen_ini.set('router', set_str, router_item[i])
 
-    # Security_group
-    sg_item = dic.get('security_group')
-    if None is not sg_item:
-        scen_ini.add_section('security_group')
-        for i in range(len(sg_item)):
-            set_str = 'set' + str(i+1)
-            scen_ini.set('security_group', set_str, sg_item[i])
+            # Router Interface
+            router_if_item = dic.get('router-interface')
+            if None is not router_if_item:
+                scen_ini.add_section('router-interface')
+                for i in range(len(router_if_item)):
+                    set_str = 'set' + str(i+1)
+                    scen_ini.set('router-interface', set_str, router_if_item[i])
 
-    # Instance
-    inst_item = dic.get('instance')
-    if None is not inst_item:
-        scen_ini.add_section('instance')
-        for i in range(len(inst_item)):
-            set_str = 'set' + str(i+1)
-            scen_ini.set('instance', set_str, inst_item[i])
+            # Security_group
+            sg_item = dic.get('security_group')
+            if None is not sg_item:
+                scen_ini.add_section('security_group')
+                for i in range(len(sg_item)):
+                    set_str = 'set' + str(i+1)
+                    scen_ini.set('security_group', set_str, sg_item[i])
 
-    # Floating Ip associate
-    fip_as_item = dic.get('floatingip_associate')
-    if None is not fip_as_item:
-        scen_ini.add_section('floatingip_associate')
-        for i in range(len(fip_as_item)):
-            set_str = 'set_' + str(i+1)
-            scen_ini.set('floatingip_associate', set_str, fip_as_item[i])
+            # Instance
+            inst_item = dic.get('instance')
+            if None is not inst_item:
+                scen_ini.add_section('instance')
+                for i in range(len(inst_item)):
+                    set_str = 'set' + str(i+1)
+                    scen_ini.set('instance', set_str, inst_item[i])
 
-    with open(scen_file, 'w') as configfile:
-        scen_ini.write(configfile)
+            # Floating Ip associate
+            fip_as_item = dic.get('floatingip_associate')
+            if None is not fip_as_item:
+                scen_ini.add_section('floatingip_associate')
+                for i in range(len(fip_as_item)):
+                    set_str = 'set_' + str(i+1)
+                    scen_ini.set('floatingip_associate', set_str, fip_as_item[i])
+
+            wlen = 0
+            with open(scen_file, 'w') as configfile:
+                wlen = scen_ini.write(configfile)
+            Reporter.PRINTR(" Success %s save file !", scen_file)
+    else:
+        Reporter.PRINTR(" => Storing information does not exist.")
 
 def test_scenario(type):
     # display scenario
@@ -622,6 +649,7 @@ def test_scenario(type):
                 break
 
 def simple_scenario_test(item_name, type):
+    Reporter.initial_test_count()
     if 'network' in item_name:
         item = save_scenario_dic.get('network')
         print item
@@ -708,48 +736,61 @@ def simple_scenario_test(item_name, type):
     report_log_viewer()
 
 
+def display_config_item(item):
+    sel_state = True
+    list = get_config_key_list(item)
+    for i in range(len(list)):
+        Reporter.PRINTB("| %d. %-21s |", i+1, list[i])
+    if 'security_group' is item:
+        Reporter.PRINTB("| %d. %-21s |", i+2, 'Do not select!')
+    Reporter.PRINTB("| 0. cancel                |")
+    Reporter.PRINTB("|--------------------------|")
+    sel = input(RED +'Select ' + item + ' : '+ENDC)
+
+    list_len = len(list)
+    if 'security_group' is item:
+        list_len = (len(list)+1)
+
+    if sel > list_len:
+        Reporter.PRINTR(" Invalid value !! range : (0~" + str(list_len) + ')')
+        sel_state = False
+        Reporter.PRINTB("|--------------------------|")
+    return list, sel, sel_state
+
 
 # scenaro create function
 def config_network(type):
-    print 'network type : ', type
     value_list=[]
     title_print(' # ' + type  + ' network')
-    list = get_config_key_list('network')
-    for i in range(len(list)):
-        for i in range(len(list)):
-            Reporter.PRINTB("| %d. %-21s |", i+1, list[i])
-        Reporter.PRINTB("|--------------------------|")
-        sel = input(RED +'Select Network : '+ENDC)
+    while 1:
+        list, sel, sel_state = display_config_item('network')
+        if False is sel_state: continue
+        if 0 is sel: break
         value_list.append(list[sel-1])
         choice = raw_input(RED +'Do you want to continue to ' + type + 'network?(y/n) : '+ENDC)
-        if 'n' in choice:
-            break
+        if 'n' in choice: break
         Reporter.PRINTB("|--------------------------|")
-    save_scenario('network', value_list, type)
+
+    if len(value_list) > 0:
+        save_scenario('network', value_list, type)
 
 def config_subnet(type):
     value = []
     value_list=[]
     title_print(' # ' + type + ' subnet')
-    if 'create' in type:
-        net_list = get_config_key_list('network')
-    sub_list = get_config_key_list('subnet')
-    ## network
-    for i in range(len(sub_list)):
+    # network
+    while 1:
         if 'create' in type:
-            print net_list
-            for i in range(len(net_list)):
-                Reporter.PRINTB("| %d. %-21s |", i+1, net_list[i])
-            Reporter.PRINTB("|--------------------------|")
-            sel = input(RED +'Select Network : '+ENDC)
+            net_list, sel, sel_state = display_config_item('network')
+            if False is sel_state: value = [] ; continue
+            if 0 is sel: value = [] ; break
             value.append(net_list[sel-1])
             Reporter.PRINTB("|--------------------------|")
 
         ## subnet
-        for x in range(len(sub_list)):
-            Reporter.PRINTB("| %d. %-21s |", x+1, sub_list[x])
-        Reporter.PRINTB("|--------------------------|")
-        sel = input(RED +'Select Subnet : '+ENDC)
+        sub_list, sel, sel_state = display_config_item('subnet')
+        if False is sel_state: value = [] ; continue
+        if 0 is sel: value = [] ; break
         value.append(sub_list[sel-1])
 
         if 'create' in type:
@@ -764,30 +805,26 @@ def config_subnet(type):
             break
         Reporter.PRINTB("|--------------------------|")
 
-    save_scenario('subnet', value_list, type)
+    if len(value_list) > 0:
+        save_scenario('subnet', value_list, type)
 
 def config_router(type):
     value = []
     value_list=[]
     title_print(' # ' + type + ' router')
-    router_list = get_config_key_list('router')
-    if 'create' in type:
-        net_list = get_config_key_list('network')
-    ## network
-    for i in range(len(router_list)):
-        for i in range(len(router_list)):
-            Reporter.PRINTB("| %d. %-21s |", i+1, router_list[i])
-        Reporter.PRINTB("|--------------------------|")
-        sel = input(RED +'Select Router : '+ENDC)
+    while 1:
+        # router
+        router_list, sel, sel_state = display_config_item('router')
+        if False is sel_state: value = [] ; continue
+        if 0 is sel: value = [] ; break
         value.append(router_list[sel-1])
 
-        ## subnet
+        # network
         if 'create' in type:
             Reporter.PRINTB("|--------------------------|")
-            for x in range(len(net_list)):
-                Reporter.PRINTB("| %d. %-21s |", x+1, net_list[x])
-            Reporter.PRINTB("|--------------------------|")
-            sel = input(RED +'Select Network : '+ENDC)
+            net_list, sel, sel_state = display_config_item('network')
+            if False is sel_state: value = [] ; continue
+            if 0 is sel: value = [] ; break
             value.append(net_list[sel-1])
             val_str = ', '.join(value)
         else:
@@ -801,7 +838,8 @@ def config_router(type):
             break
         Reporter.PRINTB("|--------------------------|")
 
-    save_scenario('router', value_list, type)
+    if len(value_list) > 0:
+        save_scenario('router', value_list, type)
 
 def config_router_interface(type):
     value = []
@@ -811,25 +849,21 @@ def config_router_interface(type):
     else:
         title_print(' # del router-interface')
 
-    router_list = get_config_key_list('router')
-    sub_list = get_config_key_list('subnet')
-    ## network
-    for i in range(len(router_list)):
-        for i in range(len(router_list)):
-            Reporter.PRINTB("| %d. %-21s |", i+1, router_list[i])
-        Reporter.PRINTB("|--------------------------|")
-        sel = input(RED +'Select Router : '+ENDC)
+    while 1:
+        # router
+        router_list, sel, sel_state = display_config_item('router')
+        if False is sel_state: value = [] ; continue
+        if 0 is sel: value = [] ; break
         if sel > len(router_list):
             Reporter.PRINTR(" Invalid value !!")
             continue
         value.append(router_list[sel-1])
-        Reporter.PRINTB("|--------------------------|")
 
-        ## subnet
-        for x in range(len(sub_list)):
-            Reporter.PRINTB("| %d. %-21s |", x+1, sub_list[x])
+        # subnet
         Reporter.PRINTB("|--------------------------|")
-        sel = input(RED +'Select Subnet : '+ENDC)
+        sub_list, sel, sel_state = display_config_item('subnet')
+        if False is sel_state: value = [] ; continue
+        if 0 is sel: value = [] ; break
         if sel > len(sub_list):
             Reporter.PRINTR(" Invalid value !!")
             value=[]
@@ -844,21 +878,18 @@ def config_router_interface(type):
             break
         Reporter.PRINTB("|--------------------------|")
 
-    save_scenario('router-interface', value_list, type)
+    if len(value_list) > 0:
+        save_scenario('router-interface', value_list, type)
 
 def config_security_group(type):
     value = []
     value_list=[]
     title_print(' # ' + type + ' security_group')
-    sec_group_list = get_config_key_list('security_group')
-    if 'create' in type:
-        rule_list = get_config_key_list('security_group_rule')
-    ## network
-    for i in range(len(sec_group_list)):
-        for i in range(len(sec_group_list)):
-            Reporter.PRINTB("| %d. %-21s |", i+1, sec_group_list[i])
-        Reporter.PRINTB("|--------------------------|")
-        sel = input(RED +'Select Security Group : '+ENDC)
+    while 1:
+        # security_group
+        sec_group_list, sel, sel_state = display_config_item('security_group')
+        if False is sel_state: value = [] ; continue
+        if 0 is sel: value = [] ; break
         if sel > len(sec_group_list):
             Reporter.PRINTR(" Invalid value !!")
             continue
@@ -867,10 +898,9 @@ def config_security_group(type):
         # Rule
         if 'create' in type:
             Reporter.PRINTB("|--------------------------|")
-            for x in range(len(rule_list)):
-                Reporter.PRINTB("| %d. %-21s |", x+1, rule_list[x])
-            Reporter.PRINTB("|--------------------------|")
-            sel = input(RED +'Select Rule : '+ENDC)
+            rule_list, sel, sel_state = display_config_item('security_group_rule')
+            if False is sel_state: value = [] ; continue
+            if 0 is sel: value = [] ; break
             if sel > len(rule_list):
                 Reporter.PRINTR(" Invalid value !!")
                 value=[]
@@ -887,80 +917,70 @@ def config_security_group(type):
             break
         Reporter.PRINTB("|--------------------------|")
 
-    save_scenario('security_group', value_list, type)
+    if len(value_list) > 0:
+        save_scenario('security_group', value_list, type)
 
 def config_instance(type):
     value = []
     value_list=[]
-    inst_list = get_config_key_list('instance')
     title_print(' # ' + type + ' instance')
-    if 'create' in type:
-        net_list = get_config_key_list('network')
-        sg_list = get_config_key_list('security_group')
 
-    ## network
-    for i in range(len(inst_list)):
+    while 1:
         # Instance
-        for i in range(len(inst_list)):
-            Reporter.PRINTB("| %d. %-21s |", i+1, inst_list[i])
-        Reporter.PRINTB("|--------------------------|")
-        sel = input(RED +'Select Instance : '+ENDC)
+        inst_list, sel, sel_state = display_config_item('instance')
+        if False is sel_state: value = [] ; continue
+        if 0 is sel: value = [] ; break
         value.append(inst_list[sel-1])
 
         if 'create' in type:
             # Network
             Reporter.PRINTB("|--------------------------|")
-            for x in range(len(net_list)):
-                Reporter.PRINTB("| %d. %-21s |", x+1, net_list[x])
-            Reporter.PRINTB("|--------------------------|")
-            sel = input(RED +'Select Network : '+ENDC)
+            net_list, sel, sel_state = display_config_item('network')
+            if False is sel_state: value = [] ; continue
+            if 0 is sel: value = [] ; break
             value.append(net_list[sel-1])
 
             # security group
-            for x in range(len(sg_list)):
-                Reporter.PRINTB("| %d. %-21s |", x+1, sg_list[x])
-            Reporter.PRINTB("| %d. %-21s |", x+2, 'Do not select!')
             Reporter.PRINTB("|--------------------------|")
-            sel = input(RED +'Select Security Group : '+ENDC)
+            sg_list, sel, sel_state = display_config_item('security_group')
+            if False is sel_state: value = [] ; continue
+            if 0 is sel: value = [] ; break
             if sel < (len(sg_list)+1):
                 value.append(sg_list[sel-1])
             val_str = ', '.join(value)
         else:
             val_str = ''.join(value)
-        value_list.append(val_str)
 
+        value_list.append(val_str)
         value=[]
         choice = raw_input(RED +'Do you want to continue to ' + type + ' inatance?(y/n) : '+ENDC)
         if 'n' in choice:
             break
     # Reporter.PRINTB("|--------------------------|")
 
-    save_scenario('instance', value_list, type)
+    if len(value_list) > 0:
+        save_scenario('instance', value_list, type)
 
 def config_floatingip_associate(type):
     value = []
     value_list=[]
     if 'create' in type:
         title_print(' # add floatingip_associate')
-        inst_list = get_config_key_list('instance')
-        net_list = get_config_key_list('network')
-        ## network
-        for i in range(len(inst_list)):
-            for i in range(len(inst_list)):
-                Reporter.PRINTB("| %d. %-21s |", i+1, inst_list[i])
-            Reporter.PRINTB("|--------------------------|")
-            sel = input(RED +'Select Router : '+ENDC)
+        while 1:
+            # Instance
+            inst_list, sel, sel_state = display_config_item('instance')
+            if False is sel_state: value = [] ; continue
+            if 0 is sel: value = [] ; break
             if sel > len(inst_list):
                 Reporter.PRINTR(" Invalid value !!")
                 continue
             value.append(inst_list[sel-1])
-            Reporter.PRINTB("|--------------------------|")
 
-            ## subnet
-            for x in range(len(net_list)):
-                Reporter.PRINTB("| %d. %-21s |", x+1, net_list[x])
+            # Nework
             Reporter.PRINTB("|--------------------------|")
-            sel = input(RED +'Select Subnet : '+ENDC)
+            net_list, sel, sel_state = display_config_item('network')
+            if False is sel_state: value = [] ; continue
+            if 0 is sel: value = [] ; break
             if sel > len(net_list):
                 Reporter.PRINTR(" Invalid value !!")
                 value=[]
@@ -975,7 +995,8 @@ def config_floatingip_associate(type):
                 break
         Reporter.PRINTB("|--------------------------|")
 
-        save_scenario('floatingip_associate', value_list, type)
+        if len(value_list) > 0:
+            save_scenario('floatingip_associate', value_list, type)
     else:
         choice = raw_input(RED +'Do you want to delete Floating ip all?(y/n) : '+ENDC)
         if 'y' in choice:
@@ -1155,52 +1176,70 @@ def main():
             global navi_menu
             if MAIN_MENU is navi_menu:
                 menu = input(PROMPT)
-                main_menu_map.get(menu)()
-                if SCEN_CRT_MENU is menu:
-                    navi_menu = SCEN_CRT_MENU
-                elif SCEN_DEL_MENU is menu:
-                    navi_menu = SCEN_DEL_MENU
-                elif ETC_MENU is menu:
-                    navi_menu = ETC_MENU
-                elif 0 is menu:
-                    break
+                if menu < len(main_menu_map):
+                    main_menu_map.get(menu)()
+                    if SCEN_CRT_MENU is menu:
+                        navi_menu = SCEN_CRT_MENU
+                    elif SCEN_DEL_MENU is menu:
+                        navi_menu = SCEN_DEL_MENU
+                    elif ETC_MENU is menu:
+                        navi_menu = ETC_MENU
+                    elif 0 is menu:
+                        break
+                    else:
+                        main_menu()
                 else:
+                    Reporter.PRINTR(" Invalid Value.!")
                     main_menu()
             elif SCEN_CRT_MENU is navi_menu:
                 menu = input(PROMPT)
-                if 0 is menu:
-                    scen_create_menu_map.get(menu)()
-                    navi_menu = MAIN_MENU
-                    save_scenario_dic.clear()
+                if menu < len(scen_create_menu_map):
+                    if 0 is menu:
+                        scen_create_menu_map.get(menu)()
+                        navi_menu = MAIN_MENU
+                        save_scenario_dic.clear()
+                    else:
+                        scen_create_menu_map.get(menu)('create')
+                        scen_create_menu()
                 else:
-                    scen_create_menu_map.get(menu)('create')
+                    Reporter.PRINTR(" Invalid Value.!")
                     scen_create_menu()
+
             elif SCEN_DEL_MENU is navi_menu:
                 menu = input(PROMPT)
-                if 0 is menu:
-                    scen_delete_menu_map.get(menu)()
-                    navi_menu = MAIN_MENU
-                    save_scenario_dic.clear()
+                if menu < len(scen_delete_menu_map):
+                    if 0 is menu:
+                        scen_delete_menu_map.get(menu)()
+                        navi_menu = MAIN_MENU
+                        save_scenario_dic.clear()
+                    else:
+                        scen_delete_menu_map.get(menu)('delete')
+                        scen_delete_menu()
                 else:
-                    scen_delete_menu_map.get(menu)('delete')
+                    Reporter.PRINTR(" Invalid Value.!")
                     scen_delete_menu()
             elif ETC_MENU is navi_menu:
                 menu = input(PROMPT)
-                if menu > 2:
-                    if 0 is menu%2:
-                        etc_menu_map.get(menu)('down')
+                if menu < len(etc_menu_map):
+                    if menu > 2:
+                        if 0 is menu%2:
+                            etc_menu_map.get(menu)('down')
+                        else:
+                            etc_menu_map.get(menu)('up')
                     else:
-                        etc_menu_map.get(menu)('up')
-                else:
-                    etc_menu_map.get(menu)()
+                        etc_menu_map.get(menu)()
 
-                if 0 is menu:
-                    navi_menu = MAIN_MENU
+                    if 0 is menu:
+                        navi_menu = MAIN_MENU
+                    else:
+                        state_test_menu()
                 else:
+                    Reporter.PRINTR(" Invalid Value.!")
                     state_test_menu()
         except Exception, e:
             # print 'Invailid command!'
             print 'err : ', e
+            Reporter.exception_err_write()
             if MAIN_MENU is navi_menu:
                 main_menu()
             elif SCEN_CRT_MENU is navi_menu:
