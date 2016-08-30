@@ -187,7 +187,6 @@ class SonaTest:
 
             return True
         except:
-            self.ssh_disconnect(conn)
             Reporter.exception_err_write()
             return False
 
