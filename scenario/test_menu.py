@@ -173,8 +173,8 @@ def scenario_test():
     title_print(' # scenario test')
     scen_list = scenario_file_search()
     for i in range(len(scen_list)):
-        Reporter.PRINTB('| %d. %-22s|', i+1, scen_list[i])
-    Reporter.PRINTB('| 0. return to main menu   |')
+        Reporter.PRINTB('| %2d. %-21s|', i+1, scen_list[i])
+    Reporter.PRINTB('|  0. return to main menu  |')
     Reporter.PRINTB("|--------------------------|")
 
     while 1:
@@ -375,14 +375,8 @@ def delete_start_scenario(scen_name):
     test.reporter.test_summary()
     report_log_viewer()
 
-
-# scenario config
-
 # scenario save memory
 def save_scenario(section, value, type):
-    # global save_scenario_dic
-    # verify check
-    # print save_scenario_dic
     save_value_list = save_scenario_dic.get(section)
     if None is not save_value_list:
         if len(value) > 1:
@@ -396,8 +390,6 @@ def save_scenario(section, value, type):
         save_scenario_dic[section] = set_list
     else:
         save_scenario_dic[section] = value
-
-    # display_save_scenario(save_scenario_dic, type)
 
 def display_save_scenario(dic, type, test_num=False):
     size_list=[]
@@ -547,7 +539,6 @@ def display_save_scenario(dic, type, test_num=False):
         Reporter.PRINTY('| 0. cancel             | %s|', ' | '.join('').ljust(max_size))
         Reporter.PRINTY('|-----------------------|%s|', ('-'*max_size).ljust(max_size+1))
 
-
 # scenario save config
 def save_config_scenario(type):
     if len(save_scenario_dic) > 0:
@@ -690,9 +681,9 @@ def simple_scenario_test(item_name, type):
 
     if 'security_group' in item_name:
         item = save_scenario_dic.get('security_group')
-        arg2 = []
-        # print item
+        print item
         for x in item:
+            arg2 = []
             if 'create' in type:
                 for i in range(len(x.split(', '))):
                     if i is 0:
@@ -701,6 +692,7 @@ def simple_scenario_test(item_name, type):
                         arg2.append((x.split(', ')[i]))
 
                 test.network.create_securitygroup(arg1, ', '.join(arg2))
+
             else:
                 test.network.delete_seuritygroup(x)
 
@@ -738,10 +730,10 @@ def display_config_item(item):
     sel_state = True
     list = get_config_key_list(item)
     for i in range(len(list)):
-        Reporter.PRINTB("| %d. %-21s |", i+1, list[i])
+        Reporter.PRINTB("| %2d. %-21s|", i+1, list[i])
     if 'security_group' is item:
-        Reporter.PRINTB("| %d. %-21s |", i+2, 'Do not select!')
-    Reporter.PRINTB("| 0. cancel                |")
+        Reporter.PRINTB("| %2d. %-21s|", i+2, 'Do not select!')
+    Reporter.PRINTB("|  0. cancel               |")
     Reporter.PRINTB("|--------------------------|")
     sel = input(RED +'Select ' + item + ' : '+ENDC)
 
@@ -754,7 +746,6 @@ def display_config_item(item):
         sel_state = False
         Reporter.PRINTB("|--------------------------|")
     return list, sel, sel_state
-
 
 # scenaro create function
 def config_network(type):
@@ -900,18 +891,26 @@ def config_security_group(type):
 
         # Rule
         if 'create' in type:
-            Reporter.PRINTB("|--------------------------|")
-            rule_list, sel, sel_state = display_config_item('security_group_rule')
-            if False is sel_state: value = [] ; continue
-            if 0 is sel: value = [] ; break
-            if sel > len(rule_list):
-                Reporter.PRINTR(" Invalid value !!")
-                value=[]
-                continue
-            value.append(rule_list[sel-1])
-            val_str = ', '.join(value)
+            while 1:
+                Reporter.PRINTB("|--------------------------|")
+                rule_list, sel, sel_state = display_config_item('security_group_rule')
+                if False is sel_state: value = [] ; continue
+                if 0 is sel: value = [] ; break
+                if sel > len(rule_list):
+                    Reporter.PRINTR(" Invalid value !!")
+                    value=[]
+                    continue
+                value.append(rule_list[sel-1])
+
+                req = select_yesno_menu('Do you want to add more rule?(y/n) : ')
+                if 'y' == req:
+                    continue
+                else:
+                    val_str = ', '.join(value)
+                    break
         else:
             val_str = ''.join(value)
+
         value_list.append(val_str)
 
         value=[]
@@ -959,7 +958,6 @@ def config_instance(type):
         value=[]
         choice = select_yesno_menu('Do you want to continue to ' + type + ' instance?(y/n) : ')
         if 'n' in choice: break
-    # Reporter.PRINTB("|--------------------------|")
 
     if len(value_list) > 0:
         set_list = list(set(value_list))
