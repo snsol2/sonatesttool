@@ -81,7 +81,11 @@ class SonaTest:
 
     # def ssh_ping(self, inst1, inst2, dest):
     def ssh_ping(self, inst1, *insts):
-        Reporter.unit_test_start(False)
+        if len(insts) > 1:
+            Reporter.unit_test_start(False, inst1, insts[0], insts[1])
+        else:
+            Reporter.unit_test_start(False, inst1, insts[0])
+
         if len(insts) > 2 or len(insts) < 1:
             Reporter.REPORT_MSG('   >> Check the arguments(Min : 2, Max : 3)')
             Reporter.unit_test_stop('nok', False)
