@@ -1057,7 +1057,6 @@ def traffic_test():
             if 2 is step_sel: type_sel = 1
             else: type_sel = 0
             for i in range(step_sel):
-                print step_sel, ', ', i
                 if i is (step_sel-1):
                     while 1:
                         Reporter.PRINTB("|--------------------------|")
@@ -1080,12 +1079,14 @@ def traffic_test():
                 elif 1 is type_sel:
                     while 1:
                         # Instance
+                        Reporter.PRINTB("|--------------------------|")
                         inst_list, inst_sel, inst_sel_state = display_config_item('instance')
                         if False is inst_sel_state: value = [] ; continue
                         if 0 is inst_sel: arg = [] ;  value = [] ;break
                         value.append(inst_list[inst_sel-1])
 
                         # Network
+                        Reporter.PRINTB("|--------------------------|")
                         net_list, net_sel, net_sel_state = display_config_item('network')
                         if False is net_sel_state: value = [] ; continue
                         if 0 is net_sel:  arg = [] ; value = [] ;break
