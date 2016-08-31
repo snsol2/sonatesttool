@@ -1,5 +1,6 @@
+#!/usr/bin/python
 #
-# kimjt Network temporarily test tool
+# yskim Network temporarily test tool
 #
 from api.sonatest import SonaTest
 from ConfigParser import ConfigParser
