@@ -242,7 +242,7 @@ def display_scenario(scen_name):
         Reporter.PRINTY('| Floating_ip_associate | %s|', ' | '.join(fip_as_item).ljust(max_size))
     Reporter.PRINTY('|------------------------%s|', ('-'*(max_size+1)).ljust(max_size+1))
 
-    ret = select_yesno_menu('Do you want to start the scenario?(y/n)')
+    ret = select_yesno_menu('Do you want to start the scenario?(y/n) : ')
     if 'y' == ret:
         return True
     elif 'n' == ret:
@@ -847,9 +847,6 @@ def config_router_interface(type):
         router_list, sel, sel_state = display_config_item('router')
         if False is sel_state: value = [] ; continue
         if 0 is sel: value = [] ; break
-        if sel > len(router_list):
-            Reporter.PRINTR(" Invalid value !!")
-            continue
         value.append(router_list[sel-1])
 
         # subnet
@@ -857,10 +854,6 @@ def config_router_interface(type):
         sub_list, sel, sel_state = display_config_item('subnet')
         if False is sel_state: value = [] ; continue
         if 0 is sel: value = [] ; break
-        if sel > len(sub_list):
-            Reporter.PRINTR(" Invalid value !!")
-            value=[]
-            continue
         value.append(sub_list[sel-1])
 
         val_str = ', '.join(value)
@@ -884,9 +877,6 @@ def config_security_group(type):
         sec_group_list, sel, sel_state = display_config_item('security_group')
         if False is sel_state: value = [] ; continue
         if 0 is sel: value = [] ; break
-        if sel > len(sec_group_list):
-            Reporter.PRINTR(" Invalid value !!")
-            continue
         value.append(sec_group_list[sel-1])
 
         # Rule
@@ -896,10 +886,6 @@ def config_security_group(type):
                 rule_list, sel, sel_state = display_config_item('security_group_rule')
                 if False is sel_state: value = [] ; continue
                 if 0 is sel: value = [] ; break
-                if sel > len(rule_list):
-                    Reporter.PRINTR(" Invalid value !!")
-                    value=[]
-                    continue
                 value.append(rule_list[sel-1])
 
                 req = select_yesno_menu('Do you want to add more rule?(y/n) : ')
@@ -1041,102 +1027,115 @@ def traffic_test():
     value = []
     arg = []
     title_print(' # traffic test')
-    inst_list = get_config_key_list('instance')
-    net_list = get_config_key_list('network')
 
     # Instance
-    Reporter.PRINTB("|--------------------------|")
-    for i in range(len(inst_list)):
-        Reporter.PRINTB("| %d. %-21s |", i+1, inst_list[i])
-    Reporter.PRINTB("|--------------------------|")
-    inst_sel = input(RED +'Select association Instance : '+ENDC)
-    arg.append(inst_list[inst_sel-1])
+    while 1:
+        inst_list1, inst_sel1, inst_sel_state1 = display_config_item('instance')
+        if False is inst_sel_state1: value = [] ; continue
+        if 0 is inst_sel1:  value = [] ;break
+        break
 
-    Reporter.PRINTB("|--------------------------|")
-    Reporter.PRINTB("| 1. 1step                 |")
-    Reporter.PRINTB("| 2. 2step                 |")
-    Reporter.PRINTB("|--------------------------|")
-    step_sel = input(RED +' Select Inatance step : '+ENDC)
-
-    type_sel = 1
-
-    for i in range(step_sel):
-        if i is (step_sel-1):
+    if inst_sel1 > 0:
+        arg.append(inst_list1[inst_sel1-1])
+        while 1:
             Reporter.PRINTB("|--------------------------|")
-            Reporter.PRINTB("| 1. Instance              |")
-            Reporter.PRINTB("| 2. IP                    |")
+            Reporter.PRINTB("| 1. 1step                 |")
+            Reporter.PRINTB("| 2. 2step                 |")
+            Reporter.PRINTB("| 0. cancel                |")
             Reporter.PRINTB("|--------------------------|")
-            type_sel = input(RED +' Instance or ip : '+ENDC)
+            step_sel = input(RED +' Select Inatance step : '+ENDC)
+            if step_sel > 2:
+                Reporter.PRINTR(" Invalid value !! range : (0~2)")
+                continue
+            elif step_sel==0:
+                arg = [];
+                break
+            else:
+                break
 
-        if 2 is type_sel:
-            value.append(raw_input(RED +' destnation ip : '+ENDC))
-        else:
-            # Instance
-            Reporter.PRINTB("|--------------------------|")
-            for i in range(len(inst_list)):
-                Reporter.PRINTB("| %d. %-21s |", i+1, inst_list[i])
-            Reporter.PRINTB("|--------------------------|")
-            inst_sel = input(RED +' Select Instance : '+ENDC)
-            value.append(inst_list[inst_sel-1])
+        if step_sel > 0:
+            if 2 is step_sel: type_sel = 1
+            else: type_sel = 0
+            for i in range(step_sel):
+                print step_sel, ', ', i
+                if i is (step_sel-1):
+                    while 1:
+                        Reporter.PRINTB("|--------------------------|")
+                        Reporter.PRINTB("| 1. Instance              |")
+                        Reporter.PRINTB("| 2. IP                    |")
+                        Reporter.PRINTB("| 0. cancel                |")
+                        Reporter.PRINTB("|--------------------------|")
+                        type_sel = input(RED +' Instance or ip : '+ENDC)
+                        if type_sel > 2:
+                            Reporter.PRINTR(" Invalid value !! range : (0~2)")
+                            continue
+                        elif type_sel==0:
+                            arg = [];
+                            break
+                        else:
+                            break
 
-            # Network
-            Reporter.PRINTB("|--------------------------|")
-            for x in range(len(net_list)):
-                Reporter.PRINTB("| %d. %-21s |", x+1, net_list[x])
-            Reporter.PRINTB("|--------------------------|")
-            net_sel = input(RED +'Select Network : '+ENDC)
-            value.append(net_list[net_sel-1])
+                if 2 is type_sel:
+                    value.append(raw_input(RED +' destnation ip : '+ENDC))
+                elif 1 is type_sel:
+                    while 1:
+                        # Instance
+                        inst_list, inst_sel, inst_sel_state = display_config_item('instance')
+                        if False is inst_sel_state: value = [] ; continue
+                        if 0 is inst_sel: arg = [] ;  value = [] ;break
+                        value.append(inst_list[inst_sel-1])
 
-        arg.append(':'.join(value))
-        value = []
+                        # Network
+                        net_list, net_sel, net_sel_state = display_config_item('network')
+                        if False is net_sel_state: value = [] ; continue
+                        if 0 is net_sel:  arg = [] ; value = [] ;break
+                        value.append(net_list[net_sel-1])
+                        break
 
+                if len(value) > 0:
+                    arg.append(':'.join(value))
+                    value = []
+                else: break
 
-    if 1 is step_sel:
-        test.ssh_ping(arg[0], arg[1])
-    else:
-        test.ssh_ping(arg[0], arg[1], arg[2])
+            if len(arg) > 0:
+                if 1 is step_sel:
+                    test.ssh_ping(arg[0], arg[1])
+                else:
+                    test.ssh_ping(arg[0], arg[1], arg[2])
 
-    test.reporter.test_summary()
-    report_log_viewer()
+                test.reporter.test_summary()
+                report_log_viewer()
+
 
 def set_router_state(type):
     Reporter.initial_test_count()
     title_print(' # router ' + type)
-    router_list = get_config_key_list('router')
     # Router
-    for i in range(len(router_list)):
-         Reporter.PRINTB("| %d. %-21s |", i+1, router_list[i])
-    Reporter.PRINTB("|--------------------------|")
-
-    sel = input(RED +'Select Router : '+ENDC)
-    test.network.set_router_up(router_list[sel-1])
-    test.reporter.test_summary()
-    report_log_viewer()
+    while 1:
+        router_list, sel, sel_state = display_config_item('router')
+        if False is sel_state: continue
+        if 0 is sel: break
+        test.network.set_router_up(router_list[sel-1])
+        test.reporter.test_summary()
+        report_log_viewer()
+        break
 
 def set_port_state(type):
     Reporter.initial_test_count()
     title_print(' # port ' + type)
-    inst_list = get_config_key_list('instance')
-    net_list = get_config_key_list('network')
-
-    # Instance
-    Reporter.PRINTB("|--------------------------|")
-    for i in range(len(inst_list)):
-        Reporter.PRINTB("| %d. %-21s |", i+1, inst_list[i])
-    Reporter.PRINTB("|--------------------------|")
-    inst_sel = input(RED +'Select Instance : '+ENDC)
-    inst_list[inst_sel-1]
-
-    # Network
-    Reporter.PRINTB("|--------------------------|")
-    for x in range(len(net_list)):
-        Reporter.PRINTB("| %d. %-21s |", x+1, net_list[x])
-    Reporter.PRINTB("|--------------------------|")
-    net_sel = input(RED +'Select Network : '+ENDC)
-
-    test.network.set_port_up(inst_list[inst_sel-1], net_list[net_sel-1])
-    test.reporter.test_summary()
-    report_log_viewer()
+    while 1:
+        # Instance
+        inst_list, inst_sel, inst_sel_state = display_config_item('instance')
+        if False is inst_sel_state: continue
+        if 0 is inst_sel: break
+        # Network
+        net_list, net_sel, net_sel_state = display_config_item('network')
+        if False is net_sel_state: continue
+        if 0 is net_sel: break
+        test.network.set_port_up(inst_list[inst_sel-1], net_list[net_sel-1])
+        test.reporter.test_summary()
+        report_log_viewer()
+        break
 
 def termination():
     print 'termination!!!!!'
