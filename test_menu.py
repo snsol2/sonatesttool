@@ -26,7 +26,7 @@ ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
-CONFIG_FILE = '../config/config.ini'
+CONFIG_FILE = './config/config.ini'
 
 test = SonaTest(CONFIG_FILE)
 
@@ -42,7 +42,7 @@ save_scenario_dic = {}
 index_save_scenario_dic = {}
 
 
-SCENARIO_PATH = './'
+SCENARIO_PATH = './scenario/'
 
 def title_print(menu='None'):
     Reporter.PRINTB("|--------------------------|")
