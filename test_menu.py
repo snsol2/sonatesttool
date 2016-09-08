@@ -303,8 +303,8 @@ def create_start_scenario(scen_name):
 
     # Security Group
     item = scen_ini._sections['security_group']
-    arg2 = []
     for i in range(len(item)):
+        arg2 = []
         if i is not 0:
             for x in range(len((item.values()[i]).split(', '))):
                 if x is 0:
