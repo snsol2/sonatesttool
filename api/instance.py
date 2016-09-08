@@ -57,7 +57,7 @@ class InstanceTester:
             instance_rst = self.nova.servers.list(search_opts={'name': config_value['name']})
             if instance_rst:
                 Reporter.REPORT_MSG("   >> Already exist in OpenStack ---> %s", instance_rst)
-                Reporter.unit_test_stop('nok')
+                Reporter.unit_test_stop('skip')
                 return
 
             image = self.nova.images.find(name=config_value['image'])
