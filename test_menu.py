@@ -188,6 +188,7 @@ def scenario_test():
     # file search
     title_print(' # scenario test')
     scen_list = scenario_file_search()
+    scen_list.sort()
     for i in range(len(scen_list)):
         Reporter.PRINTB("| %2d. %s|", i+1, (scen_list[i]).ljust(menu_string2_len))
     Reporter.PRINTB("|%s|", ('  0. return to main menu').ljust(menu_string_len))
