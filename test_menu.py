@@ -7,6 +7,7 @@ from ConfigParser import ConfigParser
 from api.reporter2 import Reporter
 import os
 import commands
+import ast
 
 WHITE = '\033[1;97m'
 BLUE = '\033[1;94m'
@@ -43,74 +44,86 @@ index_save_scenario_dic = {}
 
 
 SCENARIO_PATH = './scenario/'
+#
+# menu_string_len = 41
+# menu_string2_len = 36
+# menu_string3_len =14
+# menu_string4_len = 19
+
+
+menu_string_len = 50
+menu_string2_len = 45
+menu_string3_len = 14
+menu_string4_len = 28
 
 def title_print(menu='None'):
-    Reporter.PRINTB("|--------------------------|")
+    Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
     print BLUE + '|' + BG_BLUEW + \
-                     '       SONA-TOOL          ' + BLUE + '|'+ENDC
-    Reporter.PRINTB("|--------------------------|")
+          ("{0:^"+str(menu_string_len)+"}").format("SONA-TOOL") + BLUE + '|'+ENDC
+
+    Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
     if 'None' not in menu:
         print BLUE + '|' + BG_PINKW + \
-                      menu.ljust(26) + BLUE + '|'+ENDC
-        Reporter.PRINTB("|--------------------------|")
+                      ("{0:<"+str(menu_string_len)+"}").format(menu)  + BLUE + '|'+ENDC
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
 def main_menu():
     os.system('clear')
     title_print()
-    Reporter.PRINTB("| 1. scenario test         |")
-    Reporter.PRINTB("| 2. create scenario       |")
-    Reporter.PRINTB("| 3. delete scenario       |")
-    Reporter.PRINTB("| 4. update & traffic test |")
-    Reporter.PRINTB("| 0. exit                  |")
-    Reporter.PRINTB("|--------------------------|")
+    Reporter.PRINTB("|%s|", (" 1. scenario test        ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 2. create scenario      ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 3. delete scenario      ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 4. update & traffic test").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 0. exit                 ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
 def state_test_menu():
     os.system('clear')
     title_print(' # update & traffic test')
-    Reporter.PRINTB("| 1. get onos state        |")
-    Reporter.PRINTB("| 2. traffic test          |")
-    Reporter.PRINTB("| 3. set router up         |")
-    Reporter.PRINTB("| 4. set router down       |")
-    Reporter.PRINTB("| 5. set port up           |")
-    Reporter.PRINTB("| 6. set port down         |")
-    Reporter.PRINTB("| 0. return to main menu   |")
-    Reporter.PRINTB("|--------------------------|")
+    Reporter.PRINTB("|%s|", (" 1. get onos state     ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 2. traffic test       ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 3. set router up      ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 4. set router down    ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 5. set port up        ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 6. set port down      ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 0. return to main menu").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
 def scen_delete_menu():
     os.system('clear')
     if len(save_scenario_dic) > 0:
         display_save_scenario(save_scenario_dic, 'delete')
     title_print(' # delete scenario')
-    Reporter.PRINTB("| 1. delete_instance       |")
-    Reporter.PRINTB("| 2. delete_floatingip_all |")
-    Reporter.PRINTB("| 3. delete_security_group |")
-    Reporter.PRINTB("| 4. delete_router_interfac|")
-    Reporter.PRINTB("| 5. delete_router         |")
-    Reporter.PRINTB("| 6. delete_subnet         |")
-    Reporter.PRINTB("| 7. delete_netowk         |")
-    Reporter.PRINTB("| 8. delete_scenario_config|")
-    Reporter.PRINTB("| 9. test delete scenario  |")
-    Reporter.PRINTB("| 10. save delete scenario |")
-    Reporter.PRINTB("| 0. return to main menu   |")
-    Reporter.PRINTB("|--------------------------|")
+    Reporter.PRINTB("|%s|", (" 1. delete_instance       ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 2. delete_floatingip_all ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 3. delete_security_group ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 4. delete_router_interfac").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 5. delete_router         ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 6. delete_subnet         ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 7. delete_netowk         ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 8. delete_scenario_config").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 9. test delete scenario  ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 10. save delete scenario ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 0. return to main menu   ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
 def scen_create_menu():
     os.system('clear')
     if len(save_scenario_dic) > 0:
         display_save_scenario(save_scenario_dic, 'create')
     title_print(' # create scenario')
-    Reporter.PRINTB("| 1. create_netowk         |")
-    Reporter.PRINTB("| 2. create_subnet         |")
-    Reporter.PRINTB("| 3. create_router         |")
-    Reporter.PRINTB("| 4. add_router_interface  |")
-    Reporter.PRINTB("| 5. security_group        |")
-    Reporter.PRINTB("| 6. create_instance       |")
-    Reporter.PRINTB("| 7. floatingip_associate  |")
-    Reporter.PRINTB("| 8. delete_scenario_config|")
-    Reporter.PRINTB("| 9. test create scenario  |")
-    Reporter.PRINTB("| 10. save create scenario |")
-    Reporter.PRINTB("| 0. return to main menu   |")
-    Reporter.PRINTB("|--------------------------|")
+    Reporter.PRINTB("|%s|", (" 1. create_netowk         ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 2. create_subnet         ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 3. create_router         ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 4. add_router_interface  ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 5. security_group        ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 6. create_instance       ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 7. floatingip_associate  ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 8. delete_scenario_config").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 9. test create scenario  ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 10. save create scenario ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", (" 0. return to main menu   ").ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
 def report_log_viewer():
     while 1:
@@ -153,8 +166,10 @@ def get_config_key_list(section):
     config.read(CONFIG_FILE)
     item = config._sections[section]
     key_list = item.keys()
+    val_list = item.values()
     del key_list[0]
-    return key_list
+    del val_list[0]
+    return key_list, val_list
 
 def select_yesno_menu(str):
     while 1:
@@ -174,9 +189,9 @@ def scenario_test():
     title_print(' # scenario test')
     scen_list = scenario_file_search()
     for i in range(len(scen_list)):
-        Reporter.PRINTB('| %2d. %-21s|', i+1, scen_list[i])
-    Reporter.PRINTB('|  0. return to main menu  |')
-    Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("| %2d. %s|", i+1, (scen_list[i]).ljust(menu_string2_len))
+    Reporter.PRINTB("|%s|", ('  0. return to main menu').ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
     while 1:
         sel_scen = input(RED + 'select scenario : '+ENDC)
@@ -729,24 +744,45 @@ def simple_scenario_test(item_name, type):
 
 def display_config_item(item):
     sel_state = True
-    list = get_config_key_list(item)
-    for i in range(len(list)):
-        Reporter.PRINTB("| %2d. %-21s|", i+1, list[i])
+    key_list, val_list = get_config_key_list(item)
+    for i in range(len(key_list)):
+        val_str = ''.join(val_list[i])
+        val_dict = ast.literal_eval(val_str)
+
+        if 'network' is item:
+            str = val_dict['name'] + ', ' + val_dict['provider:network_type']
+            Reporter.PRINTB("| %2d. %s : %s|", i+1,
+                            (key_list[i]).ljust(menu_string3_len),
+                            (str).ljust(menu_string4_len))
+        elif 'subnet' is item:
+            str = val_dict['name'] + ', ' + val_dict['cidr']
+            Reporter.PRINTB("| %2d. %s : %s|", i+1,
+                            (key_list[i]).ljust(menu_string3_len),
+                            (str).ljust(menu_string4_len))
+        elif 'security_group_rule' is item:
+            str = val_dict['direction'] + ', ' + val_dict['protocol']
+            Reporter.PRINTB("| %2d. %s : %s|", i+1,
+                            (key_list[i]).ljust(menu_string3_len),
+                            (str).ljust(menu_string4_len))
+        else:
+            Reporter.PRINTB("| %2d. %s : %s|", i+1,
+                            (key_list[i]).ljust(menu_string3_len),
+                            (val_dict['name']).ljust(menu_string4_len))
     if 'security_group' is item:
-        Reporter.PRINTB("| %2d. %-21s|", i+2, 'Do not select!')
-    Reporter.PRINTB("|  0. cancel               |")
-    Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("| %2d. %s|", i+2, ('Do not select!').ljust(menu_string2_len))
+    Reporter.PRINTB("|%s|", ('  0. cancel').ljust(menu_string_len))
+    Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
     sel = input(RED +'Select ' + item + ' : '+ENDC)
 
-    list_len = len(list)
+    list_len = len(key_list)
     if 'security_group' is item:
-        list_len = (len(list)+1)
+        list_len = (len(key_list)+1)
 
     if sel > list_len:
         Reporter.PRINTR(" Invalid value !! range : (0~" + str(list_len) + ')')
         sel_state = False
-        Reporter.PRINTB("|--------------------------|")
-    return list, sel, sel_state
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
+    return key_list, sel, sel_state
 
 # scenaro create function
 def config_network(type):
@@ -759,7 +795,7 @@ def config_network(type):
         value_list.append(net_list[sel-1])
         choice = select_yesno_menu('Do you want to continue to ' + type + ' network?(y/n) : ')
         if 'n' in choice: break
-        Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
     if len(value_list) > 0:
         set_list = list(set(value_list))
@@ -777,7 +813,7 @@ def config_subnet(type):
             if False is sel_state: value = [] ; continue
             if 0 is sel: value = [] ; break
             value.append(net_list[sel-1])
-            Reporter.PRINTB("|--------------------------|")
+            Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
         ## subnet
         sub_list, sel, sel_state = display_config_item('subnet')
@@ -794,7 +830,7 @@ def config_subnet(type):
         value=[]
         choice = select_yesno_menu('Do you want to continue to ' + type + ' subnet?(y/n) : ')
         if 'n' in choice: break
-        Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
     if len(value_list) > 0:
         set_list = list(set(value_list))
@@ -814,7 +850,7 @@ def config_router(type):
 
         # network
         if 'create' in type:
-            Reporter.PRINTB("|--------------------------|")
+            Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
             net_list, sel, sel_state = display_config_item('network')
             if False is sel_state: value = [] ; continue
             if 0 is sel: value = [] ; break
@@ -828,7 +864,7 @@ def config_router(type):
         value=[]
         choice = select_yesno_menu('Do you want to continue to ' + type + ' router?(y/n) : ')
         if 'n' in choice: break
-        Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
     if len(value_list) > 0:
         set_list = list(set(value_list))
@@ -851,7 +887,7 @@ def config_router_interface(type):
         value.append(router_list[sel-1])
 
         # subnet
-        Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
         sub_list, sel, sel_state = display_config_item('subnet')
         if False is sel_state: value = [] ; continue
         if 0 is sel: value = [] ; break
@@ -862,7 +898,7 @@ def config_router_interface(type):
         value=[]
         choice = select_yesno_menu('Do you want to continue to ' + type + ' router-interface?(y/n) : ')
         if 'n' in choice: break
-        Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
     if len(value_list) > 0:
         set_list = list(set(value_list))
@@ -883,7 +919,7 @@ def config_security_group(type):
         # Rule
         if 'create' in type:
             while 1:
-                Reporter.PRINTB("|--------------------------|")
+                Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
                 rule_list, sel, sel_state = display_config_item('security_group_rule')
                 if False is sel_state: value = [] ; continue
                 if 0 is sel: value = [] ; break
@@ -894,16 +930,17 @@ def config_security_group(type):
                     continue
                 else:
                     val_str = ', '.join(value)
+                    value_list.append(val_str)
                     break
         else:
             val_str = ''.join(value)
+            value_list.append(val_str)
 
-        value_list.append(val_str)
 
         value=[]
         choice = select_yesno_menu('Do you want to continue to ' + type + ' security group?(y/n) : ')
         if 'n' in choice: break
-        Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
     if len(value_list) > 0:
         set_list = list(set(value_list))
@@ -924,14 +961,14 @@ def config_instance(type):
 
         if 'create' in type:
             # Network
-            Reporter.PRINTB("|--------------------------|")
+            Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
             net_list, sel, sel_state = display_config_item('network')
             if False is sel_state: value = [] ; continue
             if 0 is sel: value = [] ; break
             value.append(net_list[sel-1])
 
             # security group
-            Reporter.PRINTB("|--------------------------|")
+            Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
             sg_list, sel, sel_state = display_config_item('security_group')
             if False is sel_state: value = [] ; continue
             if 0 is sel: value = [] ; break
@@ -967,7 +1004,7 @@ def config_floatingip_associate(type):
             value.append(inst_list[sel-1])
 
             # Nework
-            Reporter.PRINTB("|--------------------------|")
+            Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
             net_list, sel, sel_state = display_config_item('network')
             if False is sel_state: value = [] ; continue
             if 0 is sel: value = [] ; break
@@ -984,7 +1021,7 @@ def config_floatingip_associate(type):
             choice = select_yesno_menu('Do you want to continue to assoctiate Floating ip?(y/n) : ')
             if 'n' == choice: break
 
-        Reporter.PRINTB("|--------------------------|")
+        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
 
         if len(value_list) > 0:
             set_list = list(set(value_list))
@@ -1039,11 +1076,11 @@ def traffic_test():
     if inst_sel1 > 0:
         arg.append(inst_list1[inst_sel1-1])
         while 1:
-            Reporter.PRINTB("|--------------------------|")
-            Reporter.PRINTB("| 1. 1step                 |")
-            Reporter.PRINTB("| 2. 2step                 |")
-            Reporter.PRINTB("| 0. cancel                |")
-            Reporter.PRINTB("|--------------------------|")
+            Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
+            Reporter.PRINTB("|%s|", (' 1. 1step ').ljust(menu_string_len))
+            Reporter.PRINTB("|%s|", (' 2. 2step ').ljust(menu_string_len))
+            Reporter.PRINTB("|%s|", (' 0. cancel').ljust(menu_string_len))
+            Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
             step_sel = input(RED +' Select Inatance step : '+ENDC)
             if step_sel > 2:
                 Reporter.PRINTR(" Invalid value !! range : (0~2)")
@@ -1060,11 +1097,11 @@ def traffic_test():
             for i in range(step_sel):
                 if i is (step_sel-1):
                     while 1:
-                        Reporter.PRINTB("|--------------------------|")
-                        Reporter.PRINTB("| 1. Instance              |")
-                        Reporter.PRINTB("| 2. IP                    |")
-                        Reporter.PRINTB("| 0. cancel                |")
-                        Reporter.PRINTB("|--------------------------|")
+                        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
+                        Reporter.PRINTB("|%s|", (' 1. Instance').ljust(menu_string_len))
+                        Reporter.PRINTB("|%s|", (' 2. IP      ').ljust(menu_string_len))
+                        Reporter.PRINTB("|%s|", (' 0. cancel  ').ljust(menu_string_len))
+                        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
                         type_sel = input(RED +' Instance or ip : '+ENDC)
                         if type_sel > 2:
                             Reporter.PRINTR(" Invalid value !! range : (0~2)")
@@ -1080,14 +1117,14 @@ def traffic_test():
                 elif 1 is type_sel:
                     while 1:
                         # Instance
-                        Reporter.PRINTB("|--------------------------|")
+                        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
                         inst_list, inst_sel, inst_sel_state = display_config_item('instance')
                         if False is inst_sel_state: value = [] ; continue
                         if 0 is inst_sel: arg = [] ;  value = [] ;break
                         value.append(inst_list[inst_sel-1])
 
                         # Network
-                        Reporter.PRINTB("|--------------------------|")
+                        Reporter.PRINTB("|%s|", ('-'*menu_string_len).ljust(menu_string_len))
                         net_list, net_sel, net_sel_state = display_config_item('network')
                         if False is net_sel_state: value = [] ; continue
                         if 0 is net_sel:  arg = [] ; value = [] ;break
