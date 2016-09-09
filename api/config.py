@@ -19,6 +19,7 @@ class ReadConfig:
             cfg.StrOpt('report_path'),
             cfg.StrOpt('report_format'),
             cfg.StrOpt('test_mode'),
+            cfg.StrOpt('wget_url'),
             cfg.IntOpt('log_collector_wait_time'),
             cfg.IntOpt('ssh_conn_timeout'),
             cfg.IntOpt('onos_get_timeout'),
@@ -61,6 +62,10 @@ class ReadConfig:
     @classmethod
     def get_test_mode(cls):
         return CONF.DEFAULT.test_mode
+
+    @classmethod
+    def get_wget_url(cls):
+        return CONF.DEFAULT.wget_url
 
     @classmethod
     def get_openstack_info(cls):
