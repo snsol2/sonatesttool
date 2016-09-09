@@ -330,11 +330,18 @@ class SonaTest:
 
         cmd = 'wget ' + self.wget_url
         wget_lines = self.second_ssh_cmd(cmd, *insts)
-        if wget_lines is False:
+        if wget_lines[0] is False:
             Reporter.unit_test_stop('nok', False)
-        elif wget_lines is 'timeout':
-            print wget_lines
+        elif wget_lines[0] is 'timeout':
             self.wget_clear(*insts)
+            wget_progress = None
+            for line in wget_lines[1]:
+                if '%' in line:
+                    wget_progress = line
+
+            if wget_progress is not None:
+                Reporter.REPORT_MSG('   >> wet download very slow : \n   >>     "%s"', wget_progress)
+                Reporter.unit_test_stop('skip', False)
             return
 
         wget_percent = ''
@@ -373,14 +380,14 @@ class SonaTest:
         if None is floating_ip:
             Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
             Reporter.unit_test_stop('nok', False)
-            return False
+            return [False]
 
         # conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
         conn = self.ssh_connect(floating_ip, 'root', '', 'root')
         if conn is False:
             Reporter.REPORT_MSG('   >>  %s ssh connection fail.', insts[0])
             Reporter.unit_test_stop('nok', False)
-            return False
+            return [False]
 
         # get second instance connection info
         if len(insts) is 2:
@@ -400,7 +407,8 @@ class SonaTest:
                 Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server(%d)', '10.10.2.77', ret)
                 Reporter.unit_test_stop('nok', False)
                 self.ssh_disconnect(conn)
-                return False
+                return [False]
+
             if ret == 1:
                 conn.sendline('yes')
                 ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
@@ -417,7 +425,7 @@ class SonaTest:
         except pexpect.TIMEOUT:
             Reporter.REPORT_MSG('   >> wget download Timeout. limit %s', self.conn_timeout)
             self.ssh_disconnect(conn)
-            return 'timeout'
+            return ['timeout', conn.before.splitlines()]
 
         self.ssh_disconnect(conn)
         return conn.before.splitlines()

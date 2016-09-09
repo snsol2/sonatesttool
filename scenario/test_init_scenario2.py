@@ -45,8 +45,8 @@ test = SonaTest(CONFIG_FILE)
 # # Traffic Test
 # test.floating_ip_check('instance1')
 # test.ssh_ping('instance1', 'instance3:network3')
-# test.ssh_wget('instance1', 'instance2:network3')
-test.ssh_wget('instance1')
+test.ssh_wget('instance1', 'instance2:network3')
+# test.ssh_wget('instance1')
 
 # =================================================================
 test.reporter.test_summary()
