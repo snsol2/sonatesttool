@@ -1,16 +1,17 @@
-import pexpect
 import ast
-import socket
 import commands
 import os
+import socket
 import time
+
 import keystoneclient.v2_0.client as kclient
+import pexpect
+
 from api.config import ReadConfig
 from api.instance import InstanceTester
 from api.network import NetworkTester
-from api.reporter2 import Reporter
-# from api.config import ReadConfig
 from api.onos_info import ONOSInfo
+from api.reporter2 import Reporter
 
 PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ', '$ ']
 CMD_PROMPT = '\[SONA\]\# '
@@ -26,6 +27,7 @@ class SonaTest:
         self.conn_timeout = self.conf.get_ssh_conn_timeout()
         self.ping_timeout = self.conf.get_floating_ip_check_timeout()
         self.result_skip_mode = self.conf.get_state_check_result_skip_mode()
+        self.wget_url = self.conf.get_wget_url()
         self.instance = InstanceTester(self.conf)
         self.network = NetworkTester(self.conf)
         self.onos = ONOSInfo(self.conf)
@@ -139,6 +141,8 @@ class SonaTest:
                     return False
                 if ret == 1:
                     conn.sendline('yes')
+                    ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
+                if ret == 2:
                     ret = conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
 
                 conn.sendline(inst_info_2['password'])
@@ -312,3 +316,172 @@ class SonaTest:
                     os._exit(1)
         except:
             Reporter.exception_err_write()
+
+
+    # def ssh_ping(self, inst1, inst2, dest):
+    def ssh_wget(self, *insts):
+        if len(insts) in [1, 2]:
+            Reporter.unit_test_start(False, *insts)
+
+            floating_ip = self.instance.get_instance_floatingip(insts[0])
+            if None is floating_ip:
+                Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
+                Reporter.unit_test_stop('nok', False)
+                return False
+
+            clear_key = 'ssh-keygen -f "' + os.path.expanduser('~')+'/.ssh/known_hosts" -R ' + floating_ip
+            commands.getstatusoutput(clear_key)
+        else:
+            Reporter.unit_test_start(False, *insts)
+            Reporter.REPORT_MSG('   >> Check the arguments(need 1 or 2)')
+            Reporter.unit_test_stop('nok', False)
+            return False
+
+        try:
+            cmd = 'wget ' + self.wget_url
+            Reporter.REPORT_MSG('   >> wget %s', self.wget_url)
+            wget_result = self.wget_ssh_cmd(cmd, *insts)
+            if wget_result[0] is True or wget_result[0] is 'timeoutError':
+                if self.wget_progress_check(wget_result[1]):
+                    self.wget_clear(*insts)
+                    Reporter.unit_test_stop('ok')
+                    return True
+            if wget_result[0] is 'sshConFail':
+                return False
+            elif wget_result[0] is 'unexpectedError' or wget_result[0] is 'timeoutError':
+                Reporter.REPORT_MSG('   >>    Interface MTU size DOWN to 1400')
+                cmd = 'sudo ifconfig eth0 mtu 1400;'
+                if self.wget_ssh_cmd(cmd, *insts)[0] is False:
+                    Reporter.REPORT_MSG('   >> Interface mtu size down fail')
+                    Reporter.unit_test_stop('nok', False)
+                    return False
+
+                Reporter.REPORT_MSG('   >> second wget %s', self.wget_url)
+                cmd = 'wget ' + self.wget_url
+                wget_sd_result = self.wget_ssh_cmd(cmd, *insts)
+                if wget_sd_result[0] is True or wget_sd_result[0] is 'timeoutError':
+                    if self.wget_progress_check(wget_sd_result[1]) is True:
+                        Reporter.REPORT_MSG('   >>    Please check MTU SIZE on ALL DATA PATH ~ !!!')
+                        Reporter.REPORT_MSG('   >>    You should be set more 1600 bytes for Data Path interfaces  !!!')
+                    else:
+                        Reporter.REPORT_MSG('   >>  Second wget fail ~ !!!')
+                        return False
+                    self.wget_clear(*insts)
+                else:
+                    Reporter.unit_test_stop('nok', False)
+                    return False
+
+                Reporter.REPORT_MSG('   >>    Interface MTU size RETURN to 1500')
+                cmd = 'sudo ifconfig eth0 mtu 1500'
+                if self.wget_ssh_cmd(cmd, *insts)[0] is False:
+                    Reporter.REPORT_MSG('   >> Interface mtu size return fail')
+                    Reporter.unit_test_stop('nok', False)
+                    return False
+
+                Reporter.unit_test_stop('nok', False)
+
+        except:
+            Reporter.exception_err_write()
+        return True
+
+    def wget_progress_check(self, wget_lines):
+        wget_percent = ''
+        wget_progress = ''
+        for line in wget_lines:
+            if 'error' in line.lower():
+                Reporter.REPORT_MSG('   >> wget request fail: "%s"', line)
+                return False
+            elif '%' in line:
+                wget_percent = line.split('%')[0].split(' ')[-1]
+                wget_progress = line
+
+        if not wget_progress is '':
+            if int(wget_percent) in range(0, 101):
+                Reporter.REPORT_MSG('   >> wet download Succ : \n   >>     "%s"', wget_progress)
+                return True
+                # return False
+            else:
+                Reporter.REPORT_MSG('   >> wet download low : \n   >>     "%s"', wget_progress)
+            return False
+        else:
+            return False
+
+
+    def wget_clear(self, *insts):
+        Reporter.REPORT_MSG('   >> all wget process kill / download file and all wget log files delete.')
+        cmd = 'killall -9 wget; ' + 'rm ' + self.wget_url.split('/')[-1] + '*' + ' ' + 'wget-log*'
+        self.wget_ssh_cmd(cmd, *insts)
+
+        return
+
+    def wget_ssh_cmd(self, cmd, *insts):
+        # floating ip
+        floating_ip = self.instance.get_instance_floatingip(insts[0])
+        # floating_ip = '10.10.2.76'
+        if None is floating_ip:
+            Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
+            Reporter.unit_test_stop('nok', False)
+            return ['sshConFail']
+
+        inst_info_1 = ast.literal_eval(self.inst_conf[insts[0]])
+        sudo_key = 'password for sdn' + inst_info_1['password']
+        conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
+        # conn = self.ssh_connect(floating_ip, 'root', '', 'root')
+        if conn is False:
+            Reporter.REPORT_MSG('   >>  %s ssh connection fail.', insts[0])
+            Reporter.unit_test_stop('nok', False)
+            return ['sshConFail']
+
+        # get second instance connection info
+        if len(insts) is 2:
+            # if ':' in inst2:
+            name_list = insts[1].split(':')
+            inst_info_2 = ast.literal_eval(self.inst_conf[name_list[0]])
+            inst2_ip = self.instance.get_instance_ip(insts[1])
+            ssh_cmd = 'ssh ' + inst_info_2['user'] + '@' + inst2_ip
+            sudo_key = 'password for sdn' + inst_info_2['password']
+            Reporter.REPORT_MSG('   >> second instance SSH connecting(%s)', inst2_ip)
+            conn.sendline(ssh_cmd)
+
+            ssh_newkey = 'want to continue connecting'
+            ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=2)
+            # ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=thr f.conn_timeout)
+            if ret == 0:
+                Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server(%d)', inst2_ip, ret)
+                Reporter.unit_test_stop('nok', False)
+                self.ssh_disconnect(conn)
+                return ['sshConFail']
+            if ret == 1:
+                conn.sendline('yes')
+                conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
+            if ret == 2:
+                conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
+
+            conn.sendline(inst_info_2['password'])
+            conn.expect(PROMPT, timeout=self.conn_timeout)
+
+        try:
+            if 'sudo' not in cmd:
+                conn.sendline(cmd)
+                conn.expect(PROMPT, timeout=self.conn_timeout)
+            elif 'sudo' in cmd:
+                conn.sendline(cmd)
+                ret = conn.expect([pexpect.TIMEOUT, sudo_key, '[P|p]assword'], timeout=self.conn_timeout)
+                if ret == 2:
+                    conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
+                # conn.sendline('root')
+                conn.sendline(inst_info_1['password'])
+                conn.expect(PROMPT, timeout=self.conn_timeout)
+        except pexpect.TIMEOUT:
+            Reporter.REPORT_MSG('   >> wget download Timeout. limit %s second', self.conn_timeout)
+            self.wget_clear(*insts)
+            self.ssh_disconnect(conn)
+            return ['timeoutError', conn.before.splitlines()]
+        except:
+            Reporter.REPORT_MSG('   >> Unexpected Error.')
+            return ['unexpectedError', conn.before.splitlines()]
+
+        self.ssh_disconnect(conn)
+        return [True, conn.before.splitlines()]
+
+

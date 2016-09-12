@@ -4,7 +4,7 @@
 #        Telcoware 2016/7/25
 #
 
-from api.sonatest2 import SonaTest
+from api.sonatest import SonaTest
 CONFIG_FILE = '../config/config.ini'
 
 test = SonaTest(CONFIG_FILE)
@@ -45,8 +45,8 @@ test = SonaTest(CONFIG_FILE)
 # # Traffic Test
 # test.floating_ip_check('instance1')
 # test.ssh_ping('instance1', 'instance3:network3')
-test.ssh_wget('instance1', 'instance2:network3')
-# test.ssh_wget('instance1')
+test.ssh_wget('instance6')
+# test.ssh_wget('instance6', 'instance7:network5')
 
 # =================================================================
 test.reporter.test_summary()
