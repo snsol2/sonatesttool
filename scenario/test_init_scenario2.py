@@ -13,7 +13,7 @@ test = SonaTest(CONFIG_FILE)
 # SONA Test scenario
 # =================================================================
 # # status check
-# test.onos_and_openstack_check()
+test.onos_and_openstack_check()
 #
 # # Network
 # test.network.create_network('network1')
@@ -45,7 +45,7 @@ test = SonaTest(CONFIG_FILE)
 # # Traffic Test
 # test.floating_ip_check('instance1')
 # test.ssh_ping('instance1', 'instance3:network3')
-test.ssh_wget('instance6')
+# test.ssh_wget('instance6')
 # test.ssh_wget('instance6', 'instance7:network5')
 
 # =================================================================

@@ -117,10 +117,11 @@ class ONOSInfo():
             Reporter.unit_test_start(True)
         try:
             onos_info = self._config.get_onos_info()
-            state_list=[]
             conn_info = {}
             state_info = {}
-            for onos_ip in onos_info.onos_list:
+
+            for onos_ip in onos_info.onos_service_ip.split(','):
+                state_list = []
                 conn_info['host'] = onos_ip
                 conn_info['user'] = onos_info.user_id
                 conn_info['password'] = onos_info.password
@@ -129,20 +130,18 @@ class ONOSInfo():
                 state_info['openstackswitching'] = ret; state_list.append(ret)
                 ret = self.app_info(conn_info, 'org.onosproject.openstackrouting')
                 state_info['openstackrouting'] = ret; state_list.append(ret)
-                # ret = self.app_info(conn_info, 'org.onosproject.openstacknetworking')
-                # state_info['openstacknetworking'] = ret; state_list.append(ret)
                 ret = self.app_info(conn_info, 'org.onosproject.openstacknode')
                 state_info['openstacknode'] = ret; state_list.append(ret)
                 ret = self.app_info(conn_info, 'org.onosproject.openstackinterface')
                 state_info['openstackinterface'] = ret; state_list.append(ret)
 
-                if 'ACTIVE' in state_list:
-                    Reporter.REPORT_MSG('   >> [%s][Application OK] : %s', onos_ip, state_info)
-                else:
+                if 'ACTIVE' not in state_list:
                     Reporter.REPORT_MSG('   >> [%s][Application NOK] : %s', onos_ip, state_info)
                     if report_flag is None:
                         Reporter.unit_test_stop('nok')
                     return False
+                else:
+                    Reporter.REPORT_MSG('   >> [%s][Application OK] : %s', onos_ip, state_info)
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
@@ -158,7 +157,7 @@ class ONOSInfo():
         try:
             onos_info = self._config.get_onos_info()
             conn_info = {}
-            for onos_ip in onos_info.onos_list:
+            for onos_ip in onos_info.onos_service_ip.split(','):
                 conn_info['host'] = onos_ip
                 conn_info['user'] = onos_info.user_id
                 conn_info['port'] = onos_info.ssh_port

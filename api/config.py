@@ -92,6 +92,7 @@ class ReadConfig:
             cfg.StrOpt('os_username'),
             cfg.StrOpt('os_password'),
             cfg.StrOpt('onos_logfile'),
+            cfg.StrOpt('onos_service_ip'),
             cfg.StrOpt('onos_list'),
             cfg.BoolOpt('log_collector')
         ]

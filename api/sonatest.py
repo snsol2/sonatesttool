@@ -318,7 +318,7 @@ class SonaTest:
             Reporter.exception_err_write()
 
 
-    # def ssh_ping(self, inst1, inst2, dest):
+    # def ssh_wget(self, inst1, [inst2]):
     def ssh_wget(self, *insts):
         if len(insts) in [1, 2]:
             Reporter.unit_test_start(False, *insts)
@@ -396,10 +396,9 @@ class SonaTest:
                 wget_progress = line
 
         if not wget_progress is '':
-            if int(wget_percent) in range(0, 101):
+            if int(wget_percent) in range(1, 101):
                 Reporter.REPORT_MSG('   >> wet download Succ : \n   >>     "%s"', wget_progress)
                 return True
-                # return False
             else:
                 Reporter.REPORT_MSG('   >> wet download low : \n   >>     "%s"', wget_progress)
             return False
@@ -417,16 +416,14 @@ class SonaTest:
     def wget_ssh_cmd(self, cmd, *insts):
         # floating ip
         floating_ip = self.instance.get_instance_floatingip(insts[0])
-        # floating_ip = '10.10.2.76'
         if None is floating_ip:
             Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
             Reporter.unit_test_stop('nok', False)
             return ['sshConFail']
 
         inst_info_1 = ast.literal_eval(self.inst_conf[insts[0]])
-        sudo_key = 'password for sdn' + inst_info_1['password']
+        sudo_key = 'password for ' + inst_info_1['user']
         conn = self.ssh_connect(floating_ip, inst_info_1['user'], '', inst_info_1['password'])
-        # conn = self.ssh_connect(floating_ip, 'root', '', 'root')
         if conn is False:
             Reporter.REPORT_MSG('   >>  %s ssh connection fail.', insts[0])
             Reporter.unit_test_stop('nok', False)
@@ -434,18 +431,16 @@ class SonaTest:
 
         # get second instance connection info
         if len(insts) is 2:
-            # if ':' in inst2:
             name_list = insts[1].split(':')
             inst_info_2 = ast.literal_eval(self.inst_conf[name_list[0]])
             inst2_ip = self.instance.get_instance_ip(insts[1])
             ssh_cmd = 'ssh ' + inst_info_2['user'] + '@' + inst2_ip
-            sudo_key = 'password for sdn' + inst_info_2['password']
+            sudo_key = 'password for ' + inst_info_2['user']
             Reporter.REPORT_MSG('   >> second instance SSH connecting(%s)', inst2_ip)
             conn.sendline(ssh_cmd)
 
             ssh_newkey = 'want to continue connecting'
             ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=2)
-            # ret = conn.expect([pexpect.TIMEOUT, ssh_newkey, '[P|p]assword:'], timeout=thr f.conn_timeout)
             if ret == 0:
                 Reporter.REPORT_MSG('   >> [%s] Error Connection to SSH Server(%d)', inst2_ip, ret)
                 Reporter.unit_test_stop('nok', False)
@@ -469,12 +464,11 @@ class SonaTest:
                 ret = conn.expect([pexpect.TIMEOUT, sudo_key, '[P|p]assword'], timeout=self.conn_timeout)
                 if ret == 2:
                     conn.expect([pexpect.TIMEOUT, '[P|p]assword'], timeout=self.conn_timeout)
-                # conn.sendline('root')
                 conn.sendline(inst_info_1['password'])
                 conn.expect(PROMPT, timeout=self.conn_timeout)
         except pexpect.TIMEOUT:
             Reporter.REPORT_MSG('   >> wget download Timeout. limit %s second', self.conn_timeout)
-            self.wget_clear(*insts)
+            # self.wget_clear(*insts)
             self.ssh_disconnect(conn)
             return ['timeoutError', conn.before.splitlines()]
         except:
