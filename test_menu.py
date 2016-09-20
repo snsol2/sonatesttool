@@ -735,7 +735,7 @@ def simple_scenario_test(item_name, type):
             item = save_scenario_dic.get('floatingip_associate')
             # print item
             for x in item:
-                test.network.floatingip_associate(x.split(', ')[0], x.split(', ')[1])
+                test.instance.floatingip_associate(x.split(', ')[0], x.split(', ')[1])
                 test.floating_ip_check(x.split(', ')[0])
 
     if 'delete_floatingip_all' in item_name:
