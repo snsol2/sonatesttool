@@ -400,7 +400,7 @@ class NetworkTester:
 
             router_cfg_body = ast.literal_eval(dict(self.router_conf)[router_opt])
             if not router_cfg_body:
-                Reporter.REPORT_MSG("   >> Not Exist config file ---> %s", router_opt)
+                Reporter.REPORT_MSG("   >> Not Exist Config file ---> %s", router_opt)
                 Reporter.unit_test_stop('nok')
                 return
 
