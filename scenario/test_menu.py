@@ -642,7 +642,7 @@ def save_config_scenario(type):
 def test_scenario(type):
     # display scenario
     results = None
-    display_save_scenario(save_scenario_dic, '', True)
+    display_save_scenario(save_scenario_dic, type, True)
     while 1:
         sel = input(RED +'Select Test Item : '+ENDC)
         if 0 is sel:
@@ -679,7 +679,7 @@ def simple_scenario_test(item_name, type):
             else:
                 test.network.delete_subnet(x)
 
-    if 'router' in item_name:
+    if 'router' == item_name:
         item = save_scenario_dic.get('router')
         # print item
         for x in item:
@@ -688,7 +688,7 @@ def simple_scenario_test(item_name, type):
             else:
                 test.network.delete_router(x)
 
-    if 'router-interface' in item_name:
+    if 'router-interface' == item_name:
         item = save_scenario_dic.get('router-interface')
         # print item
         for x in item:
