@@ -19,6 +19,7 @@ class ReadConfig:
             cfg.StrOpt('report_path'),
             cfg.StrOpt('report_format'),
             cfg.StrOpt('test_mode'),
+            cfg.StrOpt('wget_url'),
             cfg.IntOpt('log_collector_wait_time'),
             cfg.IntOpt('ssh_conn_timeout'),
             cfg.IntOpt('onos_get_timeout'),
@@ -63,6 +64,10 @@ class ReadConfig:
         return CONF.DEFAULT.test_mode
 
     @classmethod
+    def get_wget_url(cls):
+        return CONF.DEFAULT.wget_url
+
+    @classmethod
     def get_openstack_info(cls):
         tail_info_group = cfg.OptGroup(name='openstack')
         tail_info_conf = [
@@ -87,6 +92,7 @@ class ReadConfig:
             cfg.StrOpt('os_username'),
             cfg.StrOpt('os_password'),
             cfg.StrOpt('onos_logfile'),
+            cfg.StrOpt('onos_service_ip'),
             cfg.StrOpt('onos_list'),
             cfg.BoolOpt('log_collector')
         ]

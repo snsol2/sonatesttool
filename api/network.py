@@ -2,6 +2,7 @@
 # network control management classes
 
 from neutronclient.v2_0 import client
+from neutronclient.common import exceptions
 # from api.config import ReadConfig
 from api.instance import InstanceTester
 from api.reporter2 import Reporter
@@ -452,6 +453,10 @@ class NetworkTester:
             Reporter.REPORT_MSG("   >> Add Router Interface ---> %s", router_if_rst)
             Reporter.unit_test_stop('ok')
             return router_if_rst
+        except exceptions.BadRequest as e:
+            if 'Router already has a port' in str(e):
+                Reporter.REPORT_MSG("   >> Router Interface alreay exist ---> %s", e)
+                Reporter.unit_test_stop('skip')
         except:
             Reporter.exception_err_write()
 
