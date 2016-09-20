@@ -304,6 +304,7 @@ def create_start_scenario(scen_name):
 
     # Security Group
     item = scen_ini._sections['security_group']
+    # arg2 = []
     for i in range(len(item)):
         arg2 = []
         if i is not 0:
@@ -641,7 +642,7 @@ def save_config_scenario(type):
 def test_scenario(type):
     # display scenario
     results = None
-    display_save_scenario(save_scenario_dic, '', True)
+    display_save_scenario(save_scenario_dic, type, True)
     while 1:
         sel = input(RED +'Select Test Item : '+ENDC)
         if 0 is sel:
@@ -678,7 +679,7 @@ def simple_scenario_test(item_name, type):
             else:
                 test.network.delete_subnet(x)
 
-    if 'router' in item_name:
+    if 'router' == item_name:
         item = save_scenario_dic.get('router')
         # print item
         for x in item:
@@ -687,7 +688,7 @@ def simple_scenario_test(item_name, type):
             else:
                 test.network.delete_router(x)
 
-    if 'router-interface' in item_name:
+    if 'router-interface' == item_name:
         item = save_scenario_dic.get('router-interface')
         # print item
         for x in item:
@@ -734,7 +735,7 @@ def simple_scenario_test(item_name, type):
             item = save_scenario_dic.get('floatingip_associate')
             # print item
             for x in item:
-                test.network.floatingip_associate(x.split(', ')[0], x.split(', ')[1])
+                test.instance.floatingip_associate(x.split(', ')[0], x.split(', ')[1])
                 test.floating_ip_check(x.split(', ')[0])
 
     if 'delete_floatingip_all' in item_name:
