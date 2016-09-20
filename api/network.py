@@ -411,7 +411,7 @@ class NetworkTester:
                     Reporter.unit_test_stop('nok')
                     return
                 router_cfg_body['external_gateway_info'] = {'network_id': network_uuid}
-                router_body = {'router': router_cfg_body}
+            router_body = {'router': router_cfg_body}
 
             router_rst = self.neutron.create_router(router_body)
             Reporter.REPORT_MSG("   >> Create Router ---> %s", router_rst)
