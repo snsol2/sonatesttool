@@ -150,12 +150,10 @@ class InstanceTester:
                     extra_floatingip = a.ip
                     break
 
-
             if not extra_floatingip:
                 extra_floatingip = self.nova.floating_ips.create(pool=pool_opt).ip
 
-            # TODO
-            # add fixed_address option
+            # TODO add fixed_address option
             self.nova.servers.add_floating_ip(server[0],
                                               extra_floatingip,
                                               fixed_address=None)
