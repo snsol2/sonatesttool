@@ -133,7 +133,6 @@ class InstanceTester:
                 return
 
             for vm_net_name in server[0].addresses.keys():
-                # print
                 for server_ip in server[0].addresses[vm_net_name]:
                     if str(server_ip['OS-EXT-IPS:type']) == 'floating':
                         Reporter.REPORT_MSG("   >>  %s already associated floating ip to %s network(%s)--->",
