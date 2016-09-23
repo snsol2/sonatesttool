@@ -132,12 +132,14 @@ class InstanceTester:
                 Reporter.unit_test_stop('nok')
                 return
 
-            for server_ip in server[0].addresses[pool_opt]:
-                if str(server_ip['OS-EXT-IPS:type']) == 'floating':
-                    Reporter.REPORT_MSG("   >>  %s already associated floating ip to %s network(%s)--->",
-                                        instance_opt, pool_opt, server_ip['addr'])
-                    Reporter.unit_test_stop('skip')
-                    return
+            for network_name in server[0].addresses.keys():
+                # print
+                for server_ip in server[0].addresses[network_name]:
+                    if str(server_ip['OS-EXT-IPS:type']) == 'floating':
+                        Reporter.REPORT_MSG("   >>  %s already associated floating ip to %s network(%s)--->",
+                                            instance_opt, network_name, server_ip['addr'])
+                        Reporter.unit_test_stop('skip')
+                        return
 
             floatingip_list = self.nova.floating_ips.list()
             if not floatingip_list:
