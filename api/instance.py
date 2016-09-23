@@ -2,7 +2,6 @@
 # network control management classes
 
 from novaclient import client
-# from api.config import ReadConfig
 from api.reporter2 import Reporter
 import ast
 
