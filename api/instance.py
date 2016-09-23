@@ -132,12 +132,11 @@ class InstanceTester:
                 Reporter.unit_test_stop('nok')
                 return
 
-            for network_name in server[0].addresses.keys():
-                # print
-                for server_ip in server[0].addresses[network_name]:
+            for vm_net_name in server[0].addresses.keys():
+                for server_ip in server[0].addresses[vm_net_name]:
                     if str(server_ip['OS-EXT-IPS:type']) == 'floating':
                         Reporter.REPORT_MSG("   >>  %s already associated floating ip to %s network(%s)--->",
-                                            instance_opt, network_name, server_ip['addr'])
+                                            instance_opt, vm_net_name, server_ip['addr'])
                         Reporter.unit_test_stop('skip')
                         return
 
