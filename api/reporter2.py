@@ -262,17 +262,22 @@ class Reporter:
 
             conn.sendline(password)
             conn.expect(PROMPT, timeout=conn_timeout)
-        except Exception, e:
-            cls.REPORT_MSG('   >> [%s] : tailer Error Connection to SSH Server(timeout except)', host)
+        except Exception as e:
+            cls.REPORT_MSG('   >> [%s] : tailer Error Connection to SSH Server', host)
+            cls.REPORT_MSG('   >>        Error: %s ', e)
             cls.ssh_disconnect(conn, host)
             return False
 
         return conn
 
     @classmethod
-    def ssh_disconnect(self, ssh_conn, host):
-        if ssh_conn.isalive():
-            ssh_conn.close()
+    def ssh_disconnect(cls, ssh_conn, host):
+        try:
+            if ssh_conn.isalive():
+                ssh_conn.close()
+        except Exception as e:
+            cls.REPORT_MSG('   >> %s ssh disconnection error(%s)', host, e)
+
 
     @classmethod
     def tailer_thread(cls, ssh_conn, host):
