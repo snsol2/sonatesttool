@@ -358,5 +358,6 @@ class Reporter:
                                         onos_info.os_password,
                                         onos_info.onos_logfile, 'onos')
 
-        time.sleep(cls._config.get_log_collector_wait_time())
+        if openstack_info.log_collector or onos_info.log_collector:
+            time.sleep(cls._config.get_log_collector_wait_time())
 
