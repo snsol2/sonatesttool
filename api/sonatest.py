@@ -365,6 +365,7 @@ class SonaTest:
                         Reporter.REPORT_MSG('   >>    You should be set more 1600 bytes for Data Path interfaces  !!!')
                     else:
                         Reporter.REPORT_MSG('   >>  Second wget fail ~ !!!')
+                        Reporter.unit_test_stop('nok', False)
                         return False
                     self.wget_clear(*insts)
                 else:
