@@ -320,24 +320,24 @@ class SonaTest:
 
     # def ssh_wget(self, inst1, [inst2]):
     def ssh_wget(self, *insts):
-        if len(insts) in [1, 2]:
-            Reporter.unit_test_start(False, *insts)
+        try:
+            if len(insts) in [1, 2]:
+                Reporter.unit_test_start(False, *insts)
 
-            floating_ip = self.instance.get_instance_floatingip(insts[0])
-            if None is floating_ip:
-                Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
+                floating_ip = self.instance.get_instance_floatingip(insts[0])
+                if None is floating_ip:
+                    Reporter.REPORT_MSG('   >> Get floating_ip[%s] fail', floating_ip)
+                    Reporter.unit_test_stop('nok', False)
+                    return False
+
+                clear_key = 'ssh-keygen -f "' + os.path.expanduser('~')+'/.ssh/known_hosts" -R ' + floating_ip
+                commands.getstatusoutput(clear_key)
+            else:
+                Reporter.unit_test_start(False, *insts)
+                Reporter.REPORT_MSG('   >> Check the arguments(need 1 or 2)')
                 Reporter.unit_test_stop('nok', False)
                 return False
 
-            clear_key = 'ssh-keygen -f "' + os.path.expanduser('~')+'/.ssh/known_hosts" -R ' + floating_ip
-            commands.getstatusoutput(clear_key)
-        else:
-            Reporter.unit_test_start(False, *insts)
-            Reporter.REPORT_MSG('   >> Check the arguments(need 1 or 2)')
-            Reporter.unit_test_stop('nok', False)
-            return False
-
-        try:
             cmd = 'wget ' + self.wget_url
             Reporter.REPORT_MSG('   >> wget %s', self.wget_url)
             wget_result = self.wget_ssh_cmd(cmd, *insts)
