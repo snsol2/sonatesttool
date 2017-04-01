@@ -341,11 +341,14 @@ class NetworkTester:
             rule_body['security_group_id'] = sg_uuid
             rule_body = {'security_group_rule': rule_body}
 
-            remote_group_name = rule_body['security_group_rule']['remote_group_id']
-            if remote_group_name:
-                remote_group_id = self.get_sg_uuid_by_name(remote_group_name)
-                rule_body['security_group_rule']['remote_group_id'] = remote_group_id;
-
+            try:
+                remote_group_name = rule_body['security_group_rule']['remote_group_id']
+                if remote_group_name:
+                    remote_group_id = self.get_sg_uuid_by_name(remote_group_name)
+                    rule_body['security_group_rule']['remote_group_id'] = remote_group_id;
+            except:
+                Reporter.REPORT_MSG("  >> no remote security group in the rule -> OK")
+           
             rule_rst.append(self.neutron.create_security_group_rule(rule_body))
         Reporter.REPORT_MSG("   >> Security Group ---> %s", rule_rst)
         return rule_rst
