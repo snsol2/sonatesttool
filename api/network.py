@@ -253,13 +253,13 @@ class NetworkTester:
     #
     def get_securitygroup_lists(self):
         sg_rst = self.neutron.list_security_groups()
-        # Reporter.REPORT_MSG("   >> SecurityGroup list ---> %s", dict(sg_rst))
+        #Reporter.REPORT_MSG("   >> SecurityGroup list ---> %s", dict(sg_rst))
         return sg_rst
 
     def get_securitygroup(self, sg_opt):
         sg_name = self.get_sg_name(sg_opt)
         sg_rst = self.neutron.list_security_groups(name=sg_name)
-        Reporter.REPORT_MSG("   >> SecurityGroup list ---> %s, %s", sg_opt, dict(sg_rst))
+        #Reporter.REPORT_MSG("   >> SecurityGroup list ---> %s, %s", sg_opt, dict(sg_rst))
         return sg_rst
 
     def get_sg_name(self, sg_opt):
@@ -285,6 +285,17 @@ class NetworkTester:
         sg_uuid = []
         for i in range(len(sg_rst['security_groups'])):
             sg_uuid.append(dict(sg_rst)['security_groups'][i]['id'])
+
+        return sg_uuid
+
+    def get_sg_uuid_by_name(self, sg_name):
+        sg_rst = self.neutron.list_security_groups(name=sg_name)
+        if not sg_rst['security_groups']:
+            Reporter.REPORT_MSG("   >> Not Exist Security Group in OpenStack ---> %s, %s",
+                                sg_opt, sg_name)
+            return
+
+        sg_uuid = dict(sg_rst)['security_groups'][0]['id']
 
         return sg_uuid
 
@@ -329,11 +340,20 @@ class NetworkTester:
             rule_body = ast.literal_eval(rule_conf)
             rule_body['security_group_id'] = sg_uuid
             rule_body = {'security_group_rule': rule_body}
+
+            try:
+                remote_group_name = rule_body['security_group_rule']['remote_group_id']
+                if remote_group_name:
+                    remote_group_id = self.get_sg_uuid_by_name(remote_group_name)
+                    rule_body['security_group_rule']['remote_group_id'] = remote_group_id;
+            except:
+                Reporter.REPORT_MSG("  >> no remote security group in the rule -> OK")
+           
             rule_rst.append(self.neutron.create_security_group_rule(rule_body))
         Reporter.REPORT_MSG("   >> Security Group ---> %s", rule_rst)
         return rule_rst
 
-    def delete_seuritygroup(self, sg_opt):
+    def delete_securitygroup(self, sg_opt):
         Reporter.unit_test_start(True, sg_opt)
         try:
             sg_uuid = self.get_sg_uuid(sg_opt)
