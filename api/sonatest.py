@@ -4,14 +4,19 @@ import os
 import socket
 import time
 
-import keystoneclient.v2_0.client as kclient
 import pexpect
+from keystoneauth1.identity import v2
+from keystoneauth1 import session
+from keystoneclient.v2_0 import client
+
+from keystoneclient import exceptions
 
 from api.config import ReadConfig
 from api.instance import InstanceTester
 from api.network import NetworkTester
 from api.onos_info import ONOSInfo
 from api.reporter2 import Reporter
+from api.identity import Identity
 
 PROMPT = ['~# ', 'onos> ', '\$ ', '\# ', ':~$ ', '$ ']
 CMD_PROMPT = '\[SONA\]\# '
@@ -30,6 +35,7 @@ class SonaTest:
         self.wget_url = self.conf.get_wget_url()
         self.instance = InstanceTester(self.conf)
         self.network = NetworkTester(self.conf)
+        self.identity = Identity(self.conf)
         self.onos = ONOSInfo(self.conf)
         self.reporter = Reporter(self.conf)
 
@@ -210,35 +216,44 @@ class SonaTest:
     def openstack_get_token(self, report_flag=None):
         if report_flag is None:
             Reporter.unit_test_start(True)
+
         try:
-            keystone = kclient.Client(auth_url=self.auth['auth_url'],
-                                      username=self.auth['username'],
-                                      password=self.auth['api_key'],
-                                      tenant_name=self.auth['project_id'])
-            token = keystone.auth_token
+            auth = v2.Password(username=self.auth['username'],
+                               password=self.auth['api_key'],
+                               tenant_name=self.auth['project_id'],
+                               auth_url=self.auth['auth_url'])
+            sess = session.Session(auth=auth, timeout=5)
+
+            token = sess.get_token()
             if not token:
-                Reporter.REPORT_MSG("   >> OpentStack Authentication NOK --->")
+                Reporter.REPORT_MSG("   >> OpentStack Authentication NOK ---> get token fail")
                 if report_flag is None:
                     Reporter.unit_test_stop('nok')
-                    return False
+                return False
             Reporter.REPORT_MSG("   >> OpenStack Authentication OK ---> token: %s", token)
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
             return True
+        except exceptions.AuthorizationFailure, err:
+            Reporter.REPORT_MSG("   >> OpentStack Authentication Fail ---> %s", err)
+            Reporter.unit_test_stop('nok')
         except:
-            if report_flag is None:
-                Reporter.exception_err_write()
+            # if report_flag is None:
+            Reporter.exception_err_write()
             return False
 
     def openstack_get_service(self, report_flag=None):
         if report_flag is None:
             Reporter.unit_test_start(True)
         try:
-            keystone = kclient.Client(auth_url=self.auth['auth_url'],
-                                      username=self.auth['username'],
-                                      password=self.auth['api_key'],
-                                      tenant_name=self.auth['project_id'])
+            auth = v2.Password(username=self.auth['username'],
+                               password=self.auth['api_key'],
+                               tenant_name=self.auth['project_id'],
+                               auth_url=self.auth['auth_url'])
+            sess = session.Session(auth=auth, timeout=2)
+            keystone = client.Client(session=sess)
+
             service_list = [{a.name: a.enabled} for a in keystone.services.list()]
 
             for i in range(len(service_list)):
@@ -255,9 +270,12 @@ class SonaTest:
 
             return True
 
+        except exceptions.AuthorizationFailure, err:
+            Reporter.REPORT_MSG("   >> OpentStack Authentication Fail ---> %s", err)
+            Reporter.unit_test_stop('nok')
         except:
-            if report_flag is None:
-                Reporter.exception_err_write()
+            # if report_flag is None:
+            Reporter.exception_err_write()
             return False
 
     def floating_ip_check(self, inst1):
@@ -307,6 +325,7 @@ class SonaTest:
             token_stat = self.openstack_get_token(report_flag=flag)
             service_stat = self.openstack_get_service(report_flag=flag)
 
+            # Reporter.NRET_PRINT("%s %s %s %s", app_stat, device_stat, token_stat, service_stat)
             if (app_stat and device_stat and token_stat and service_stat):
                 Reporter.unit_test_stop('ok')
             else:

@@ -6,7 +6,6 @@ class ONOSInfo():
     _config=''
 
     def __init__(self, config):
-        # print 'init'
         ONOSInfo._config = config
 
     def onos_create_session(self, conn_info):
@@ -23,7 +22,9 @@ class ONOSInfo():
             url = 'http://' + conn_info['host'] + ':8181/onos/v1/applications/' + app_name
             header = {'Accept': 'application/json'}
             # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
-            return dict(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json())['state'].encode('utf-8')
+            return dict(conn.get(url,
+                                 headers=header,
+                                 timeout= self._config.get_onos_timeout()).json())['state'].encode('utf-8')
         except:
             return
 
@@ -32,7 +33,8 @@ class ONOSInfo():
             conn = self.onos_create_session(conn_info)
             url = 'http://' + conn_info['host'] + ':8181/onos/v1/devices/'
             header = {'Accept': 'application/json'}
-            ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
+            ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(),
+                             ensure_ascii=False, sort_keys=False).encode('utf-8')
             dev_list = json.loads(ret)
             return dev_list['devices']
         except:
@@ -44,30 +46,31 @@ class ONOSInfo():
             url = 'http://' + conn_info['host'] + ':8181/onos/v1/devices/' + dev_id + '/ports'
             header = {'Accept': 'application/json'}
             # print json.dumps(conn.get(url, headers=header).json(),indent=4, separators=('',':'))
-            ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(), ensure_ascii=False, sort_keys=False).encode('utf-8')
-            port_list = json.loads(ret)
+            ret = json.dumps(conn.get(url, headers=header, timeout= self._config.get_onos_timeout()).json(),
+                             ensure_ascii=False, sort_keys=False).encode('utf-8')
 
-            result = []
-            for x in dict(port_list)['ports']:
-                port_name = dict(dict(x)['annotations'])
-                port_status = dict(x)
-                # test
-                # if 'vxlan' in port_name['portName']:
-                #     port_status['isEnabled'] = False
-                result.append({port_name['portName'] : port_status['isEnabled']})
+            result = dict()
+            for x in json.loads(ret)['ports']:
+                result[x['annotations']['portName']] = x['isEnabled']
+
+            if not len(result):
+                Reporter.REPORT_MSG('   >> [%s] Device[%s] Get port fail',
+                                    conn_info['host'], dev_id)
+                return
 
             return result
+
         except:
+            Reporter.exception_err_write()
             return
 
-    def device_status(self, conn_info):
+    def each_device_status(self, conn_info):
         try:
             dev_list = self.device_info(conn_info)
             if None is dev_list:
+                Reporter.REPORT_MSG('   >> [%s] Device Get Fail -->', conn_info['host'])
                 return False
 
-            br_int_status = 0
-            vxlan_status = 0
             dev_cnt = 0
             for i in range(len(dev_list)):
                 dev_info_dic = dict(dev_list[i])
@@ -75,37 +78,25 @@ class ONOSInfo():
                 if None is proto:
                     continue
                 dev_cnt += 1
-                # Reporter.REPORT_MSG('   >>[%d] %s', i, dev_info_dic)
                 if False is dev_info_dic['available']:
-                    Reporter.REPORT_MSG('   >> [%s] device[%s] status nok', conn_info['host'], dev_info_dic['id'])
+                    Reporter.REPORT_MSG('   >> [%s] Device[%s] Status NOK', conn_info['host'], dev_info_dic['id'])
                     return False
 
                 # Port status(br-int)
-                port_result = self.port_info(conn_info, dev_info_dic['id'])
-                status = 0
-                for x in port_result:
-                    str = dict(x)
-                    if str.has_key('br-int') == True :
-                        status = 1
-                        break
-                br_int_status += status
+                if 'of' in dev_info_dic['id']:
+                    port_status = self.port_info(conn_info, dev_info_dic['id'])
+                    if not port_status:
+                        return False
 
-                # Port status(vxlan)
-                for x in port_result:
-                    str = dict(x)
-                    if str.has_key('vxlan') == True:
-                        if True is str['vxlan']:
-                            vxlan_status += 1
-
-            # br-int
-            if dev_cnt != br_int_status:
-                Reporter.REPORT_MSG('   >> [%s] port status(br-int) -- nok', conn_info['host'])
-                return False
-
-            # vxlan-int
-            if dev_cnt != vxlan_status:
-                Reporter.REPORT_MSG('   >> [%s] port status(vxlan)  -- nok', conn_info['host'])
-                return False
+                    status = 0
+                    for x in list(port_status):
+                        if x == 'br-int' :
+                            continue
+                        else:
+                            if not port_status[x]:
+                                Reporter.REPORT_MSG('   >> [%s] device[%s] port(%s) status is False',
+                                                    conn_info['host'], dev_info_dic['id'], x)
+                                return False
 
             Reporter.REPORT_MSG('   >> [%s] device, port status -- ok', conn_info['host'])
             return True
@@ -126,16 +117,17 @@ class ONOSInfo():
                 conn_info['user'] = onos_info.user_id
                 conn_info['password'] = onos_info.password
 
-                ret = self.app_info(conn_info, 'org.onosproject.openstackswitching')
-                state_info['openstackswitching'] = ret; state_list.append(ret)
-                ret = self.app_info(conn_info, 'org.onosproject.openstackrouting')
-                state_info['openstackrouting'] = ret; state_list.append(ret)
-                ret = self.app_info(conn_info, 'org.onosproject.openstacknode')
-                state_info['openstacknode'] = ret; state_list.append(ret)
-                ret = self.app_info(conn_info, 'org.onosproject.openstackinterface')
-                state_info['openstackinterface'] = ret; state_list.append(ret)
+                for app in onos_info.app_list:
+                    # Reporter.NRET_PRINT("aaa %s", app)
+                    ret = self.app_info(conn_info, 'org.onosproject.' + app)
+                    state_info[app] = ret; state_list.append(ret)
+                # ret = self.app_info(conn_info, 'org.onosproject.scalablegateway')
+                # state_info['scalablegateway'] = ret; state_list.append(ret)
+                # ret = self.app_info(conn_info, 'org.onosproject.openstacknode')
+                # state_info['openstacknode'] = ret; state_list.append(ret)
 
-                if 'ACTIVE' not in state_list:
+                # if 'ACTIVE' not in state_list:
+                if state_list.count('ACTIVE') != len(state_list):
                     Reporter.REPORT_MSG('   >> [%s][Application NOK] : %s', onos_ip, state_info)
                     if report_flag is None:
                         Reporter.unit_test_stop('nok')
@@ -148,7 +140,7 @@ class ONOSInfo():
 
             return True
         except:
-            # Reporter.exception_err_write()
+            Reporter.exception_err_write()
             return False
 
     def devices_status(self, report_flag=None):
@@ -162,7 +154,7 @@ class ONOSInfo():
                 conn_info['user'] = onos_info.user_id
                 conn_info['port'] = onos_info.ssh_port
                 conn_info['password'] = onos_info.password
-                ret = self.device_status(conn_info)
+                ret = self.each_device_status(conn_info)
                 if False is ret:
                     if report_flag is None:
                         Reporter.unit_test_stop('nok')
@@ -170,7 +162,8 @@ class ONOSInfo():
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
+
             return True
         except:
-            # Reporter.exception_err_write()
+            Reporter.exception_err_write()
             return False

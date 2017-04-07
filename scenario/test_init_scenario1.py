@@ -13,10 +13,11 @@ test = SonaTest(CONFIG_FILE)
 # SONA Test scenario
 # =================================================================
 # # status check
-test.onos_and_openstack_check()
+test.identity.create_user()
+# test.onos_and_openstack_check()
 #
 # # Network
-# test.network.create_network('network1')
+test.network.create_network('network1')
 # test.network.create_network('network2')
 # test.network.create_network('network3')
 #
@@ -47,5 +48,6 @@ test.onos_and_openstack_check()
 # test.ssh_ping('instance1', 'instance3:network3')
 # test.ssh_ping('instance1', 'instance3:network3', '10.10.2.91')
 
+test.identity.delete_user()
 # =================================================================
 test.reporter.test_summary()

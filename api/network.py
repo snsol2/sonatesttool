@@ -291,8 +291,8 @@ class NetworkTester:
     def get_sg_uuid_by_name(self, sg_name):
         sg_rst = self.neutron.list_security_groups(name=sg_name)
         if not sg_rst['security_groups']:
-            Reporter.REPORT_MSG("   >> Not Exist Security Group in OpenStack ---> %s, %s",
-                                sg_opt, sg_name)
+            Reporter.REPORT_MSG("   >> Not Exist Security Group in OpenStack ---> %s",
+                                sg_name)
             return
 
         sg_uuid = dict(sg_rst)['security_groups'][0]['id']

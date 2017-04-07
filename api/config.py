@@ -94,6 +94,7 @@ class ReadConfig:
             cfg.StrOpt('onos_logfile'),
             cfg.StrOpt('onos_service_ip'),
             cfg.StrOpt('onos_list'),
+            cfg.ListOpt('app_list'),
             cfg.BoolOpt('log_collector')
         ]
         CONF.register_group(onos_info_group)
@@ -115,6 +116,21 @@ class ReadConfig:
         CONF.register_group(auth_group)
         CONF.register_opts(auth_conf, auth_group)
         return CONF.openstack
+
+    @classmethod
+    def get_identity(cls):
+        new_id_group = cfg.OptGroup(name='identity')
+        new_id_conf = [
+            cfg.StrOpt('username'),
+            cfg.StrOpt('password'),
+            cfg.StrOpt('tenant_id'),
+            cfg.StrOpt('role'),
+            cfg.StrOpt('auth_url')
+        ]
+        CONF.register_group(new_id_group)
+        CONF.register_opts(new_id_conf, new_id_group)
+        return CONF.identity
+
 
     @classmethod
     def get_network_config(cls):
