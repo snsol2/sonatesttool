@@ -121,6 +121,7 @@ class ReadConfig:
     def get_identity(cls):
         new_id_group = cfg.OptGroup(name='identity')
         new_id_conf = [
+            cfg.StrOpt('version'),
             cfg.StrOpt('username'),
             cfg.StrOpt('password'),
             cfg.StrOpt('tenant_id'),

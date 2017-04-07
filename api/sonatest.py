@@ -28,7 +28,7 @@ class SonaTest:
         self.conf = ReadConfig(config_file)
         self.onos_info = self.conf.get_onos_info()
         self.inst_conf = self.conf.get_instance_config()
-        self.auth = self.conf.get_auth_conf()
+        self.auth = self.conf.get_identity()
         self.conn_timeout = self.conf.get_ssh_conn_timeout()
         self.ping_timeout = self.conf.get_floating_ip_check_timeout()
         self.result_skip_mode = self.conf.get_state_check_result_skip_mode()
@@ -219,8 +219,8 @@ class SonaTest:
 
         try:
             auth = v2.Password(username=self.auth['username'],
-                               password=self.auth['api_key'],
-                               tenant_name=self.auth['project_id'],
+                               password=self.auth['password'],
+                               tenant_name=self.auth['tenant_id'],
                                auth_url=self.auth['auth_url'])
             sess = session.Session(auth=auth, timeout=5)
 
@@ -230,14 +230,20 @@ class SonaTest:
                 if report_flag is None:
                     Reporter.unit_test_stop('nok')
                 return False
-            Reporter.REPORT_MSG("   >> OpenStack Authentication OK ---> token: %s", token)
+            else:
+                Reporter.REPORT_MSG("   >> OpenStack Authentication OK ---> user: %s, token: %s",
+                                    self.auth['username'], token)
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
             return True
+
         except exceptions.AuthorizationFailure, err:
             Reporter.REPORT_MSG("   >> OpentStack Authentication Fail ---> %s", err)
-            Reporter.unit_test_stop('nok')
+            return False
+        except exceptions.Unauthorized, err:
+            Reporter.REPORT_MSG("   >> OpentStack Authentication Fail ---> %s", err)
+            return False
         except:
             # if report_flag is None:
             Reporter.exception_err_write()
@@ -248,10 +254,10 @@ class SonaTest:
             Reporter.unit_test_start(True)
         try:
             auth = v2.Password(username=self.auth['username'],
-                               password=self.auth['api_key'],
-                               tenant_name=self.auth['project_id'],
+                               password=self.auth['password'],
+                               tenant_name=self.auth['tenant_id'],
                                auth_url=self.auth['auth_url'])
-            sess = session.Session(auth=auth, timeout=2)
+            sess = session.Session(auth=auth, timeout=5)
             keystone = client.Client(session=sess)
 
             service_list = [{a.name: a.enabled} for a in keystone.services.list()]
@@ -272,11 +278,13 @@ class SonaTest:
 
         except exceptions.AuthorizationFailure, err:
             Reporter.REPORT_MSG("   >> OpentStack Authentication Fail ---> %s", err)
-            Reporter.unit_test_stop('nok')
+            return False
+        except exceptions.Unauthorized, err:
+            Reporter.REPORT_MSG("   >> OpentStack Authentication Fail ---> %s", err)
+            return False
         except:
             # if report_flag is None:
             Reporter.exception_err_write()
-            return False
 
     def floating_ip_check(self, inst1):
         Reporter.unit_test_start(False)
