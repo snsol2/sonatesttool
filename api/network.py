@@ -17,15 +17,16 @@ class NetworkTester:
 
     # def __init__(self, config_file):
     def __init__(self, config):
-            self.auth_conf = dict(config.get_auth_conf())
+            # self.auth_conf = dict(config.get_auth_conf())
+            self.auth_conf = config.get_identity()
             self.network_conf = config.get_network_config()
             self.subnet_conf = config.get_subnet_config()
             self.sg_conf = config.get_sg_config()
             self.rule_conf = config.get_rule_config()
             self.router_conf = config.get_router_config()
             self.neutron = client.Client(username=self.auth_conf['username'],
-                                         password=self.auth_conf['api_key'],
-                                         tenant_name=self.auth_conf['project_id'],
+                                         password=self.auth_conf['password'],
+                                         tenant_name=self.auth_conf['tenant_id'],
                                          auth_url=self.auth_conf['auth_url'])
             # Get Token and Nova Object
             self.nova = InstanceTester(config)
@@ -271,22 +272,22 @@ class NetworkTester:
         sg_name = ast.literal_eval(sg_conf)['name']
         return sg_name
 
-    def get_sg_uuid(self, sg_opt):
-        sg_name = self.get_sg_name(sg_opt)
-        if not sg_name:
-            return
-
-        sg_rst = self.neutron.list_security_groups(name=sg_name)
-        if not sg_rst['security_groups']:
-            Reporter.REPORT_MSG("   >> Not Exist Security Group in OpenStack ---> %s, %s",
-                                sg_opt, sg_name)
-            return
-
-        sg_uuid = []
-        for i in range(len(sg_rst['security_groups'])):
-            sg_uuid.append(dict(sg_rst)['security_groups'][i]['id'])
-
-        return sg_uuid
+    # def get_sg_uuid(self, sg_opt):
+    #     sg_name = self.get_sg_name(sg_opt)
+    #     if not sg_name:
+    #         return
+    #
+    #     sg_rst = self.neutron.list_security_groups(name=sg_name)
+    #     if not sg_rst['security_groups']:
+    #         Reporter.REPORT_MSG("   >> Not Exist Security Group in OpenStack ---> %s, %s",
+    #                             sg_opt, sg_name)
+    #         return
+    #
+    #     sg_uuid = []
+    #     for i in range(len(sg_rst['security_groups'])):
+    #         sg_uuid.append(dict(sg_rst)['security_groups'][i]['id'])
+    #
+    #     return sg_uuid
 
     def get_sg_uuid_by_name(self, sg_name):
         sg_rst = self.neutron.list_security_groups(name=sg_name)
@@ -302,7 +303,7 @@ class NetworkTester:
     def create_securitygroup(self, sg_opt, rule_opt_list):
         Reporter.unit_test_start(True, sg_opt, rule_opt_list)
         try:
-            if self.get_sg_uuid(sg_opt):
+            if self.get_sg_uuid_by_name(sg_opt):
                 Reporter.REPORT_MSG("   >> Already Exist Security Group ---> %s", sg_opt)
                 Reporter.unit_test_stop('skip')
                 return
@@ -347,7 +348,7 @@ class NetworkTester:
                     remote_group_id = self.get_sg_uuid_by_name(remote_group_name)
                     rule_body['security_group_rule']['remote_group_id'] = remote_group_id;
             except:
-                Reporter.REPORT_MSG("  >> no remote security group in the rule -> OK")
+                Reporter.REPORT_MSG("   >> no remote security group in the rule -> OK")
            
             rule_rst.append(self.neutron.create_security_group_rule(rule_body))
         Reporter.REPORT_MSG("   >> Security Group ---> %s", rule_rst)
@@ -356,16 +357,15 @@ class NetworkTester:
     def delete_securitygroup(self, sg_opt):
         Reporter.unit_test_start(True, sg_opt)
         try:
-            sg_uuid = self.get_sg_uuid(sg_opt)
+            sg_uuid = self.get_sg_uuid_by_name(self.get_sg_name(sg_opt))
             if not sg_uuid:
                 Reporter.unit_test_stop('skip')
                 return
 
             sg_rst = []
-            for i in range(len(sg_uuid)):
-                sg_rst.append(self.neutron.delete_security_group(sg_uuid[i]))
-                Reporter.REPORT_MSG("   >> Delete Security Group Succ ---> %s, %s",
-                                    sg_opt, sg_rst)
+            sg_rst.append(self.neutron.delete_security_group(sg_uuid))
+            Reporter.REPORT_MSG("   >> Delete Security Group Succ ---> %s, %s",
+                                sg_opt, sg_rst)
             Reporter.unit_test_stop('ok')
             return sg_rst
         except:

@@ -11,12 +11,18 @@ class InstanceTester:
     # def __init__(self, config_file):
     def __init__(self, config):
         # Get config
-        self.auth_conf = config.get_auth_conf()
+        # self.auth_conf = config.get_auth_conf()
+        self.auth_conf = config.get_identity()
         self.instance_conf = config.get_instance_config()
         self.network_conf = config.get_network_config()
         self.sg_config = config.get_sg_config()
         # Get Token and Neutron Object
-        self.nova = client.Client(**self.auth_conf)
+        # self.nova = client.Client(**self.auth_conf)
+        self.nova = client.Client(self.auth_conf['version'],
+                                  self.auth_conf['username'],
+                                  self.auth_conf['password'],
+                                  self.auth_conf['tenant_id'],
+                                  self.auth_conf['auth_url'])
 
     def get_instance_lists(self):
         instance_rst = self.nova.servers.list()

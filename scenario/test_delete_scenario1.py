@@ -13,16 +13,16 @@ test = SonaTest(CONFIG_FILE)
 # =================================================================
 
 # Instance
-test.instance.delete_instance('instance1')
-test.instance.delete_instance('instance2')
-test.instance.delete_instance('instance3')
-test.instance.delete_instance('instance4')
+# test.instance.delete_instance('instance1')
+# test.instance.delete_instance('instance2')
+# test.instance.delete_instance('instance3')
+# test.instance.delete_instance('instance4')
 
 # Floating IP
 test.instance.delete_floatingip_all()
 
 # Security Group
-test.network.delete_seuritygroup('sg2')
+test.network.delete_securitygroup('sg2')
 
 # Router
 test.network.remove_router_interface('router1', 'subnet2')
@@ -40,5 +40,6 @@ test.network.delete_network('network1')
 test.network.delete_network('network2')
 test.network.delete_network('network3')
 
+test.identity.delete_user()
 # =================================================================
 test.reporter.test_summary()

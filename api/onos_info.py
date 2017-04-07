@@ -6,7 +6,8 @@ class ONOSInfo():
     _config=''
 
     def __init__(self, config):
-        ONOSInfo._config = config
+        # ONOSInfo._config = config
+        self._config = config
 
     def onos_create_session(self, conn_info):
         try:
@@ -27,6 +28,7 @@ class ONOSInfo():
                                  timeout= self._config.get_onos_timeout()).json())['state'].encode('utf-8')
         except:
             return
+
 
     def device_info(self, conn_info):
         try:
@@ -54,8 +56,8 @@ class ONOSInfo():
                 result[x['annotations']['portName']] = x['isEnabled']
 
             if not len(result):
-                Reporter.REPORT_MSG('   >> [%s] Device[%s] Get port fail',
-                                    conn_info['host'], dev_id)
+                Reporter.REPORT_MSG('   >> Device[%s] Get port fail from [%s] ',
+                                    dev_id, conn_info['host'])
                 return
 
             return result
@@ -68,7 +70,7 @@ class ONOSInfo():
         try:
             dev_list = self.device_info(conn_info)
             if None is dev_list:
-                Reporter.REPORT_MSG('   >> [%s] Device Get Fail -->', conn_info['host'])
+                Reporter.REPORT_MSG('   >> Device Get Fail from [%s] -->', conn_info['host'])
                 return False
 
             dev_cnt = 0
@@ -79,7 +81,7 @@ class ONOSInfo():
                     continue
                 dev_cnt += 1
                 if False is dev_info_dic['available']:
-                    Reporter.REPORT_MSG('   >> [%s] Device[%s] Status NOK', conn_info['host'], dev_info_dic['id'])
+                    Reporter.REPORT_MSG('   >> ONOS Device[%s] Status NOK [%s] ', dev_info_dic['id'], conn_info['host'])
                     return False
 
                 # Port status(br-int)
@@ -94,11 +96,11 @@ class ONOSInfo():
                             continue
                         else:
                             if not port_status[x]:
-                                Reporter.REPORT_MSG('   >> [%s] device[%s] port(%s) status is False',
-                                                    conn_info['host'], dev_info_dic['id'], x)
+                                Reporter.REPORT_MSG('   >> ONOS Device[%s]\' Port(%s) status is False [%s]',
+                                                    dev_info_dic['id'], x, conn_info['host'])
                                 return False
 
-            Reporter.REPORT_MSG('   >> [%s] device, port status -- ok', conn_info['host'])
+            Reporter.REPORT_MSG('   >> ONOS Device/Port status OK [%s] ', conn_info['host'])
             return True
         except:
             Reporter.exception_err_write()
@@ -128,12 +130,12 @@ class ONOSInfo():
 
                 # if 'ACTIVE' not in state_list:
                 if state_list.count('ACTIVE') != len(state_list):
-                    Reporter.REPORT_MSG('   >> [%s][Application NOK] : %s', onos_ip, state_info)
+                    Reporter.REPORT_MSG('   >> ONOS Application NOK [%s]: %s', onos_ip, state_info)
                     if report_flag is None:
                         Reporter.unit_test_stop('nok')
                     return False
                 else:
-                    Reporter.REPORT_MSG('   >> [%s][Application OK] : %s', onos_ip, state_info)
+                    Reporter.REPORT_MSG('   >> ONOS Application OK [%s]: %s', onos_ip, state_info)
 
             if report_flag is None:
                 Reporter.unit_test_stop('ok')
