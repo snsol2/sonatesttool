@@ -5,7 +5,7 @@
 
 from api.sonatest import SonaTest
 
-CONFIG_FILE = '../config/config.ini'
+CONFIG_FILE = 'config/config.ini'
 
 test = SonaTest(CONFIG_FILE)
 

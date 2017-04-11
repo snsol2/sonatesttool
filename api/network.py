@@ -7,6 +7,7 @@ from neutronclient.common import exceptions
 from api.instance import InstanceTester
 from api.reporter2 import Reporter
 import ast
+import time
 
 # TODO
 # - apply log
@@ -24,10 +25,11 @@ class NetworkTester:
             self.sg_conf = config.get_sg_config()
             self.rule_conf = config.get_rule_config()
             self.router_conf = config.get_router_config()
-            self.neutron = client.Client(username=self.auth_conf['username'],
-                                         password=self.auth_conf['password'],
-                                         tenant_name=self.auth_conf['tenant_id'],
-                                         auth_url=self.auth_conf['auth_url'])
+            self.neutron = self.get_neutron_client(self.auth_conf)
+            # self.neutron = client.Client(username=self.auth_conf['username'],
+            #                              password=self.auth_conf['password'],
+            #                              tenant_name=self.auth_conf['tenant_id'],
+            #                              auth_url=self.auth_conf['auth_url'])
             # Get Token and Nova Object
             self.nova = InstanceTester(config)
 
@@ -35,12 +37,22 @@ class NetworkTester:
     # Networks Methods
     # TODO
     # - get_network_list_all and get_network_list merge
+    def get_neutron_client(self, user_identity):
+        try:
+            neutron_client = client.Client(username=user_identity['username'],
+                                           password=user_identity['password'],
+                                           tenant_name=user_identity['tenant_id'],
+                                           auth_url=user_identity['auth_url'])
+            return neutron_client
+
+        except client.exceptions.Unauthorized, err:
+            Reporter.NRET_PRINT("   >> Authentication fail")
+            exit(1)
+
     def get_network_lists(self):
         network_rst = self.neutron.list_networks()
         if not network_rst:
-            print ' >> Not exist Network --->'
             return
-        # print "Network All List --->", dict(network_rst).values()
         return network_rst
 
     def get_network(self, network_opt):
@@ -303,8 +315,10 @@ class NetworkTester:
     def create_securitygroup(self, sg_opt, rule_opt_list):
         Reporter.unit_test_start(True, sg_opt, rule_opt_list)
         try:
-            if self.get_sg_uuid_by_name(sg_opt):
-                Reporter.REPORT_MSG("   >> Already Exist Security Group ---> %s", sg_opt)
+            sg_uuid = self.get_sg_uuid_by_name(self.get_sg_name(sg_opt))
+            if sg_uuid:
+                Reporter.REPORT_MSG("   >> Already Exist Security Group ---> %s: %s",
+                                    sg_opt, sg_uuid)
                 Reporter.unit_test_stop('skip')
                 return
 
@@ -356,18 +370,29 @@ class NetworkTester:
 
     def delete_securitygroup(self, sg_opt):
         Reporter.unit_test_start(True, sg_opt)
+        sg_uuid = ''
+        sg_rst = []
         try:
             sg_uuid = self.get_sg_uuid_by_name(self.get_sg_name(sg_opt))
             if not sg_uuid:
                 Reporter.unit_test_stop('skip')
                 return
 
-            sg_rst = []
             sg_rst.append(self.neutron.delete_security_group(sg_uuid))
             Reporter.REPORT_MSG("   >> Delete Security Group Succ ---> %s, %s",
                                 sg_opt, sg_rst)
             Reporter.unit_test_stop('ok')
             return sg_rst
+        except client.exceptions.Conflict, err:
+            Reporter.REPORT_MSG("   >> Conflict error, after sleep 3 seconds, delete retry")
+            time.sleep(3)
+            try:
+                self.neutron.delete_security_group(sg_uuid)
+            except:
+                Reporter.exception_err_write()
+            Reporter.REPORT_MSG("   >> Delete Security Group Succ ---> %s", sg_opt)
+            Reporter.unit_test_stop('ok')
+            return
         except:
             Reporter.exception_err_write()
 
@@ -394,7 +419,8 @@ class NetworkTester:
             Reporter.REPORT_MSG("   >> Router list ---> %s", router_rst)
             return router_rst
         except:
-            Reporter.exception_err_write()
+            Reporter.exception_err_write2()
+            return 'fail'
 
     def get_router_name(self, router_opt):
         router_conf = dict(self.router_conf)[router_opt]
@@ -408,13 +434,20 @@ class NetworkTester:
         router_rst = self.get_router(router_opt)
         if not router_rst:
             return
-        router_uuid = router_rst['routers'][0]['id']
+        if router_rst == 'fail':
+            return 'fail'
+        else:
+            router_uuid = router_rst['routers'][0]['id']
         return router_uuid
 
     def create_router(self, router_opt, network_opt):
         Reporter.unit_test_start(True, router_opt, network_opt)
         try:
-            if self.get_router(router_opt):
+            router_rt = self.get_router(router_opt)
+            if router_rt == 'fail':
+                Reporter.unit_test_stop('nok')
+                return
+            elif self.get_router(router_opt):
                 Reporter.unit_test_stop('skip')
                 return
 
@@ -447,6 +480,10 @@ class NetworkTester:
             if not router_uuid:
                 Reporter.unit_test_stop('skip')
                 return
+            elif router_uuid == 'fail':
+                Reporter.unit_test_stop('nok')
+                return
+
             router_rst = self.neutron.delete_router(router_uuid)
             Reporter.REPORT_MSG("   >> Delete Router ---> %s", router_rst)
             Reporter.unit_test_stop('ok')
@@ -486,13 +523,13 @@ class NetworkTester:
             router_uuid = self.get_router_uuid(router_opt)
             if not router_uuid:
                 Reporter.REPORT_MSG("   >> Router Not Exist --->> %s", router_opt)
-                Reporter.unit_test_stop('skip')
+                Reporter.unit_test_stop('nok')
                 return
 
             subnet_uuid = self.get_subnet_uuid(subnet_opt)
             if not subnet_uuid:
                 Reporter.REPORT_MSG("   >> Subnet Not Exist --->> %s", router_opt)
-                Reporter.unit_test_stop('skip')
+                Reporter.unit_test_stop('nok')
                 return
 
             router_if_body = {'subnet_id': subnet_uuid}

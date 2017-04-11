@@ -6,8 +6,9 @@ from keystoneauth1 import session
 from keystoneclient.v2_0 import client
 from keystoneclient import exceptions
 
-from api.config import ReadConfig
 from api.reporter2 import Reporter
+from api.instance import InstanceTester
+from api.network import NetworkTester
 
 
 class Identity:
@@ -15,6 +16,8 @@ class Identity:
         self.identity = config.get_identity()
         self.openstack_admin = config.get_auth_conf()
         self.admin_user = self.get_admin_auth(self.openstack_admin)
+        self.nova_client = InstanceTester(config)
+        self.neutron_client = NetworkTester(config)
 
     def get_admin_auth(self, user):
         try:
@@ -43,6 +46,7 @@ class Identity:
                                 self.identity['tenant_id'], tenant_id)
         except:
             Reporter.exception_err_write()
+            return
 
         # Reporter.NRET_PRINT("aaa %s\n", tenant_id)
         try:
@@ -62,23 +66,40 @@ class Identity:
             return
         except:
             Reporter.exception_err_write()
+            return
 
         if user_id:
             Reporter.REPORT_MSG("   >> Create User(%s) > user_id: %s",
                                 self.identity['username'], user_id)
             Reporter.unit_test_stop('ok')
+            return
         else:
             Reporter.REPORT_MSG("   >> Create User(%s) fail > ", self.identity['username'])
             Reporter.unit_test_stop('nok')
+            return
 
     def delete_user(self):
         Reporter.unit_test_start(True)
         try:
+            instance_list = self.nova_client.get_instance_lists()
+            network_list = self.neutron_client.get_network_lists()['networks']
+            if instance_list or network_list:
+                Reporter.REPORT_MSG("   >> Delete User Fail, cause --> Instance or Network Exist, "
+                                    "This user can delete after deleted instance and network\n"
+                                    "instance: %s\n network: %s", instance_list, network_list)
+                Reporter.unit_test_stop('nok')
+                return
+
+            # Delete default Security Group
+            default_sg_uuid = self.neutron_client.get_sg_uuid_by_name('default')
+            self.neutron_client.neutron.delete_security_group(default_sg_uuid)
+
             user_list = self.admin_user.users.list()
             user_id = [x.id for x in user_list if x.name == self.identity['username']][0]
             if not user_id:
                 Reporter.REPORT_MSG("   >> User(%s) Not Exist > ", self.identity['username'])
                 Reporter.unit_test_stop('skip')
+                return
             else:
                 self.admin_user.users.delete(user_id)
                 Reporter.REPORT_MSG("   >> User(%s) Delete OK > ", self.identity['username'])
@@ -88,12 +109,14 @@ class Identity:
             if not tenant_id:
                 Reporter.REPORT_MSG("   >> Tenent(%s) Not Exist > ", self.identity['username'])
                 Reporter.unit_test_stop('skip')
+                return
             else:
                 self.admin_user.tenants.delete(tenant_id)
                 Reporter.REPORT_MSG("   >> Tenant(%s) Delete OK > ", self.identity['tenant_id'])
 
             if user_id and tenant_id:
                 Reporter.unit_test_stop('ok')
+                return
 
         except:
             Reporter.exception_err_write()

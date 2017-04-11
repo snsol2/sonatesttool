@@ -26,7 +26,6 @@ class InstanceTester:
 
     def get_instance_lists(self):
         instance_rst = self.nova.servers.list()
-        print ' >> GET Instance All --->', instance_rst
         return instance_rst
 
     def get_instance(self, instance_opt):
