@@ -13,7 +13,7 @@ test = SonaTest(CONFIG_FILE)
 # SONA Test scenario
 # =================================================================
 # # status check
-# test.identity.create_user()
+test.identity.create_user()
 test.onos_and_openstack_check()
 
 # Network
