@@ -178,6 +178,13 @@ class Reporter:
         return lines
 
     @classmethod
+    def exception_err_write2(cls):
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        cls.REPORT_MSG("%s", ''.join('   !! ' + line for line in lines))
+        return lines
+
+    @classmethod
     def unit_test_start(cls, tail_enable, *args):
         cls.test_start_time = datetime.datetime.now()
         if cls.test_count == 0:
